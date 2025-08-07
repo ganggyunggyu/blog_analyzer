@@ -148,7 +148,7 @@ def generate_manuscript_with_ai(
         db_service = MongoDBService
         current_time = time.time()
         try: 
-            db_service.insert_document(collection_name="manuscripts", document={"timestamp": current_time, "content": generated_manuscript})
+            db_service.insert_document(self=db_service,collection_name="manuscripts", document={"timestamp": current_time, "content": generated_manuscript})
         except Exception as e:
             print(f"데이터베이스에 저장 실패: {e}")
         
