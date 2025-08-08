@@ -45,7 +45,7 @@ def getKoPrompt(keyword: str):
 12. 키워드에 대한 **상세한 정보**를 모두 전달해줘야해.
     - 건강 기능 식품은 리뷰 뿐 아니라 제품 자체의 정보도 중요합니다.
 
-13. 원고와 피드백 사이에 --- 필수 추가합니다.
+13. 원고 내에는 --- 을 포함한 마크다운 문법을 쓰지 않습니다.
 
 키워드: **{keyword}**
 
@@ -77,12 +77,21 @@ def getKoPrompt(keyword: str):
 
 **만약 모든 규칙이 이행되지 않았다면 다시 원고를 작성해줘야 합니다.**
 
+
 '''
 
 ref = '''
-교통사고는 한순간에 방심했을 때 발생하기 쉬웠어요. 순간적인 실수 혹은 주변 환경에 영향을 받아 차량 사고로 이어지는 경우가 많은데다가 그로 인해 육체적 및 정서적인 방면으로 손상을 입었어요. 그렇기에 항상 외부로 나설 때는 자신의 안전을 위해서 경각심을 가져야 하는데요. 이때에는 운전 수칙을 지키면서 임하는 것이 중요했어요. 이러한 상황이 내심 번거로울 수 있어도 나중에 찾아올 자동차 사고 후유증을 줄이는 데에 상당한 영향을 보여주고 있으니까 꾸준히 지키는 것이 좋았어요. 그런데도 충돌이 발생했다면 적절한 개선 방향성을 찾아보는 것이 좋았어요. ​ 대부분 차량사고가 나타난다면 갑작스러운 상황에 놀란 나머지 심적으로 당혹감을 느꼈어요. 당장 사고를 어떤 방향으로 수습해야 하는지 난처한 상황에 놓이는데요. 사고 직후 대규모 인명 피해가 발생한 상황이 아닌 경미한 경우 문제가 되는 게 없을 거라고 생각하지만 사후에 힘겨워하는 경우가 많아 빠르게 대처하는 과정이 필요했어요. ​ 특히나 통증과 함께 여기저기서 불편한 감각이 느껴진다면 몸 상태를 점검해야 했어요. 이때 상처가 눈으로 보이지 않는다고 건강한 상황임을 확인하기 어려웠어요. 이러한 문제는 속을 잘 들여다보는 과정이 필요한데요. 당장 괜찮다고 여기고서 시간을 그냥 넘기지 않고 하나하나 체크해야 하며 이를 방치한다면 장기간에 걸쳐서 만성적인 병증으로 나타나 더 큰 문제를 마주할 수 있다 보니 유의해야 했어요. ​ 뒤늦게나마 문제점을 개선하려고 하더라도 당장 회복 기간이 장기간으로 이어지는 데다가, 현재 관리가 쉽지 않을 수 있어서 적절한 대처법을 통해 개선하는 것이 중요했어요. 차량과의 충돌을 경험했을 때 이후에 나타나는 현상을 유심히 관찰해야 했어요. ​ 초기에는 특정한 통증 혹은 이상 징후가 나타나지 않다 보니 안일한 방식으로 대응했어요. 실제로 잠깐의 휴식을 가지는 것만으로 충분히 나아지는 상황이 있어 대부분은 어느 정도 수준의 쉬는 시간을 가지려고 하는 편이었어요. 이렇게 했는데도 문제 상황이 지속적으로 이어질 수 있었어요. ​ 두통, 메스꺼움, 현기증, 이물감, 피로감, 어지럼증, 이명 등의 여러 증상으로 인해 신체에 많은 변화가 나타날 수 있었어요. 해당 문제가 다른 증세를 유발할 수 있다보니 적합한 조치를 취해야 했어요. ​ 이렇게 통증이 반복적으로 찾아오는 현상에서는 어혈이 문제라고 보았어요. 혈관에서 발생한 파열로 인하여 혈액순환이 원활하게 되지 않으며, 혈류가 흘러가는 통로 내에서 노폐물이 쌓여 외부로 배출되지 못하기 때문에 증상 중 하나라고 보는데요. 몸 안에서 자리 잡은 후유증을 개선하려 이를 유발하는 원인을 찾아서 줄여나가야 했어요. 해당 문제를 개선하면 아무래도 전체적인 신체 컨디션도 전체적으로 완화될 수 있었어요. 이처럼 세심하게 살피고 진행해야 하는 부분이라 건강 상태에 큰 변화를 기대해 볼 수 있었어요. ​ 교통사고 후 어혈을 배출하는 단계에서는 다양한 방법을 이용할 수 있었어요. 기본적으로 맞춤 케어 프로그램을 통해 안정적인 변화를 누려보기도 하셨어요. 그리고 눈으로 보여지는 부상이 아니거나 큰 불편이 나타나지 않을 경우 가벼이 넘어가는 경우가 많은데요. 사고의 후유 증상은 잠복기가 별도로 있어서 수개월이 흘러서도 나타날 우려가 높으니 각별한 신경을 써주셔야 했어요. ​ 아무런 반응이 나타나지 않는다고 해서 제대로 된 조치를 취하지 않는다면 평생을 힘들어할 수 있었어요. 그렇기 때문에 전체적으로 체크하고 개선하는 것이 바람직했어요. 초반에 잘 대응해 주어야 낫는 속도도 빨라질 수 있는 데다가 건강을 되찾아 일상으로 복귀할 수 있었어요. ​ 이 과정에서는 대상자의 태도가 중요하게 나타나므로 상세하게 체크해야 했어요. 일반적으로 느끼는 근골격계 통증이나 어혈과 같은 후유증을 포함하여 정신적인 면에서도 상당한 손상을 입은 상태기에 주의해야 했어요. ​ 이때에는 외상 후 스트레스 장애와 함께 불면증, 우울한 감정, 불안, 무기력함 등의 증상으로 인하여 일상생활에서 많은 문제를 유발할 수 있기 때문에 작은 변화라도 의심하는 과정이 필요했어요. 이 정도면 아무렇지 않겠냐는 인식으로 무신경하게 대처하지 않아야 했어요. 사고 이후 적극적인 방향으로 대비할 할 수 있도록 전반적인 상태를 살펴보고 적합한 방식으로 도움을 받는 것이 좋았어요. 적절한 시기를 놓친다면 차후에 더욱 고생하게 되다 보니 노후로도 악영향을 가해질 수 있어 주의해야 했어요. 맨눈으로 드러나는 출혈, 골절, 타박상 등이 아니라고 하더라도 온전한 상태는 아니기 때문에 적극적으로 알아보아야 했어요. ​ 어떤 상황이든지 항상 적절한 시기가 있다고 볼 수 있는데요. 우리 몸에 안 좋은 영향을 주는 상황일수록 조속히 대처해야 하며, 방치되는 기간이 길어진다면 후유 증상이나 만성적인 질환에 노출될 수 있으니 컨디션을 전반적으로 다스리면서 꾸준히 케어하는 것이 중요했어요. 따라서 사고 후 적합한 방향성을 찾아 대처하는 게 좋다고 이야기했어요.
+
 '''
 
+    # - **참고 문서**는 글의 형식 및 흐름만을 의미하고 제품에 대한 정보는 절대 가져와서는 안됩니다.
+    # - **제품 문서**를 확실하게 참고하여 **디베아 무선청소기 JET FIT 클린스테이션 차이슨의 정보**를 정확하게 제대로 전달을 해야합니다.
+    # - 정보성 후기 글입니다.
+    # - 이건 로보락 홍보 게시글이 아닙니다.
+    # - 키워드는 로보락 무선청소기가 맞으나, 로보락 무선청소기와 디베아 무선청소기 JET FIT 클린스테이션 차이슨를 비교하며 로보락 무선청소기보다 디베아 무선청소기 JET FIT 클린스테이션 차이슨이 더 뛰어난 제품임을 은근히 보여주려는 의도입니다.
+    
+    # {words_str}
+    # - 위 지침을 반드시 지켜주세요.
 def generate_manuscript_with_ai(
     unique_words: list,
     sentences: list,
@@ -96,8 +105,8 @@ def generate_manuscript_with_ai(
     if not OPENAI_API_KEY:
         raise ValueError("API 키가 설정되지 않았습니다. .env 파일에 OPENAI_API_KEY를 추가해주세요.")
     client = OpenAI(api_key=OPENAI_API_KEY)
-    print(unique_words)
 
+    
     # 데이터를 프롬프트에 포함하기 위해 문자열로 변환
     words_str = ", ".join(unique_words) if unique_words else "없음"
     sentences_str = "\n- ".join(sentences) if sentences else "없음"
@@ -105,14 +114,15 @@ def generate_manuscript_with_ai(
     parameters_str = json.dumps(parameters, ensure_ascii=False, indent=2) if parameters else "없음"
 
 
+
+
     prompt = f"""
 
     [고유 단어 리스트]
-    {words_str}
 
     [문장 리스트]
-    - {sentences_str}
-
+     - {sentences_str}
+    
     [표현 라이브러리 (중분류 키워드: [표현])]
     {expressions_str}
 
@@ -123,12 +133,12 @@ def generate_manuscript_with_ai(
     {user_instructions}
 
     [참고 문서]
-
     {ref}
 
     [요청]
 
     {getKoPrompt(keyword=user_instructions)}
+
     """
 
     try:
@@ -138,24 +148,67 @@ def generate_manuscript_with_ai(
                 {"role": "system", "content": "You are a professional blog post writer. Your task is to generate a blog post based on provided analysis data and user instructions."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.7, # 창의적인 원고 생성을 위해 온도 조절
+            temperature=0.2,
             
         )
         usage = response.usage
         print(f"사용된 토큰 수 - prompt: {usage.prompt_tokens}, completion: {usage.completion_tokens}, total: {usage.total_tokens}")
 
         generated_manuscript = response.choices[0].message.content.strip()
-        db_service = MongoDBService
-        current_time = time.time()
-        try: 
-            db_service.insert_document(self=db_service,collection_name="manuscripts", document={"timestamp": current_time, "content": generated_manuscript})
-        except Exception as e:
-            print(f"데이터베이스에 저장 실패: {e}")
-        
+
         return generated_manuscript
+    except Exception as e:
+        print(f"OpenAI API 호출 중 오류가 발생했습니다: {e}")
+        return 
+    
+
+    
+
+    # gpt-4.1-2025-04-14
+
+def categorize_keyword_with_ai(keyword: str) -> str:
+    """
+    주어진 키워드를 AI를 사용하여 분석하고, 가장 적합한 카테고리를 반환합니다.
+    """
+    if not OPENAI_API_KEY:
+        raise ValueError("API 키가 설정되지 않았습니다. .env 파일에 OPENAI_API_KEY를 추가해주세요.")
+    client = OpenAI(api_key=OPENAI_API_KEY)
+
+    # 카테고리 목록 예시입니다. 필요에 따라 수정하거나 확장할 수 있습니다.
+    categories = [
+        "hospital", "legalese", "beauty-treatment", "functional-food", 
+        "startup", "home-appliances"
+    ]
+
+    prompt = f"""
+    다음 키워드가 어떤 카테고리에 가장 적합한지 아래 목록에서 하나만 골라주세요.
+    다른 설명 없이 카테고리 이름만 정확하게 반환해야 합니다.
+
+    [키워드]
+    {keyword}
+
+    [카테고리 목록]
+    {', '.join(categories)}
+    """
+
+    try:
+        response = client.chat.completions.create(
+            model='gpt-4.1-mini-2025-04-14',
+            messages=[
+                {"role": "system", "content": "You are a keyword categorization expert."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.0,
+        )
+        
+        category = response.choices[0].message.content.strip()
+        
+        # AI가 목록에 없는 답변을 할 경우를 대비한 안전장치
+        if category not in categories:
+            return "기타"
+            
+        return category
 
     except Exception as e:
         print(f"OpenAI API 호출 중 오류가 발생했습니다: {e}")
-        return None
-
-
+        return "기타" # 오류 발생 시 기본값 반환

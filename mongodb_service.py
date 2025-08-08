@@ -43,6 +43,7 @@ class MongoDBService:
         """MongoDB 연결을 닫습니다."""
         self.client.close()
 
+
     def get_latest_analysis_data(self):
         """MongoDB에서 최신 분석 데이터를 가져옵니다."""
         unique_words = []
@@ -53,14 +54,16 @@ class MongoDBService:
         # 형태소
         morpheme_docs = self.find_documents(collection_name='morphemes')
         if morpheme_docs:
-            unique_words = morpheme_docs[0]['word']
+            unique_words = [doc["word"] for doc in morpheme_docs if "word" in doc]
+        else:
+            unique_words = []
 
         # 문장
-        sentence_docs = self.find_documents(
-            collection_name='sentences',
-        )
-        if sentence_docs and "sentences" in sentence_docs[0]:
-            sentences = sentence_docs[0]["sentences"]
+        sentence_docs = self.find_documents(collection_name='sentences')
+        if sentence_docs:
+            sentences = [doc["sentence"] for doc in sentence_docs if "sentence" in doc]
+        else:
+            sentences = []
 
         # 표현
         expression_docs = self.find_documents(
@@ -92,3 +95,8 @@ class MongoDBService:
             "expressions": expressions,
             "parameters": parameters
         }
+    def set_db_name(self, db_name: str):
+        """MongoDB의 데이터베이스 이름을 변경합니다."""
+        if not db_name:
+            raise ValueError("새 DB 이름은 비어 있을 수 없습니다.")
+        self.db = self.client[db_name]
