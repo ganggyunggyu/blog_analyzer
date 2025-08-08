@@ -11,3 +11,6 @@ __pycache__/
 # IDE/Editor specific
 .vscode/
 .idea/
+
+
+*.pem

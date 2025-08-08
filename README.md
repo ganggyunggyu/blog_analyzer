@@ -15,7 +15,59 @@
 
 ---
 
-## 설치 및 설정
+## 설치 및 사용법
+
+### 1. 설치
+
+프로젝트를 로컬에 설치하여 `blog-analyzer` 명령어를 사용할 수 있습니다.
+
+```bash
+# 프로젝트 디렉토리에서 다음 명령어를 실행합니다.
+# 가상환경을 사용하고 있다면 먼저 활성화해주세요.
+source venv/bin/activate
+
+# pip를 사용하여 설치합니다.
+pip install .
+```
+
+### 2. CLI 명령어 사용법
+
+설치가 완료되면, 터미널에서 `blog-analyzer` 명령어를 사용할 수 있습니다.
+
+```bash
+# 사용 가능한 모든 명령어 확인
+blog-analyzer --help
+```
+
+#### 원고 분석
+
+`data` 폴더의 텍스트 파일을 분석하고 결과를 MongoDB에 저장합니다.
+
+```bash
+blog-analyzer analyze
+```
+
+#### 원고 생성
+
+MongoDB의 최신 분석 데이터를 기반으로 원고를 생성합니다.
+
+```bash
+blog-analyzer generate --keywords "키워드1, 키워드2" --user-instructions "추가 지침"
+```
+
+#### API 서버 실행
+
+FastAPI 기반의 웹 서버를 실행합니다.
+
+```bash
+blog-analyzer serve
+```
+
+---
+
+## 개발 환경 설정 (기존 방식)
+
+CLI를 직접 수정하거나 개발에 참여하고 싶다면 아래의 기존 방식을 따를 수 있습니다.
 
 ### 1. 프로젝트 복제 및 이동
 
@@ -26,19 +78,12 @@ cd blog_analyzer
 
 ### 2. 가상 환경 생성 및 활성화
 
-프로젝트의 의존성을 독립적으로 관리하기 위해 가상 환경을 사용합니다.
-
 ```bash
-# 가상 환경 생성 (최초 1회)
 python3 -m venv venv
-
-# 가상 환경 활성화 (터미널 실행 시마다)
 source venv/bin/activate
 ```
 
 ### 3. 의존성 라이브러리 설치
-
-`requirements.txt` 파일에 명시된 라이브러리들을 설치합니다.
 
 ```bash
 pip install -r requirements.txt
@@ -46,46 +91,4 @@ pip install -r requirements.txt
 
 ### 4. OpenAI API 키 설정
 
-AI 기반 파라미터 그룹화 기능을 사용하려면 OpenAI API 키가 필요합니다.
-
-1.  프로젝트 루트 디렉토리에 `.env` 파일을 생성합니다.
-
-2.  다음과 같이 파일 내용을 작성하고, `YOUR_OPENAI_API_KEY` 부분을 자신의 실제 API 키로 교체합니다.
-
-    ```
-    # .env 파일
-    OPENAI_API_KEY="sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-    ```
-
-> **참고:** `.env` 파일은 `.gitignore`에 의해 버전 관리에서 제외되므로, API 키가 외부에 노출될 걱정 없이 안전하게 사용할 수 있습니다.
-
----
-
-## 사용 방법
-
-모든 명령어는 프로젝트 루트 디렉토리에서 가상 환경이 활성화된 상태로 실행합니다.
-
-### 대화형 모드
-
-`python main.py`만 입력하면 대화형 모드로 진입하여 원하는 분석 작업을 선택하고 필요한 정보를 입력할 수 있습니다.
-
-```bash
-python main.py
-```
-
-### 직접 명령어 실행 (기존 방식 유지)
-
-특정 작업을 직접 실행하고 싶다면, 아래와 같이 명령어를 사용할 수도 있습니다.
-
--   **AI 개체 인식 및 그룹화 (`parameters`)**
-    주어진 디렉토리 내의 모든 `.txt` 파일을 하나씩 분석하여, AI가 각 원고에서 핵심 개체를 인식하고 의미적으로 그룹화한 후, 모든 파일의 결과를 최종적으로 병합하여 출력합니다. 대량의 원고 처리에도 적합합니다.
-    ```bash
-    python main.py parameters [디렉토리 경로]
-    # 예시: python main.py parameters data
-    ```
-
--   **카테고리별 문장 라이브러리 (`build-library`)**
-    ```bash
-    python main.py build-library [디렉토리 경로]
-    # 예시: python main.py build-library data
-    ```# blog_analyzer
+`.env` 파일에 `OPENAI_API_KEY`를 설정합니다.
