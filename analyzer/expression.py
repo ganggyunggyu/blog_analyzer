@@ -4,10 +4,6 @@ import json
 from config import OPENAI_API_KEY
 
 def extract_expressions_with_ai(text: str) -> dict:
-    """
-    OpenAI API를 사용하여 원고에서 특정 중분류에 적합한 단어 또는 짧은 문장(표현)을 추출합니다.
-    결과는 '키': ['밸류', '밸류'] 형태의 JSON으로 반환됩니다.
-    """
     if not OPENAI_API_KEY:
         raise ValueError("API 키가 설정되지 않았습니다. .env 파일에 OPENAI_API_KEY를 추가해주세요.")
 
@@ -33,18 +29,21 @@ def extract_expressions_with_ai(text: str) -> dict:
 
     try:
         response = client.chat.completions.create(
-            model='gpt-4.1-mini-2025-04-14', # 또는 gpt-3.5-turbo
+            model='gpt-4.1-mini-2025-04-14',
             messages=[
-                {"role": "system", "content": "You are an expert in marketing content analysis. Your task is to extract useful expressions from the given text, categorize them into mid-level categories, and return them in a JSON format of 'category_key': ['expression1', 'expression2']."},
+                {
+                    "role": "system",
+                    "content": "You are an expert in marketing content analysis. Your task is to extract useful expressions from the given text, categorize them into mid-level categories, and return them in a JSON format of 'category_key': ['expression1', 'expression2']."
+                },
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.5, # 창의성과 정확성 사이의 균형
-            max_tokens=1000, # 적절히 조절
-            response_format={"type": "json_object"}
+            temperature=0.5,
+            
         )
-        
-        expressions_data = json.loads(response.choices[0].message.content)
-        return expressions_data
+
+        raw = response.choices[0].message.content.strip()
+        cleaned = re.sub(r"^```json|```$", "", raw).strip()
+        return json.loads(cleaned)
 
     except Exception as e:
         print(f"OpenAI API 호출 중 오류가 발생했습니다: {e}")

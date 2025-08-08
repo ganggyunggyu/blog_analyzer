@@ -39,8 +39,7 @@ def generate_template_from_segment(text_segment: str, known_parameters_map: dict
                 {"role": "system", "content": "You are a text templating assistant. Your task is to replace specific values in a given text segment with their corresponding category placeholders based on a provided parameter map. Output only the templated text."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.1, # 창의성보다는 정확한 대체에 초점
-            max_tokens=500 # 세그먼트 단위이므로 토큰 제한을 더 낮게 설정
+            temperature=0.1,
         )
         templated_text = response.choices[0].message.content.strip()
         return templated_text
