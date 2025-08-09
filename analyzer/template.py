@@ -34,12 +34,12 @@ def generate_template_from_segment(text_segment: str, known_parameters_map: dict
 
     try:
         response = client.chat.completions.create(
-            model="gpt-4.1-mini-2025-04-14", # 또는 gpt-3.5-turbo
+            model="gpt-5-mini-2025-08-07", # 또는 gpt-3.5-turbo
             messages=[
                 {"role": "system", "content": "You are a text templating assistant. Your task is to replace specific values in a given text segment with their corresponding category placeholders based on a provided parameter map. Output only the templated text."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.1,
+            # temperature=0.1,
         )
         templated_text = response.choices[0].message.content.strip()
         return templated_text

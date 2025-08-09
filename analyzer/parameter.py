@@ -29,12 +29,12 @@ def extract_and_group_entities_with_ai(full_text):
 
     try:
         response = client.chat.completions.create(
-            model='gpt-4.1-mini-2025-04-14',
+            model='gpt-5-mini-2025-08-07',
             messages=[
                 {"role": "system", "content": "You are an expert in Named Entity Recognition and text analysis. Your task is to extract key entities from the text and group them semantically into a JSON format."},
                 {"role": "user", "content": prompt}
             ],
-            response_format={"type": "json_object"}
+            # response_format={"type": "json_object"}
         )
         
         grouped_params = json.loads(response.choices[0].message.content)

@@ -3,10 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from main import run_manuscript_generation
 from mongodb_service import MongoDBService
-from bson import ObjectId
 from llm.claude_service import get_claude_response
 from llm.gemini_service import get_gemini_response
-from analyzer.manuscript_generator import categorize_keyword_with_ai
+from utils.categorize_keyword_with_ai import categorize_keyword_with_ai
 
 
 app = FastAPI()
@@ -87,7 +86,7 @@ async def generate_manuscript_api(request: GenerateRequest):
 @app.post("/generate/gemini")
 def test_gemini_endpoint(prompt_data: GenerateRequest):
     try:
-        prompt = prompt_data.get("prompt")
+        prompt = prompt_data.keyword
         if not prompt:
             raise HTTPException(status_code=400, detail="'prompt' 필드는 필수입니다.")
         
@@ -122,25 +121,4 @@ def test_claude_endpoint(req: GenerateRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"서버 내부 오류: {e}")
 
-from analyzer.manuscript_generator import categorize_keyword_with_ai
-
-@app.post("/categorize-keyword")
-def categorize_keyword_endpoint(data: dict):
-    keyword = data.get("keyword")
-    if not keyword:
-        raise HTTPException(status_code=400, detail="'keyword' 필드는 필수입니다.")
-    
-    try:
-        category = categorize_keyword_with_ai(keyword)
-        return {"keyword": keyword, "category": category}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"카테고리 분류 중 오류 발생: {e}")
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(
-        app,
-        host="0.0.0.0",
-        port=8000, 
-    )
 

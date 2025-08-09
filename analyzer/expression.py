@@ -37,7 +37,7 @@ def extract_expressions_with_ai(text: str) -> dict:
                 },
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.5,
+            # temperature=0.5,
             
         )
 

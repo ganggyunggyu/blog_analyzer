@@ -26,6 +26,8 @@
 # 가상환경을 사용하고 있다면 먼저 활성화해주세요.
 source venv/bin/activate
 
+uvicorn main:app --reload
+
 # pip를 사용하여 설치합니다.
 pip install .
 ```
