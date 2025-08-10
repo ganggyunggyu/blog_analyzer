@@ -28,6 +28,8 @@ python3 -m venv venv
 # 가상환경을 사용하고 있다면 먼저 활성화해주세요.
 source venv/bin/activate
 
+uvicorn api:app --host 0.0.0.0 --port 8000 --reload
+
 uvicorn main:app --reload
 
 # pip를 사용하여 설치합니다.
