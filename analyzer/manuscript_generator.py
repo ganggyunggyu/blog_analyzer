@@ -8,6 +8,8 @@ from prompts.get_my_ko_prompt import myGetKoPrompt
 from prompts.get_ref import ref
 from typing import Optional
 
+    # [고유 단어 리스트]
+    # {words_str}
 
 def generate_manuscript_with_ai(
     unique_words: list,
@@ -30,8 +32,6 @@ def generate_manuscript_with_ai(
 
     prompt = f"""
 
-    [고유 단어 리스트]
-    {words_str}
 
     [문장 리스트]
      - {sentences_str}
@@ -56,9 +56,9 @@ def generate_manuscript_with_ai(
 
     try:
         response = client.chat.completions.create(
-            model='gpt-5-mini-2025-08-07',
+            # model='gpt-5-mini-2025-08-07',
             # model='gpt-5-nano-2025-08-07',
-            # model='gpt-4.1-2025-04-14', 
+            model='gpt-4.1-2025-04-14', 
             messages=[
                 {"role": "system", "content": "You are a professional blog post writer. Your task is to generate a blog post based on provided analysis data and user instructions."},
                 {"role": "user", "content": prompt}
@@ -75,7 +75,3 @@ def generate_manuscript_with_ai(
     except Exception as e:
         print(f"OpenAI API 호출 중 오류가 발생했습니다: {e}")
         raise
-    
-
-    
-
