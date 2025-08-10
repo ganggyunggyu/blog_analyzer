@@ -8,9 +8,6 @@ from prompts.get_my_ko_prompt import myGetKoPrompt
 from prompts.get_ref import ref
 from typing import Optional
 
-    # [고유 단어 리스트]
-    # {words_str}
-
 def generate_manuscript_with_ai(
     unique_words: list,
     sentences: list,
@@ -30,8 +27,10 @@ def generate_manuscript_with_ai(
     expressions_str = json.dumps(expressions, ensure_ascii=False, indent=2) if expressions else "없음"
     parameters_str = json.dumps(parameters, ensure_ascii=False, indent=2) if parameters else "없음"
 
-    prompt = f"""
 
+    prompt = f"""
+    [고유 단어 리스트]
+    {words_str}
 
     [문장 리스트]
      - {sentences_str}
@@ -64,7 +63,7 @@ def generate_manuscript_with_ai(
                 {"role": "user", "content": prompt}
             ],
             # temperature=0.2,
-            
+            max_completion_tokens=5000  # max_tokens → max_completion_tokens
         )
         usage = response.usage
         print(f"사용된 토큰 수 - prompt: {usage.prompt_tokens}, completion: {usage.completion_tokens}, total: {usage.total_tokens}")
