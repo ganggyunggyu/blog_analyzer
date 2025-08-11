@@ -12,12 +12,13 @@ def categorize_keyword_with_ai(keyword: str) -> str:
     # 카테고리 목록 예시입니다. 필요에 따라 수정하거나 확장할 수 있습니다.
     categories = [
         "hospital", "legalese", "beauty-treatment", "functional-food", 
-        "startup", "home-appliances"
+        "startup", "home-appliances", 'diet','ophthalmology'
     ]
 
     prompt = f"""
     다음 키워드가 어떤 카테고리에 가장 적합한지 아래 목록에서 하나만 골라주세요.
     다른 설명 없이 카테고리 이름만 정확하게 반환해야 합니다.
+    프롬프트에 카테고리 언급이 있다면 그것을 기반으로 반환해야합니다.
 
     [키워드]
     {keyword}

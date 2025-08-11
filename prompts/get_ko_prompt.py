@@ -98,4 +98,3 @@ def getKoPrompt(keyword: str):
     # [AI 개체 인식 및 그룹화 결과 (대표 키워드: [개체])]
     # {parameters_str}
     # gpt-4.1-2025-04-14
-
