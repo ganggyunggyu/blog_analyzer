@@ -19,7 +19,6 @@ def get_claude_response(prompt: str):
     try:
         message = client.messages.create(
             model='claude-opus-4-1-20250805',
-            max_tokens=1024,
             messages=[
                 {"role": "user", "content": prompt}
             ]
