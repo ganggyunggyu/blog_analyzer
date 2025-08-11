@@ -7,6 +7,7 @@ from llm.claude_service import get_claude_response
 from llm.gemini_service import get_gemini_response
 from utils.categorize_keyword_with_ai import categorize_keyword_with_ai
 from typing import Optional
+from fastapi.concurrency import run_in_threadpool
 
 
 
@@ -58,7 +59,8 @@ async def generate_manuscript_api(request: GenerateRequest):
         if not (unique_words and sentences and expressions and parameters):
             raise HTTPException(status_code=500, detail="MongoDB에 원고 생성을 위한 충분한 분석 데이터가 없습니다. 먼저 분석을 실행하고 저장해주세요.")
 
-        generated_manuscript = run_manuscript_generation(
+        generated_manuscript = await run_in_threadpool(
+            run_manuscript_generation,
             unique_words=unique_words,
             sentences=sentences,
             expressions=expressions,
