@@ -5,7 +5,6 @@ from config import OPENAI_API_KEY
 from mongodb_service import MongoDBService
 from prompts.get_ko_prompt import getKoPrompt
 from prompts.get_my_ko_prompt import myGetKoPrompt
-from prompts.get_ref import ref
 from typing import Optional
 
 def generate_manuscript_with_ai(
@@ -13,7 +12,8 @@ def generate_manuscript_with_ai(
     sentences: list,
     expressions: dict,
     parameters: dict,
-    user_instructions: str
+    user_instructions: str,
+    ref: str = ''
 ) -> str:
     """
     수집된 분석 데이터를 기반으로 OpenAI API를 사용하여 블로그 원고를 생성합니다.
@@ -55,7 +55,7 @@ def generate_manuscript_with_ai(
 
     try:
         response = client.chat.completions.create(
-            # model='gpt-5-mini-2025-08-07',
+            #    model='gpt-5-mini-2025-08-07',
             # model='gpt-5-nano-2025-08-07',
             model='gpt-4.1-2025-04-14', 
             messages=[

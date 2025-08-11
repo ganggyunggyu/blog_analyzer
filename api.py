@@ -6,6 +6,8 @@ from mongodb_service import MongoDBService
 from llm.claude_service import get_claude_response
 from llm.gemini_service import get_gemini_response
 from utils.categorize_keyword_with_ai import categorize_keyword_with_ai
+from typing import Optional
+
 
 
 app = FastAPI()
@@ -20,7 +22,9 @@ app.add_middleware(
 class GenerateRequest(BaseModel):
     service: str
     keyword: str
-
+    ref: Optional[str] = None
+    
+    
 @app.get("/test")
 async def test_endpoint():
     return {"message": "Test successful"}
@@ -33,6 +37,7 @@ async def generate_manuscript_api(request: GenerateRequest):
     """
     service = request.service.lower()
     keyword = request.keyword.strip()
+    ref = request.ref
     print(service, request)
 
     category = categorize_keyword_with_ai(keyword=keyword)
@@ -58,7 +63,8 @@ async def generate_manuscript_api(request: GenerateRequest):
             sentences=sentences,
             expressions=expressions,
             parameters=parameters,
-            user_instructions=keyword
+            user_instructions=keyword,
+            ref=ref
         )
         
         if generated_manuscript:

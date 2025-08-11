@@ -335,7 +335,7 @@ def _get_expressions_from_dir(directory_path, n):
                 print(f"표현 추출 중 오류 발생: {e}")
     return final_grouped_expressions
 
-def run_manuscript_generation(unique_words: list, sentences: list, expressions: dict, parameters: dict, user_instructions: str = ""):
+def run_manuscript_generation(unique_words: list, sentences: list, expressions: dict, parameters: dict, user_instructions: str = "", ref=''):
     from analyzer.manuscript_generator import generate_manuscript_with_ai
     from config import OPENAI_API_KEY
 
@@ -355,7 +355,8 @@ def run_manuscript_generation(unique_words: list, sentences: list, expressions: 
             sentences=sentences,
             expressions=expressions,
             parameters=parameters,
-            user_instructions=user_instructions
+            user_instructions=user_instructions,
+            ref=ref
         )
         return generated_manuscript
 
