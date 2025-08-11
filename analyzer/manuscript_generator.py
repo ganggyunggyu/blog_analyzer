@@ -59,16 +59,18 @@ def generate_manuscript_with_ai(
     try:
         response = client.chat.completions.create(
             #    model='gpt-5-mini-2025-08-07',
+               model='gpt-5-2025-08-07',
+            #    model='gpt-5-chat-latest',
             #    model='gpt-4.1-mini-2025-04-14',
             #    model='o4-mini-2025-04-16',
             # model='gpt-5-nano-2025-08-07',
-            model='gpt-4.1-2025-04-14', 
+            # model='gpt-4.1-2025-04-14', 
             messages=[
                 {"role": "system", "content": "You are a professional blog post writer. Your task is to generate a blog post based on provided analysis data and user instructions."},
                 {"role": "user", "content": prompt}
             ],
             # temperature=0.2,
-            max_completion_tokens=2200  # max_tokens → max_completion_tokens
+            # max_completion_tokens=2200
         )
         usage = response.usage
         print(f"사용된 토큰 수 - prompt: {usage.prompt_tokens}, completion: {usage.completion_tokens}, total: {usage.total_tokens}")
