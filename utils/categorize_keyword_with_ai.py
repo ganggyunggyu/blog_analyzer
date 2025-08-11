@@ -12,7 +12,7 @@ def categorize_keyword_with_ai(keyword: str) -> str:
     # 카테고리 목록 예시입니다. 필요에 따라 수정하거나 확장할 수 있습니다.
     categories = [
         "hospital", "legalese", "beauty-treatment", "functional-food", 
-        "startup", "home-appliances", 'diet','ophthalmology'
+        "startup", "home-appliances", 'diet','ophthalmology', 'pets-adoption'
     ]
 
     prompt = f"""
