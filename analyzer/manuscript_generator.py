@@ -68,7 +68,7 @@ def generate_manuscript_with_ai(
                 {"role": "user", "content": prompt}
             ],
             # temperature=0.2,
-            max_completion_tokens=2000  # max_tokens → max_completion_tokens
+            max_completion_tokens=2200  # max_tokens → max_completion_tokens
         )
         usage = response.usage
         print(f"사용된 토큰 수 - prompt: {usage.prompt_tokens}, completion: {usage.completion_tokens}, total: {usage.total_tokens}")
