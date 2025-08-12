@@ -21,6 +21,9 @@ def generate_manuscript_with_ai(
 ) -> str:
     """
     수집된 분석 데이터를 기반으로 OpenAI API를 사용하여 블로그 원고를 생성합니다.
+        
+    [고유 단어 리스트]
+    {words_str}
     """
     if not OPENAI_API_KEY:
         raise ValueError("API 키가 설정되지 않았습니다. .env 파일에 OPENAI_API_KEY를 추가해주세요.")
@@ -33,9 +36,7 @@ def generate_manuscript_with_ai(
 
 
     prompt = f"""
-    
-    [고유 단어 리스트]
-    {words_str}
+
 
     
     [표현 라이브러리 (중분류 키워드: [표현])]
