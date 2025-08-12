@@ -14,7 +14,7 @@ def get_claude_response(
     *,
     min_length_no_space: int = 1700,
     max_length_no_space: int = 2000,
-    max_retry: int = 5,
+    max_retry: int = 3,
     model: str = "claude-opus-4-1-20250805",
     max_tokens: int = 3000
 ) -> str:

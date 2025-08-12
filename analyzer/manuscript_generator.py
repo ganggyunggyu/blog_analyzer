@@ -15,7 +15,7 @@ async def generate_manuscript_with_ai(
     ref: str = '',
     min_length_no_space: int = 1700,
     max_length_no_space: int = 2000,
-    max_retry: int = 5
+    max_retry: int = 3
 ) -> str:
     if not OPENAI_API_KEY:
         raise ValueError("API 키가 설정되지 않았습니다. .env 파일에 OPENAI_API_KEY를 추가해주세요.")
