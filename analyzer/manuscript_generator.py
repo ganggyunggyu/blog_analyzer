@@ -4,8 +4,9 @@ from openai import OpenAI
 from config import OPENAI_API_KEY
 from prompts.get_ko_prompt import getKoPrompt
 from utils.text_len import length_no_space, is_len_between
+from constants.Model import Model
 
-def generate_manuscript_with_ai(
+async def generate_manuscript_with_ai(
     unique_words: list,
     sentences: list,
     expressions: dict,
@@ -14,7 +15,7 @@ def generate_manuscript_with_ai(
     ref: str = '',
     min_length_no_space: int = 1700,
     max_length_no_space: int = 2000,
-    max_retry: int = 3
+    max_retry: int = 5
 ) -> str:
     if not OPENAI_API_KEY:
         raise ValueError("API 키가 설정되지 않았습니다. .env 파일에 OPENAI_API_KEY를 추가해주세요.")
@@ -53,12 +54,12 @@ def generate_manuscript_with_ai(
     while retry < max_retry:
         try:
             resp = client.chat.completions.create(
-                model='gpt-4.1-2025-04-14',
+                model=Model.GPT4_1,
                 messages=[
                     {"role": "system", "content": "You are a professional blog post writer. Your task is to generate a blog post based on provided analysis data and user instructions."},
                     {"role": "user", "content": prompt}
                 ],
-                max_completion_tokens=2200
+                # max_completion_tokens=2200
             )
             text = resp.choices[0].message.content.strip()
             n = length_no_space(text)
