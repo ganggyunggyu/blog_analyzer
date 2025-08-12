@@ -12,8 +12,7 @@ import asyncio
 from fastapi import FastAPI, HTTPException
 from fastapi.concurrency import run_in_threadpool
 import os
-# 외부 API(오픈AI/클로드/제미니) 동시 호출 제한
-# 예: 동시에 3개까지만 허용 (환경/요금제에 맞게 조절)
+
 LLM_CONCURRENCY = int(os.getenv("LLM_CONCURRENCY", "3"))
 llm_semaphore = asyncio.Semaphore(LLM_CONCURRENCY)
 

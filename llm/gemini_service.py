@@ -12,7 +12,7 @@ def get_gemini_response(
     user_instructions: str,
     ref: str = "",
     *,
-    model: str = "gemini-2.5-pro",
+    model: str = "gemini-2.5-flash",
     max_output_tokens: int = 4096,
     temperature: float = 0.2,
     top_p: float = 0.95,
@@ -55,8 +55,9 @@ def get_gemini_response(
     [요청]
     {getKoPrompt(keyword=user_instructions)}
 
-    [길이확인 필수]
-    5000 단어 이상 검수
+    [문서의 길이확인 필수]
+    한국어 기준 공백 제거 후 2,500 단어 이상 검수가 필요합니다.
+    만약 모자랄 경우 다시 제작해야합니다.
     """.strip()
 
     # --- Gemini 호출 ---
@@ -77,6 +78,7 @@ def get_gemini_response(
             ),
             contents=user_prompt,
         )
+        print(f'gemini 문서 생성 완료 {len(res.text)}')
         return res.text
 
 
