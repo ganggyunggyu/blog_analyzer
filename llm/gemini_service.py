@@ -3,6 +3,7 @@ from typing import Optional
 import json
 from config import GEMINI_API_KEY
 from prompts.get_ko_prompt import getKoPrompt
+import re
 
 def get_gemini_response(
     unique_words: list,
@@ -78,7 +79,9 @@ def get_gemini_response(
             ),
             contents=user_prompt,
         )
-        print(f'gemini 문서 생성 완료 {len(res.text)}')
+        length_no_space = len(re.sub(r"\s+", "", res.text))
+
+        print(f'gemini 문서 생성 완료 {len(length_no_space)}')
         return res.text
 
 
