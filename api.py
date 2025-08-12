@@ -8,8 +8,14 @@ from llm.gemini_service import get_gemini_response
 from utils.categorize_keyword_with_ai import categorize_keyword_with_ai
 from typing import Optional
 from fastapi.concurrency import run_in_threadpool
-
-
+import asyncio
+from fastapi import FastAPI, HTTPException
+from fastapi.concurrency import run_in_threadpool
+import os
+# 외부 API(오픈AI/클로드/제미니) 동시 호출 제한
+# 예: 동시에 3개까지만 허용 (환경/요금제에 맞게 조절)
+LLM_CONCURRENCY = int(os.getenv("LLM_CONCURRENCY", "3"))
+llm_semaphore = asyncio.Semaphore(LLM_CONCURRENCY)
 
 app = FastAPI()
 
@@ -30,23 +36,26 @@ class GenerateRequest(BaseModel):
 async def test_endpoint():
     return {"message": "Test successful"}
 
-
 @app.post("/generate/gpt")
 async def generate_manuscript_api(request: GenerateRequest):
+    """
+    Generates text using the specified service (gpt, claude, or solar).
+    """
     service = request.service.lower()
     keyword = request.keyword.strip()
     ref = request.ref
 
     category = categorize_keyword_with_ai(keyword=keyword)
+
     db_service = MongoDBService()
     db_service.set_db_name(db_name=category)
 
     print(f'''
-    서비스: {service}
-    키워드: {request.keyword}
-    참조문서 유무: {len(ref) != 0}
-    선택된 카테고리: {category}
-    ''')
+서비스: {service}
+키워드: {request.keyword}
+참조문서 유무: {len(ref) != 0}
+선택된 카테고리: {category}
+''')
 
     try:
         analysis_data = db_service.get_latest_analysis_data()
@@ -55,35 +64,42 @@ async def generate_manuscript_api(request: GenerateRequest):
         expressions = analysis_data.get("expressions", {})
         parameters = analysis_data.get("parameters", {})
 
+        
         if not (unique_words and sentences and expressions and parameters):
-            raise HTTPException(status_code=500, detail="MongoDB에 데이터 부족")
+            raise HTTPException(status_code=500, detail="MongoDB에 원고 생성을 위한 충분한 분석 데이터가 없습니다. 먼저 분석을 실행하고 저장해주세요.")
 
-        # ⬇️ 바로 await (완전 비동기)
-        from analyzer.manuscript_generator import generate_manuscript_with_ai
-        generated_manuscript = await generate_manuscript_with_ai(
+        generated_manuscript = await run_in_threadpool(
+            run_manuscript_generation,
             unique_words=unique_words,
             sentences=sentences,
             expressions=expressions,
             parameters=parameters,
             user_instructions=keyword,
-            ref=ref,
+            ref=ref
         )
+        
+        if generated_manuscript:
+            import time
+            current_time = time.time()
+            document = {
+                'content' : generated_manuscript,
+                'timestamp': current_time,
+            }
+            try: 
+                db_service.insert_document("manuscripts", document)
+                document['_id'] = str(document['_id'])
 
-        if not generated_manuscript:
-            raise HTTPException(status_code=500, detail="원고 생성 실패")
-
-        import time
-        doc = {"content": generated_manuscript, "timestamp": time.time()}
-        db_service.insert_document("manuscripts", doc)
-        doc["_id"] = str(doc["_id"])
-        return doc
-
-    except HTTPException:
-        raise
+                return document
+            except Exception as e:
+                print(f"데이터베이스에 저장 실패: {e}")
+        else:
+            raise HTTPException(status_code=500, detail="원고 생성에 실패했습니다. AI 모델 응답을 확인해주세요.")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"원고 생성 중 오류: {e}")
+        raise HTTPException(status_code=500, detail=f"원고 생성 중 오류 발생: {e}")
     finally:
-        db_service.close_connection()
+        if db_service:
+            db_service.close_connection()
+
 
 @app.post("/generate/gemini")
 async def generate_manuscript_gemini_api(request: GenerateRequest):
