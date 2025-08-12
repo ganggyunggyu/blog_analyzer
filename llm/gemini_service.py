@@ -4,6 +4,8 @@ import json
 from config import GEMINI_API_KEY
 from prompts.get_ko_prompt import getKoPrompt
 import re
+from google import genai
+from google.genai import types
 
 def get_gemini_response(
     unique_words: list,
@@ -14,7 +16,7 @@ def get_gemini_response(
     ref: str = "",
     *,
     model: str = "gemini-2.5-flash",
-    max_output_tokens: int = 4096,
+    max_output_tokens: int = 1900,
     temperature: float = 0.2,
     top_p: float = 0.95,
     system_prompt: Optional[str] = "You are a professional blog post writer. Your task is to generate a blog post based on provided analysis data and user instructions."
@@ -57,16 +59,19 @@ def get_gemini_response(
     {getKoPrompt(keyword=user_instructions)}
 
     [문서의 길이확인 필수]
-    한국어 기준 공백 제거 후 2,000 단어 이상 검수가 필요합니다.
-    만약 모자랄 경우 다시 제작해야합니다.
+    - 한국어 기준 공백 제거 후 1,999 단어 이상 검수가 필요합니다.
+    - 만약 모자랄 경우 다시 제작해야합니다.
+
+    [필수 확인사항]
+    - 절대 문장이 중간에 끊겨서는 안됩니다.
+    - 완벽하게 마무리가 된 문장 형태여야만합니다.
     """.strip()
 
-    # --- Gemini 호출 ---
-    try:
-        # google-genai SDK (공식) 기준
-        from google import genai
-        from google.genai import types
+    
 
+    # ... (기존 코드)
+
+    try:
         client = genai.Client(api_key=GEMINI_API_KEY)
 
         res = client.models.generate_content(
@@ -79,13 +84,21 @@ def get_gemini_response(
             ),
             contents=user_prompt,
         )
-        length_no_space = len(re.sub(r"\s+", "", res.text))
+        
+        # 토큰 사용량 정보 추가
+        input_tokens = res.usage_metadata.prompt_token_count
+        output_tokens = res.usage_metadata.candidates_token_count
+        
+        print(f'입력 토큰 수: {input_tokens}')
+        print(f'출력 토큰 수: {output_tokens}')
+        print(f'총 토큰 수: {input_tokens + output_tokens}')
 
-        print(f'gemini 문서 생성 완료 {length_no_space}')
+        # 기존 텍스트 길이 출력
+        length_no_space = len(re.sub(r"\s+", "", res.text))
+        print(f'gemini 문서 생성 완료 (공백 제외 길이: {length_no_space})')
+
         return res.text
 
-
     except Exception as e:
-        # 호출 에러는 문자열로 반환 (너 코드 스타일에 맞춤)
-        print(res)
+        print(f"An error occurred: {e}")
         return f"An error occurred: {e}"
