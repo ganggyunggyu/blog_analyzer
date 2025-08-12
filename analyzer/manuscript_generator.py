@@ -51,36 +51,37 @@ async def generate_manuscript_with_ai(
     best_distance = float('inf')
     target = (min_length_no_space + max_length_no_space) / 2
 
-    while retry < max_retry:
-        try:
-            resp = client.chat.completions.create(
-                model=Model.GPT4_1,
-                messages=[
-                    {"role": "system", "content": "You are a professional blog post writer. Your task is to generate a blog post based on provided analysis data and user instructions."},
-                    {"role": "user", "content": prompt}
-                ],
-                # max_completion_tokens=2200
-            )
-            text = resp.choices[0].message.content.strip()
-            n = length_no_space(text)
-            print(f"[시도 {retry+1}] 공백 제외 길이: {n}")
 
-            if is_len_between(text, min_length_no_space, max_length_no_space, inclusive=True):
-                print("✅ 조건 충족 — 문서 생성 완료")
-                return text
+    try:
+        resp = client.chat.completions.create(
+            model=Model.GPT4_1,
+            messages=[
+                {"role": "system", "content": "You are a professional blog post writer. Your task is to generate a blog post based on provided analysis data and user instructions."},
+                {"role": "user", "content": prompt}
+            ],
+            # max_completion_tokens=2200
+        )
+        text = resp.choices[0].message.content.strip()
+        n = length_no_space(text)
+        print(f"[시도 {retry+1}] 공백 제외 길이: {n}")
 
-            
-            dist = abs(target - n)
-            if dist < best_distance:
-                best_distance = dist
-                best_result = text
+        # if is_len_between(text, min_length_no_space, max_length_no_space, inclusive=True):
+        #     print("✅ 조건 충족 — 문서 생성 완료")
+        #     return text
 
-            print(f"⚠ 길이 {min_length_no_space}~{max_length_no_space} 범위 밖 — 재시도")
-            retry += 1
+        
+        # dist = abs(target - n)
+        # if dist < best_distance:
+        #     best_distance = dist
+        #     best_result = text
 
-        except Exception as e:
-            print(f"OpenAI API 호출 오류: {e}")
-            retry += 1
+        # print(f"⚠ 길이 {min_length_no_space}~{max_length_no_space} 범위 밖 — 재시도")
+        # retry += 1
+        return text
+
+    except Exception as e:
+        print(f"OpenAI API 호출 오류: {e}")
+        retry += 1
 
     print("⚠ 최대 재시도 도달 — 가장 근접한 문서 반환")
     return best_result or ""
