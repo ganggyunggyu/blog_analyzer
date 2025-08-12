@@ -39,14 +39,18 @@ async def generate_manuscript_api(request: GenerateRequest):
     service = request.service.lower()
     keyword = request.keyword.strip()
     ref = request.ref
-    print(service, request)
 
     category = categorize_keyword_with_ai(keyword=keyword)
 
     db_service = MongoDBService()
     db_service.set_db_name(db_name=category)
 
-    print(db_service.db._name)
+    print(f'''
+서비스: {service}
+키워드: {request.keyword}
+참조문서 유무: {len(ref) != 0}
+선택된 카테고리: {category}
+''')
 
     try:
         analysis_data = db_service.get_latest_analysis_data()

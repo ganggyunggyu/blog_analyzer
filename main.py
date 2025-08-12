@@ -347,7 +347,7 @@ def run_manuscript_generation(unique_words: list, sentences: list, expressions: 
         click.echo("원고 생성을 위한 분석 데이터(고유 단어, 문장, 표현, 파라미터)가 부족합니다. MongoDB에 데이터가 있는지 확인하거나 먼저 분석을 실행하고 저장해주세요.")
         return None
 
-    click.echo("\n--- AI 원고 생성 시작 ---")
+    click.echo("\n원고 생성 시작")
 
     try:
         generated_manuscript = generate_manuscript_with_ai(
