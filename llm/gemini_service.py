@@ -57,7 +57,7 @@ def get_gemini_response(
     {getKoPrompt(keyword=user_instructions)}
 
     [문서의 길이확인 필수]
-    한국어 기준 공백 제거 후 2,500 단어 이상 검수가 필요합니다.
+    한국어 기준 공백 제거 후 2,000 단어 이상 검수가 필요합니다.
     만약 모자랄 경우 다시 제작해야합니다.
     """.strip()
 
@@ -81,7 +81,7 @@ def get_gemini_response(
         )
         length_no_space = len(re.sub(r"\s+", "", res.text))
 
-        print(f'gemini 문서 생성 완료 {len(length_no_space)}')
+        print(f'gemini 문서 생성 완료 {length_no_space}')
         return res.text
 
 
