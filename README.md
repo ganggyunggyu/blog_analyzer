@@ -110,12 +110,29 @@ blog-analyzer generate --keywords "강남역 맛집" --user-instructions "20대 
 
 외부 서비스와 연동해야 할 경우, API 서버를 실행할 수 있습니다.
 
+**서버 실행**
+
+아래 명령어를 실행하면 `0.0.0.0:8000` 주소에서 서버가 시작됩니다. 이 명령어는 터미널 창을 계속 차지하고 실행 상태를 보여주는 포그라운드(foreground) 방식으로 작동합니다.
+
 ```bash
-# FastAPI 서버를 0.0.0.0:8000 주소로 실행합니다.
 blog-analyzer serve
 ```
 
-서버가 켜지면 HTTP 요청을 통해 원고 생성을 요청할 수 있습니다.
+서버가 실행되면 아래와 같은 로그가 터미널에 나타납니다.
+```
+INFO:     Started server process [12345]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+```
+
+**서버 중지**
+
+서버를 중지하려면, 서버가 실행되고 있는 터미널 창에서 `Ctrl+C` 키를 누르면 됩니다.
+
+**API 요청**
+
+서버가 실행 중일 때, `curl` 같은 도구를 사용해 원고 생성을 요청할 수 있습니다.
 
 -   **Endpoints**: `POST /generate/gpt`, `POST /generate/gemini`, `POST /generate/claude`
 -   **`curl` 예시**:
