@@ -1,48 +1,54 @@
-import re
+import logging, json, re
 from openai import OpenAI
-import json
 from config import OPENAI_API_KEY
+from constants.Model import Model
 from mongodb_service import MongoDBService
-from prompts.get_ko_prompt import getKoPrompt
-from prompts.get_my_ko_prompt import myGetKoPrompt
-from typing import Optional
+from fastapi import HTTPException
+
+from prompts.get_gpt_prompt import GptPrompt
 
 
-    # [문장 리스트]
-    #  - {sentences_str}
-
-def generate_manuscript_with_ai(
-    unique_words: list,
-    sentences: list,
-    expressions: dict,
-    parameters: dict,
+def manuscript_generator(
     user_instructions: str,
-    ref: str = ''
+    ref: str = ""
 ) -> str:
     """
-    수집된 분석 데이터를 기반으로 OpenAI API를 사용하여 블로그 원고를 생성합니다.
-        
-    [고유 단어 리스트]
-    {words_str}
+    분석 산출물 + 사용자 지시 → 원고 텍스트
+    DB, 카테고리 등 외부 의존성 없음 (순수 함수).
+    [단어 라이브러리]
+    {unique_words}
+    
+    [문장 라이브러리]
+    {sentences}
     """
+
     if not OPENAI_API_KEY:
-        raise ValueError("API 키가 설정되지 않았습니다. .env 파일에 OPENAI_API_KEY를 추가해주세요.")
-    client = OpenAI(api_key=OPENAI_API_KEY)
+        print("OPENAI_API_KEY 미설정")
+        raise ValueError("OPENAI_API_KEY가 필요합니다.")
+    
+    model = Model.GPT4_1
+    user_prompt = GptPrompt.gpt_4(keyword=user_instructions)
 
-    words_str = ", ".join(unique_words) if unique_words else "없음"
-    sentences_str = "\n- ".join(sentences) if sentences else "없음"
+    db_service = MongoDBService()
+    
+    analysis_data = db_service.get_latest_analysis_data()
+    unique_words = analysis_data.get('unique_words', [])
+    sentences = analysis_data.get("sentences", [])
+    expressions = analysis_data.get("expressions", {})
+    parameters = analysis_data.get("parameters", {})
+
+    if not (unique_words and sentences and expressions and parameters):
+        raise HTTPException(status_code=500, detail="MongoDB에 원고 생성을 위한 충분한 분석 데이터가 없습니다. 먼저 분석을 실행하고 저장해주세요.")
+
     expressions_str = json.dumps(expressions, ensure_ascii=False, indent=2) if expressions else "없음"
-    parameters_str = json.dumps(parameters, ensure_ascii=False, indent=2) if parameters else "없음"
-
+    parameters_str  = json.dumps(parameters, ensure_ascii=False, indent=2) if parameters else "없음"
 
     prompt = f"""
 
-
-    
-    [표현 라이브러리 (중분류 키워드: [표현])]
+    [표현 라이브러리]
     {expressions_str}
 
-    [AI 개체 인식 및 그룹화 결과 (대표 키워드: [개체])]
+    [AI 개체 인식 및 그룹화 결과]
     {parameters_str}
 
     [사용자 지시사항]
@@ -52,36 +58,34 @@ def generate_manuscript_with_ai(
     {ref}
 
     [요청]
+    {user_prompt}
+    """.strip()
 
-    {getKoPrompt(keyword=user_instructions)}
-
-    """
-
+    client = OpenAI(api_key=OPENAI_API_KEY)
     try:
-        response = client.chat.completions.create(
-            #    model='gpt-5-mini-2025-08-07',
-            #    model='gpt-5-2025-08-07',
-            #    model='gpt-5-chat-latest',
-            #    model='gpt-4.1-mini-2025-04-14',
-            #    model='o4-mini-2025-04-16',
-            # model='gpt-5-nano-2025-08-07',
-            model='gpt-4.1-2025-04-14', 
+        print(f"GPT 생성 시작 | keyword={user_instructions}")
+        res = client.chat.completions.create(
+            model=model,
             messages=[
-                {"role": "system", "content": "You are a professional blog post writer. Your task is to generate a blog post based on provided analysis data and user instructions."},
+                {"role": "system", "content": "You are a professional blog post writer."},
                 {"role": "user", "content": prompt}
             ],
-            # temperature=0.2,
-            max_completion_tokens=2200
+            # max_completion_tokens=2200
         )
-        usage = response.usage
-        print(f"사용된 토큰 수: input: {usage.prompt_tokens}, output: {usage.completion_tokens}, total: {usage.total_tokens}")
-        print(f'키워드 {user_instructions}의 문서 생성이 완료되었습니다.')
-        generated_manuscript = response.choices[0].message.content.strip()
-        length_no_space = len(re.sub(r"\s+", "", generated_manuscript))
-        print(f'공백제외 문서 길이: {length_no_space}')
+        usage = res.usage
+        print(f"tokens in={usage.prompt_tokens}, out={usage.completion_tokens} total={usage.total_tokens}")
+        
 
+        text = (res.choices[0].message.content or "").strip()
+        if not text:
+            raise RuntimeError("모델이 빈 응답을 반환했습니다.")
+        
+        length_no_space = len(re.sub(r"\s+", "", text))
+        print(f'{model} 문서 생성 완료 (공백 제외 길이: {length_no_space})')
 
-        return generated_manuscript
+        return text
+
     except Exception as e:
-        print(f"OpenAI API 호출 중 오류가 발생했습니다: {e}")
+        print("OpenAI 호출 실패")
+        print(e)
         raise
