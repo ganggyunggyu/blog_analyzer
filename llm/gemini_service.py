@@ -1,11 +1,13 @@
-# utils/gemini_client.py
-from typing import Optional
-import json
-from config import GEMINI_API_KEY
-from prompts.get_ko_prompt import getKoPrompt
 import re
+import json
+
 from google import genai
 from google.genai import types
+
+from config import GEMINI_API_KEY
+from prompts.get_gemini_prompt import get_gemini_prompt
+from prompts.get_system_prompt import get_system_prompt
+
 
 def get_gemini_response(
     unique_words: list,
@@ -16,16 +18,14 @@ def get_gemini_response(
     ref: str = "",
     *,
     model: str = "gemini-2.5-flash",
-    max_output_tokens: int = 1900,
     temperature: float = 0.2,
     top_p: float = 0.95,
-    system_prompt: Optional[str] = "You are a professional blog post writer. Your task is to generate a blog post based on provided analysis data and user instructions."
 ) -> str:
     """
     Gemini로 원고 생성 (재시도 없음). Claude/OpenAI와 동일한 프롬프트 형태 사용.
     반환: 생성 텍스트(없으면 빈 문자열)
     [고유 단어 리스트]
-    {words_str}s
+    {words_str}
     [문장 리스트]
     - {sentences_str}
     """
@@ -37,6 +37,8 @@ def get_gemini_response(
     sentences_str = "\n- ".join(sentences) if sentences else "없음"
     expressions_str = json.dumps(expressions, ensure_ascii=False, indent=2) if expressions else "없음"
     parameters_str = json.dumps(parameters, ensure_ascii=False, indent=2) if parameters else "없음"
+
+    sys_prompt = get_system_prompt()
 
     user_prompt = f"""
 
@@ -56,7 +58,7 @@ def get_gemini_response(
     {ref}
 
     [요청]
-    {getKoPrompt(keyword=user_instructions)}
+    {get_gemini_prompt(keyword=user_instructions)}
 
     [문서의 길이확인 필수]
     - 한국어 기준 공백 제거 후 1,999 단어 이상 검수가 필요합니다.
@@ -77,7 +79,7 @@ def get_gemini_response(
         res = client.models.generate_content(
             model=model,
             config=types.GenerateContentConfig(
-                system_instruction=system_prompt,
+                system_instruction=sys_prompt,
                 temperature=temperature,
                 top_p=top_p,
                 # max_output_tokens=max_output_tokens,
