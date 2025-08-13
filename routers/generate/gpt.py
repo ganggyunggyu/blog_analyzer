@@ -8,10 +8,6 @@ from fastapi.concurrency import run_in_threadpool
 from schema.generate import GenerateRequest
 from analyzer.manuscript_generator import manuscript_generator
 
-import logging
-
-
-logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
