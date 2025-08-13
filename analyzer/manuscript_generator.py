@@ -37,8 +37,8 @@ def manuscript_generator(
     expressions = analysis_data.get("expressions", {})
     parameters = analysis_data.get("parameters", {})
 
-    if not (unique_words and sentences and expressions and parameters):
-        raise HTTPException(status_code=500, detail="MongoDB에 원고 생성을 위한 충분한 분석 데이터가 없습니다. 먼저 분석을 실행하고 저장해주세요.")
+    # if not (unique_words and sentences and expressions and parameters):
+    #     raise HTTPException(status_code=500, detail="MongoDB에 원고 생성을 위한 충분한 분석 데이터가 없습니다. 먼저 분석을 실행하고 저장해주세요.")
 
     expressions_str = json.dumps(expressions, ensure_ascii=False, indent=2) if expressions else "없음"
     parameters_str  = json.dumps(parameters, ensure_ascii=False, indent=2) if parameters else "없음"
