@@ -336,7 +336,7 @@ def _get_expressions_from_dir(directory_path, n):
     return final_grouped_expressions
 
 def run_manuscript_generation(unique_words: list, sentences: list, expressions: dict, parameters: dict, user_instructions: str = "", ref=''):
-    from analyzer.manuscript_generator import generate_manuscript_with_ai
+    from analyzer.manuscript_generator import manuscript_generator
     from config import OPENAI_API_KEY
 
     if not OPENAI_API_KEY:
@@ -350,7 +350,7 @@ def run_manuscript_generation(unique_words: list, sentences: list, expressions: 
     click.echo("\n원고 생성 시작")
 
     try:
-        generated_manuscript = generate_manuscript_with_ai(
+        generated_manuscript = manuscript_generator(
             unique_words=unique_words,
             sentences=sentences,
             expressions=expressions,

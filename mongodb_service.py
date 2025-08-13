@@ -1,3 +1,5 @@
+from fastapi import HTTPException
+from schema.analysis import AnalysisData
 from pymongo import MongoClient
 from config import MONGO_URI, MONGO_DB_NAME
 
@@ -100,3 +102,16 @@ class MongoDBService:
         if not db_name:
             raise ValueError("새 DB 이름은 비어 있을 수 없습니다.")
         self.db = self.client[db_name]
+        
+    def get_analysis_data(self) -> AnalysisData:
+        raw = self._collection.find_one( 
+            sort=[("timestamp", -1)]
+        ) or {}
+        data = AnalysisData.from_dict(raw)
+        if not data.is_complete():
+            
+            raise HTTPException(
+                status_code=500,
+                detail="MongoDB에 원고 생성을 위한 충분한 분석 데이터가 없습니다. 먼저 분석을 실행하고 저장해주세요.",
+            )
+        return data
