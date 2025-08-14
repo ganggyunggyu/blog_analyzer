@@ -1,9 +1,9 @@
-import logging, json, re
+import json
+import re
 from openai import OpenAI
 from config import OPENAI_API_KEY
 from constants.Model import Model
 from mongodb_service import MongoDBService
-from fastapi import HTTPException
 
 from prompts.get_gpt_prompt import GptPrompt
 
@@ -22,9 +22,6 @@ def manuscript_generator(
     {sentences}
     """
 
-    if not OPENAI_API_KEY:
-        print("OPENAI_API_KEY 미설정")
-        raise ValueError("OPENAI_API_KEY가 필요합니다.")
     
     model = Model.GPT4_1
     user_prompt = GptPrompt.gpt_4(keyword=user_instructions)

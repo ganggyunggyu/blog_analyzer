@@ -62,6 +62,8 @@ source venv/bin/activate
 # 2. requirements.txt 파일에 기록된 라이브러리들을 설치합니다.
 pip install -r requirements.txt
 
+uvicorn api:app --reload --host 0.0.0.0 --port 8000
+
 # 3. 프로젝트를 "편집 가능 모드"로 설치합니다.
 # 이렇게 하면 코드를 수정했을 때 바로 반영되며, `blog-analyzer` 명령어를 사용할 수 있게 됩니다.
 pip install -e .
