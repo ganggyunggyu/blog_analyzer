@@ -351,10 +351,6 @@ def run_manuscript_generation(unique_words: list, sentences: list, expressions: 
 
     try:
         generated_manuscript = manuscript_generator(
-            unique_words=unique_words,
-            sentences=sentences,
-            expressions=expressions,
-            parameters=parameters,
             user_instructions=user_instructions,
             ref=ref
         )
