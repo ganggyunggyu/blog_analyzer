@@ -6,8 +6,7 @@ from fastapi.concurrency import run_in_threadpool
 from fastapi.concurrency import run_in_threadpool
 
 from schema.generate import GenerateRequest
-from analyzer.manuscript_generator import manuscript_generator
-
+from analyzer.manuscript_generator import manuscript_generator, model_name
 
 router = APIRouter()
 
@@ -47,6 +46,7 @@ async def generator_gpt(request: GenerateRequest):
             document = {
                 'content' : generated_manuscript,
                 'timestamp': current_time,
+                'engine': model_name,
                 'keyword' : keyword
             }
             try: 
@@ -66,4 +66,3 @@ async def generator_gpt(request: GenerateRequest):
     finally:
         if db_service:
             db_service.close_connection()
-

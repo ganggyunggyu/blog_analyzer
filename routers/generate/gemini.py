@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 from mongodb_service import MongoDBService
 from utils.categorize_keyword_with_ai import categorize_keyword_with_ai
-from llm.gemini_service import get_gemini_response  
+from llm.gemini_service import get_gemini_response
 
 class GenerateRequest(BaseModel):
     service: str = "gemini"
@@ -58,10 +58,6 @@ async def generate_manuscript_gemini_api(request: GenerateRequest):
 
         generated = await run_in_threadpool(
             get_gemini_response,
-            unique_words,
-            sentences,
-            expressions,
-            parameters,
             keyword,   
             ref,       
         )
