@@ -11,8 +11,18 @@ def categorize_keyword_with_ai(keyword: str) -> str:
 
     # 카테고리 목록 예시입니다. 필요에 따라 수정하거나 확장할 수 있습니다.
     categories = [
-        "hospital", "legalese", "beauty-treatment", "functional-food", 
-        "startup", "home-appliances", 'diet','ophthalmology', 'pets-adoption', 'traval'
+        "hospital", 
+        "legalese", 
+        "beauty-treatment", 
+        "functional-food", 
+        "startup", 
+        "home-appliances", 
+        'diet',
+        'ophthalmology', 
+        'pets-adoption', 
+        'traval',
+        'dentistry', 
+        'wedding'
     ]
 
     prompt = f"""
@@ -37,7 +47,7 @@ def categorize_keyword_with_ai(keyword: str) -> str:
             # temperature=0.0,
         )
         
-        category = response.choices[0].message.content.strip()
+        category = response.choices[0].message.content.strip() 
         
         # AI가 목록에 없는 답변을 할 경우를 대비한 안전장치
         if category not in categories:
