@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 from typing import Any, Dict, List, Optional
 
@@ -9,12 +10,15 @@ from config import OPENAI_API_KEY
 from constants.Model import Model
 from mongodb_service import MongoDBService
 from prompts.get_gpt_prompt import GptPrompt
+from utils.categorize_keyword_with_ai import categorize_keyword_with_ai
+
+from config import MONGO_DB_NAME
 
 model_name: str = Model.GPT4_1
 
 def manuscript_generator(
     user_instructions: str,
-    ref: str = ""
+    ref: str = "",
 ) -> str:
     """
     분석 산출물 + 사용자 지시 → 원고 텍스트를 생성한다.
@@ -40,13 +44,22 @@ def manuscript_generator(
 
     
     user_prompt: str = GptPrompt.gpt_4(keyword=user_instructions)
+    
+    category = ''
+    if user_instructions:
+        category = categorize_keyword_with_ai(keyword=user_instructions)
 
+    if not category:
+        category = os.getenv("MONGO_DB_NAME", "wedding")
     
     db_service = MongoDBService()
+
+    db_service.set_db_name(db_name=category)
+
+    print(f'지금 연결 된 DB: {db_service.db.name}')
+
     analysis_data: Dict[str, Any] = db_service.get_latest_analysis_data() or {}
 
-    
-    
     unique_words: List[str] = analysis_data.get("unique_words", []) or []
     sentences: List[str] = analysis_data.get("sentences", []) or []
 
@@ -61,7 +74,6 @@ def manuscript_generator(
     parameters_str: str = json.dumps(parameters, ensure_ascii=False, indent=2) if parameters else "없음"
     templates_str  = json.dumps(templates,  ensure_ascii=False, indent=2) if templates  else "없음"
 
-    
     prompt: str = f"""
 [표현 라이브러리]
 {expressions_str}

@@ -123,6 +123,7 @@ class MongoDBService:
         if not db_name:
             raise ValueError("새 DB 이름은 비어 있을 수 없습니다.")
         self.db = self.client[db_name]
+            
 
     # ---------------------------
     # 분석 데이터 수집
