@@ -11,10 +11,12 @@ from constants.Model import Model
 from mongodb_service import MongoDBService
 from prompts.get_gpt_prompt import GptPrompt
 from utils.categorize_keyword_with_ai import categorize_keyword_with_ai
+from utils.query_parser import parse_query
 
 from config import MONGO_DB_NAME
 
-model_name: str = Model.GPT4_1
+
+model_name: str = Model.GPT5
 
 def manuscript_generator(
     user_instructions: str,
@@ -43,11 +45,16 @@ def manuscript_generator(
 
 
     
-    user_prompt: str = GptPrompt.gpt_4(keyword=user_instructions)
-    
+
+    parsed = parse_query(user_instructions)
+
+    if not parsed['keyword']:
+        raise
+    user_prompt: str = GptPrompt.gpt_4(parsed['keyword'])
+
     category = ''
     if user_instructions:
-        category = categorize_keyword_with_ai(keyword=user_instructions)
+        category = categorize_keyword_with_ai(user_instructions)
 
     if not category:
         category = os.getenv("MONGO_DB_NAME", "wedding")
@@ -78,24 +85,44 @@ def manuscript_generator(
 [표현 라이브러리]
 {expressions_str}
 
+---
+
 [AI 개체 인식 및 그룹화 결과]
 {parameters_str}
+
+---
 
 [부제 예시]
 {subtitles_str}
 
+---
+
 [사용자 지시사항]
-{user_instructions}
+{parsed['note']}
+
+---
 
 [참고 문서]
 {ref}
 
-[템플릿]
+---
+너는 아래 제공된 "템플릿 텍스트"의 **형식, 말투, 워딩 패턴**을 반드시 따르는 글쓰기 어시스턴트이다.  
+- 출력 문서는 반드시 템플릿과 **유사한 어휘, 문장 구조, 문단 흐름**을 유지해야 한다.  
+- 새로운 주제로 변형하더라도 템플릿의 **톤, 반복 구조, 문장 길이, 순서**를 그대로 모방해야 한다.  
+- 예시와 다른 어휘·문장 구조를 사용하지 말고, 가능한 한 **템플릿의 스타일을 복제**하라.  
+
+[템플릿 예시]
 {templates_str}
+
+[작성 지침]  
+사용자가 입력한 주제를 기반으로 위 템플릿과 동일한 스타일로 결과를 작성하라.
+
+---
 
 [요청]
 {user_prompt}
 """.strip()
+    print(parsed)
 
     
     client = OpenAI(api_key=OPENAI_API_KEY)

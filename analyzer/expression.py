@@ -2,6 +2,7 @@ import re
 from openai import OpenAI
 import json
 from config import OPENAI_API_KEY
+from constants.Model import Model
 
 def extract_expressions_with_ai(text: str) -> dict:
     if not OPENAI_API_KEY:
@@ -29,7 +30,7 @@ def extract_expressions_with_ai(text: str) -> dict:
 
     try:
         response = client.chat.completions.create(
-            model='gpt-4.1-mini-2025-04-14',
+            model=Model.GPT5_MINI,
             messages=[
                 {
                     "role": "system",
@@ -41,10 +42,15 @@ def extract_expressions_with_ai(text: str) -> dict:
             
         )
 
-        raw = response.choices[0].message.content.strip()
+        content = response.choices[0].message.content
+
+        if content == None:
+            raise
+
+        raw = content.strip()
         cleaned = re.sub(r"^```json|```$", "", raw).strip()
         return json.loads(cleaned)
 
     except Exception as e:
         print(f"OpenAI API 호출 중 오류가 발생했습니다: {e}")
-        return None
+        return {}

@@ -7,8 +7,9 @@ from typing import Dict, Any, Optional
 
 from openai import OpenAI
 from config import OPENAI_API_KEY
+from constants.Model import Model
 
-_DEFAULT_MODEL = "gpt-4.1-mini"
+_DEFAULT_MODEL = Model.GPT5_MINI
 
 
 def _extract_json_block(text: str) -> Optional[str]:
@@ -86,7 +87,7 @@ def extract_and_group_entities_with_ai(
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
             ],
-            temperature=0.2,
+            # temperature=0.2,
             # 최신 SDK/모델에서 지원하면 주석 해제해 JSON 강제
             # response_format={"type": "json_object"},
         )
