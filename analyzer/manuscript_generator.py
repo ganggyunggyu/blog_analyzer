@@ -17,7 +17,7 @@ from config import MONGO_DB_NAME
 from analyzer.request_문장해체분석기 import get_문장해체
 
 
-model_name: str = Model.GPT4_1
+model_name: str = Model.GPT5
 
 def manuscript_generator(
     user_instructions: str,
@@ -55,7 +55,7 @@ def manuscript_generator(
 
     if not parsed['keyword']:
         raise
-    user_prompt: str = GptPrompt.gpt_4(parsed['keyword'])
+    user_prompt: str = GptPrompt.gpt_5(parsed['keyword'])
 
     category = ''
     if user_instructions:
