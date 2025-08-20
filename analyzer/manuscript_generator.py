@@ -14,6 +14,7 @@ from utils.categorize_keyword_with_ai import categorize_keyword_with_ai
 from utils.query_parser import parse_query
 
 from config import MONGO_DB_NAME
+from analyzer.request_문장해체분석기 import get_문장해체
 
 
 model_name: str = Model.GPT5
@@ -45,8 +46,12 @@ def manuscript_generator(
 
 
     
-
+    
     parsed = parse_query(user_instructions)
+
+    문장해체 = get_문장해체(ref)
+
+    print(문장해체)
 
     if not parsed['keyword']:
         raise
@@ -104,6 +109,21 @@ def manuscript_generator(
 
 [참고 문서]
 {ref}
+
+---
+
+[분석 지시]
+아래 JSON 데이터는 참고 문서에서 추출한 화자/구성/스타일 분석 결과물입니다.  
+원고 생성 시 반드시 다음 조건을 반영해야 합니다.  
+
+- "화자 지시"에 따른 인물 설정, 말투, 단어 빈도와 형태소 패턴을 그대로 따릅니다.  
+- "구성 지시"에 따라 서론-중론-결론 흐름을 유지합니다.  
+- "원고 스타일 세부사항"을 전부 반영해 문체·문단 길이·리듬감·감정선 등을 동일하게 재현합니다.  
+- JSON에 기재된 단어/형태소는 반복적으로 등장해야 하며, 실제 경험담+정보 설명이 혼합된 톤을 유지해야 합니다.  
+
+아래는 분석 결과 JSON입니다.  
+
+{문장해체}
 
 ---
 너는 아래 제공된 "템플릿 텍스트"의 **형식, 말투, 워딩 패턴**을 반드시 따르는 글쓰기 어시스턴트이다.  

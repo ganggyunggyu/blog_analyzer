@@ -25,6 +25,8 @@ async def generator_gpt(request: GenerateRequest):
     db_service = MongoDBService()
     db_service.set_db_name(db_name=category)
 
+    
+
     print(f'''
 서비스: {service}
 키워드: {request.keyword}
