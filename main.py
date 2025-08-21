@@ -15,7 +15,7 @@ from analyzer.expression import extract_expressions_with_ai
 from analyzer.parameter import extract_and_group_entities_with_ai
 from analyzer.template import generate_template_from_segment
 from analyzer.library import build_sentence_library
-from analyzer.manuscript_generator import manuscript_generator
+from llm.gpt_4_service import gpt_4_gen
 from analyzer.subtitle import extract_subtitles_with_ai
 from config import OPENAI_API_KEY
 
@@ -268,7 +268,7 @@ def run_manuscript_generation(
         return None
     click.echo("\n원고 생성 시작")
     try:
-        return manuscript_generator(user_instructions=user_instructions, ref=ref)
+        return gpt_4_gen(user_instructions=user_instructions, ref=ref)
     except Exception as e:
         click.echo(f"원고 생성 오류: {e}")
         return None

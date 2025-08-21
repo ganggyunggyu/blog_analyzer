@@ -19,7 +19,7 @@ from analyzer.request_문장해체분석기 import get_문장해체
 
 model_name: str = Model.GPT4_1
 
-def manuscript_generator(
+def gpt_4_v2_gen(
     user_instructions: str,
     ref: str = "",
 ) -> str:
@@ -55,7 +55,7 @@ def manuscript_generator(
 
     if not parsed['keyword']:
         raise
-    user_prompt: str = GptPrompt.gpt_4(parsed['keyword'])
+    user_prompt: str = GptPrompt.gpt_4_v2(parsed['keyword'])
 
     category = ''
     if user_instructions:

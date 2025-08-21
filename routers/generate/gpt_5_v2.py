@@ -1,17 +1,17 @@
 from fastapi import HTTPException, APIRouter
+from fastapi.concurrency import run_in_threadpool
+from fastapi.concurrency import run_in_threadpool
 
 from mongodb_service import MongoDBService
 from utils.categorize_keyword_with_ai import categorize_keyword_with_ai
-from fastapi.concurrency import run_in_threadpool
-from fastapi.concurrency import run_in_threadpool
-
 from schema.generate import GenerateRequest
-from llm.gpt_4_service import gpt_4_gen, model_name
+from llm.gpt_5_service import gpt_5_gen, model_name
+
 
 router = APIRouter()
 
 
-@router.post("/generate/gpt")
+@router.post("/generate/gpt-5-v2")
 async def generator_gpt(request: GenerateRequest):
     """
     Generates text using the specified service (gpt, claude, or solar).
@@ -25,8 +25,6 @@ async def generator_gpt(request: GenerateRequest):
     db_service = MongoDBService()
     db_service.set_db_name(db_name=category)
 
-    
-
     print(f'''
 서비스: {service}
 키워드: {request.keyword}
@@ -37,7 +35,7 @@ async def generator_gpt(request: GenerateRequest):
     try:
 
         generated_manuscript = await run_in_threadpool(
-            gpt_4_gen,
+            gpt_5_gen,
             user_instructions=keyword,
             ref=ref
         )

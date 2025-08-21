@@ -6,12 +6,12 @@ from fastapi.concurrency import run_in_threadpool
 from fastapi.concurrency import run_in_threadpool
 
 from schema.generate import GenerateRequest
-from llm.gpt_4_service import gpt_4_gen, model_name
+from llm.gpt_4_v2_service import gpt_4_v2_gen, model_name
 
 router = APIRouter()
 
 
-@router.post("/generate/gpt")
+@router.post("/generate/gpt-4-v2")
 async def generator_gpt(request: GenerateRequest):
     """
     Generates text using the specified service (gpt, claude, or solar).
@@ -37,7 +37,7 @@ async def generator_gpt(request: GenerateRequest):
     try:
 
         generated_manuscript = await run_in_threadpool(
-            gpt_4_gen,
+            gpt_4_v2_gen,
             user_instructions=keyword,
             ref=ref
         )
