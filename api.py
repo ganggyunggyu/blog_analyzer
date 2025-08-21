@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 # 라우터
 from routers import ingest
 from routers.test import test
-from routers.generate import gemini, gpt
+from routers.generate import gemini, gpt, gpt_5
 from routers.category import keyword
 from routers.analysis import get_sub_title
 
@@ -31,5 +31,6 @@ app.include_router(ingest.router)
 app.include_router(test.router)
 app.include_router(gemini.router)
 app.include_router(gpt.router)
+app.include_router(gpt_5.router)
 app.include_router(keyword.router)
 app.include_router(get_sub_title.router)
