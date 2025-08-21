@@ -332,7 +332,7 @@ assert 1800 <= n <= 2000, flength={{n}}
 ``` Python
 import re
 n = len(re.sub(r"\s+", "", TEXT, flags=re.MULTILINE))
-assert 1800 <= n <= 2100, flength={{n}}
+assert 2200 <= n <= 2400, flength={{n}}
 ```
 
 [자기점검 루프]
