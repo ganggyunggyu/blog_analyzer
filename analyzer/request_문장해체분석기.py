@@ -5,7 +5,7 @@ from textwrap import dedent
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-def get_문장해체(ref: str, model: str = Model.GPT5_MINI) -> str:
+def get_문장해체(ref: str, model: str = Model.GPT4_1) -> str:
 
     schema_block = dedent("""
     {{
@@ -56,6 +56,7 @@ def get_문장해체(ref: str, model: str = Model.GPT5_MINI) -> str:
             {"role": "system", "content": system},
             {"role": "user", "content": user},
         ],
+        temperature=0
     )
     out = resp.choices[0].message.content or ""
     return out.strip()
