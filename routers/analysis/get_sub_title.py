@@ -7,13 +7,16 @@ from constants.Model import Model
 router = APIRouter(prefix="/analysis", tags=["analysis"])
 client = OpenAI(api_key=OPENAI_API_KEY)
 
+
 class SubtitleReq(BaseModel):
     text: str
     top_k: int = 7
 
+
 class SubtitleRes(BaseModel):
     subtitles: list[str]
     domain_hints: dict[str, float]
+
 
 @router.post("/sub-title", response_model=SubtitleRes)
 async def get_sub_title(payload: SubtitleReq):
@@ -39,8 +42,14 @@ async def get_sub_title(payload: SubtitleReq):
             model=Model.GPT5_NANO,  # 가벼운 모델 가능
             messages=[{"role": "user", "content": prompt}],
         )
-        content = resp.choices[0].message.content.strip()
+        content = resp.choices[0].message.content
+
+        if content == None:
+            raise
+
+        content.strip()
         import json
+
         data = json.loads(content)
         return SubtitleRes(**data)
     except Exception as e:
