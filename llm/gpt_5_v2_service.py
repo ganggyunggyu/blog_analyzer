@@ -61,8 +61,6 @@ def gpt_5_gen(
 
     db_service.set_db_name(db_name=category)
 
-    print(f"지금 연결 된 DB: {db_service.db.name}")
-
     analysis_data: Dict[str, Any] = db_service.get_latest_analysis_data() or {}
 
     unique_words: List[str] = analysis_data.get("unique_words", []) or []
@@ -85,6 +83,8 @@ def gpt_5_gen(
     templates_str = (
         json.dumps(templates, ensure_ascii=False, indent=2) if templates else "없음"
     )
+
+    print(f"지금 연결 된 DB: {db_service.db.name}")
 
     _분석본 = f"""
 [분석 지시]
@@ -118,6 +118,37 @@ def gpt_5_gen(
 [작성 지침]  
 사용자가 입력한 주제를 기반으로 위 템플릿과 동일한 스타일로 결과를 작성하라.
 
+- 문체는 딱딱하게 하지 않고 아래처럼 부드러운 문체를 사용한다.
+
+- 예시1: (저처럼 짐이 많거나, 아이가 있거나,
+
+부모님을 모시고 가는 여행은
+
+인천공항 콜밴만한 교통수단이 없어요 -)
+- 예시2: (가족여행 or 골프여행 or 짐이 많거나
+
+유모차가 있다?!
+
+아묻따 에이스팀 인천공항 콜밴 이용이 답이에요!)
+
+- 예시3: (대중교통 이용했으면 피곤해서 못 내렸을수도..
+
+만약 자차를 가지고 갔다면?
+
+와... 그 피곤함에 운전까지
+
+절대 상상도 못해요!
+
+졸음운전 정말 위험하잖아요 ㅠ_ㅠ)
+
+- 예시4: (
+
+콜택시 기사님께서 짐을 실어주셔서
+
+저는 두 손 편하게 탑승 후 정말
+
+1시간동안 곯아 떨어졌답니다 ㅋㅋㅋ)
+
 ---
 
 [표현 라이브러리]
@@ -144,6 +175,7 @@ def gpt_5_gen(
 ---
 
 [참고 문서]
+- 참고문서의 업체명은 절대 원고에 포함하지 않습니다.
 {ref}
 
 ---
