@@ -10,6 +10,7 @@ from config import OPENAI_API_KEY
 from constants.Model import Model
 from mongodb_service import MongoDBService
 from prompts.get_gpt_prompt import GptPrompt
+from prompts.get_system_prompt import get_system_prompt_v2
 from utils.categorize_keyword_with_ai import categorize_keyword_with_ai
 from utils.query_parser import parse_query
 
@@ -49,7 +50,7 @@ def gpt_4_v2_gen(
 
     if not parsed["keyword"]:
         raise
-    user_prompt: str = GptPrompt.gpt_4_v2(parsed["keyword"])
+    user_prompt: str = GptPrompt.test(parsed["keyword"])
 
     category = ""
     if user_instructions:
@@ -86,8 +87,10 @@ def gpt_4_v2_gen(
     )
 
     print(f"지금 연결 된 DB: {db_service.db.name}")
-
-    _분석본 = f"""
+    참조분석 = get_문장해체(ref)
+    print(참조분석)
+    기본_프롬프트 = GptPrompt.gpt_4_v2(keyword=parsed["keyword"])
+    참조_분석_프롬프트 = f"""
 
 [분석 지시]
 아래는 분석 결과 JSON입니다.  
@@ -110,18 +113,11 @@ def gpt_4_v2_gen(
 - "원고 스타일 세부사항"을 전부 반영해 문체·문단 길이·리듬감·감정선 등을 동일하게 재현합니다.  
 - JSON에 기재된 단어/형태소는 반복적으로 등장해야 하며, 실제 경험담+정보 설명이 혼합된 톤을 유지해야 합니다.  
 
-- 사용자 요청에 (부제 넘버링 제거)가 있다면 필수로 숫자 제거 된 부제 사용
+= 부제는 하단 데이터를 이용하여 작성
 
 아래는 분석 결과 JSON입니다.  
 
-[부제 예시]
-= 부제는 간결하게 작성
-- 나쁜 예시: 1. 공항 이동의 어려움과 인천공항 콜밴을 써본 계기 
-- 좋은 예시: 1. 인천공항 콜밴을 써본 계기 
-
-- 사용자 요청에 (부제 넘버링 제거)가 있다면 필수로 숫자 제거 된 부제 사용
-
-{_분석본}
+{참조_분석_프롬프트}
 
 ---
 
@@ -151,28 +147,39 @@ def gpt_4_v2_gen(
     prompt: str = (
         f"""
 
-{_mongo_data}
+    {_mongo_data}
+        
+---
+
+[참조 문서]
+- 참조 문서의 업체명은 절대 원고에 포함하지 않습니다.
+- 참조 문서와 동일하게 작성하지 않습니다.
+- 아래의 분석본과 함께 사용해서 전체적인 흐름을 유사하게 가져갑니다.
+- 없다면 넘어갑니다.
+{ref}
+
+[참조 원고 분석]
+{참조_분석_프롬프트}
 
 ---
 
-[사용자 지시사항]
+[필수 사항]
+{기본_프롬프트}
+
+---
+
+[필수로 이행해야하는 추가 요청]
 {parsed['note']}
 
 ---
 
-[참고 문서]
-- 참고문서의 업체명은 절대 원고에 포함하지 않습니다.
-{ref}
-
----
-
-[요청]
-{user_prompt}
 """.strip()
     )
     print(parsed)
 
     client = OpenAI(api_key=OPENAI_API_KEY)
+
+    system = get_system_prompt_v2()
 
     try:
         print(f"GPT 생성 시작 | keyword={user_instructions!r} | model={model_name}")
@@ -181,7 +188,7 @@ def gpt_4_v2_gen(
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a professional blog post writer.",
+                    "content": system,
                 },
                 {"role": "user", "content": prompt},
             ],

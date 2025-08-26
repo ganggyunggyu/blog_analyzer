@@ -8,6 +8,9 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def get_문장해체(ref: str, model: str = Model.GPT4_1) -> str:
 
+    if ref == "":
+        return ""
+
     schema_block = dedent(
         """
     {{
@@ -38,7 +41,10 @@ def get_문장해체(ref: str, model: str = Model.GPT4_1) -> str:
     - 새로 창작하지 말고 원고 속 실제 의미와 흐름을 반영할 것
     - 업체명은 언급 금지 키워드 위주로 부제목 제작
         - 인천공항은 업체명이 아님
-    - 넘버링 요망
+    - 부제 앞에는 번호 필요 
+        1. 부제 1
+        2. 부제 2
+        ...
     - JSON 배열로 반환 (예: ["...", "...", "...", "...", "..."])
     
     }

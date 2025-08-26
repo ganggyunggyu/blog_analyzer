@@ -5,7 +5,6 @@ from fastapi.concurrency import run_in_threadpool
 from mongodb_service import MongoDBService
 from utils.categorize_keyword_with_ai import categorize_keyword_with_ai
 from schema.generate import GenerateRequest
-from llm.gpt_5_service import gpt_5_gen, model_name
 from llm.gpt_5_v2_service import gpt_5_gen, model_name
 
 
