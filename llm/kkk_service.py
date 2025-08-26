@@ -6,7 +6,7 @@ from openai import OpenAI
 from config import OPENAI_API_KEY
 from constants.Model import Model
 from prompts.get_gpt_prompt import GptPrompt
-from prompts.get_system_prompt import get_system_prompt_v2
+from prompts.get_kkk_prompts import KkkPrompt
 from utils.query_parser import parse_query
 from analyzer.request_문장해체분석기 import get_문장해체
 
@@ -100,7 +100,7 @@ def kkk_gen(
     print(f"KKK 테스트 파싱 결과: {parsed}")
     
     client = OpenAI(api_key=OPENAI_API_KEY)
-    system = get_system_prompt_v2()
+    system = KkkPrompt.get_kkk_system_prompt_v2()
     
     try:
         print(f"KKK GPT 생성 시작 | keyword={user_instructions!r} | model={model_name}")
