@@ -5,10 +5,12 @@ import re
 from typing import Any, Dict, List
 
 from openai import OpenAI
+from analyzer.request_문장해체분석기 import get_문장해체
 from config import OPENAI_API_KEY
 from constants.Model import Model
 from mongodb_service import MongoDBService
 from prompts.get_gpt_prompt import GptPrompt
+from prompts.get_gemini_prompt import get_gemini_v2_prompt
 from prompts.get_system_prompt import get_system_prompt
 
 from config import GEMINI_API_KEY
@@ -16,12 +18,13 @@ from config import GEMINI_API_KEY
 from google import genai
 from google.genai import types
 
+from utils.query_parser import parse_query
 
 
 def get_gemini_response(
     user_instructions: str,
     ref: str = "",
-    model: str = "gemini-2.5-flash",
+    model: str = "gemini-2.5-pro",
 ) -> str:
     """
     분석 산출물 + 사용자 지시 → 원고 텍스트를 생성한다.
@@ -37,18 +40,20 @@ def get_gemini_response(
         ValueError: API 키 미설정
         Exception: OpenAI 호출 실패 등
     """
-    # --- 환경 체크 ---
+
     if not OPENAI_API_KEY:
         raise ValueError("OPENAI_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요.")
 
+    parsed = parse_query(user_instructions)
 
+    if parsed["keyword"] == None:
+        raise
 
-    # 사용자 프롬프트(지시사항을 기반으로 본문 작성 지시)
     sys_prompt: str = get_system_prompt()
-    user_prompt: str = GptPrompt.gpt_4(keyword=user_instructions)
+    user_prompt: str = GptPrompt.gpt_5_v2(keyword=parsed["keyword"])
+    문장해체 = get_문장해체(ref)
     model_name = model
 
-    # --- DB에서 최신 분석 데이터 로딩 ---
     db_service = MongoDBService()
     analysis_data: Dict[str, Any] = db_service.get_latest_analysis_data() or {}
 
@@ -60,37 +65,92 @@ def get_gemini_response(
     parameters: Dict[str, List[str]] = analysis_data.get("parameters", {}) or {}
     templates: List[Dict[str, Any]] = analysis_data.get("templates", []) or []
 
-    # --- 직렬화 (보기 좋게) ---
-    subtitles_str: str   = json.dumps(subtitles,  ensure_ascii=False, indent=2) if subtitles   else "없음"
-    expressions_str: str = json.dumps(expressions, ensure_ascii=False, indent=2) if expressions else "없음"
-    parameters_str: str  = json.dumps(parameters, ensure_ascii=False, indent=2) if parameters  else "없음"
-    templates_str: str   = json.dumps(templates,  ensure_ascii=False, indent=2) if templates   else "없음"
+    subtitles_str: str = (
+        json.dumps(subtitles, ensure_ascii=False, indent=2) if subtitles else "없음"
+    )
+    expressions_str: str = (
+        json.dumps(expressions, ensure_ascii=False, indent=2) if expressions else "없음"
+    )
+    parameters_str: str = (
+        json.dumps(parameters, ensure_ascii=False, indent=2) if parameters else "없음"
+    )
+    templates_str: str = (
+        json.dumps(templates, ensure_ascii=False, indent=2) if templates else "없음"
+    )
 
-    # --- 최종 프롬프트 ---
-    prompt: str = f"""
-[표현 라이브러리]
-{expressions_str}
+    _분석본 = f"""
+[참조원고 분석 데이터 활용 지침]
+아래 데이터는 참고 문서에서 추출한 화자/구성/스타일 분석 결과물입니다.  
+원고 생성 시 반드시 다음 조건을 반영해야 합니다.  
 
-[AI 개체 인식 및 그룹화 결과]
-{parameters_str}
+{문장해체}
+
+- "화자 지시"에 따른 인물 설정, 말투, 단어 빈도와 형태소 패턴을 그대로 따릅니다.  
+- "구성 지시"에 따라 서론-중론-결론 흐름을 유지합니다.
+- "원고 스타일 세부사항"을 전부 반영해 문체·문단 길이·리듬감·감정선 등을 동일하게 재현합니다.  
+- JSON에 기재된 단어/형태소는 반복적으로 등장해야 하며, 실제 경험담+정보 설명이 혼합된 톤을 유지해야 합니다.  
+
+- 사용자 요청에 (부제 넘버링 제거)가 있다면 필수로 숫자 제거 된 부제 사용
+
+"""
+
+    _mongo_data = f"""
 
 [부제 예시]
 {subtitles_str}
 
+---
+
+[템플릿 예시]
+- 출력 문서는 반드시 템플릿과 **유사한 어휘, 문장 구조, 문단 흐름**을 유지해야 한다.  
+- 새로운 주제로 변형하더라도 템플릿의 **톤, 반복 구조, 문장 길이, 순서**를 그대로 모방해야 한다.  
+- 예시와 다른 어휘·문장 구조를 사용하지 말고, 가능한 한 **템플릿의 스타일을 복제**하라.  
+
+{templates_str}
+
+---
+
+[표현 라이브러리]
+{expressions_str}
+
+---
+
+[AI 개체 인식 및 그룹화 결과]
+{parameters_str}
+"""
+
+    user: str = (
+        f"""
+
+---
+
+{_mongo_data}
+
+---
+
 [사용자 지시사항]
-{user_instructions}
+{parsed['note']}
+
+---
 
 [참고 문서]
+- 참고문서의 업체명은 절대 원고에 포함하지 않습니다.
 {ref}
 
-[템플릿]
-{templates_str}
+---
 
 [요청]
 {user_prompt}
-""".strip()
 
-    # --- OpenAI 호출 ---
+---
+
+{_분석본}
+
+---
+
+""".strip()
+    )
+
     client = OpenAI(api_key=OPENAI_API_KEY)
 
     try:
@@ -99,33 +159,33 @@ def get_gemini_response(
         res = client.models.generate_content(
             model=model,
             config=types.GenerateContentConfig(
-            system_instruction=sys_prompt,
+                system_instruction=sys_prompt,
             ),
-            contents=prompt,
+            contents=user,
         )
 
-                # 토큰 사용량 로그 (가능하면)
         try:
             meta = getattr(res, "usage_metadata", None)
             if meta:
                 in_tokens = getattr(meta, "prompt_token_count", None)
                 out_tokens = getattr(meta, "candidates_token_count", None)
                 total = (in_tokens or 0) + (out_tokens or 0)
-                print(f"입력 토큰: {in_tokens}, 출력 토큰: {out_tokens}, 총 토큰: {total}")
+                print(
+                    f"입력 토큰: {in_tokens}, 출력 토큰: {out_tokens}, 총 토큰: {total}"
+                )
         except Exception:
-            pass  # 사용량 정보가 없는 모델/버전 대비
+            pass
 
-        # 본문 텍스트 추출
         text: str = getattr(res, "text", "") or ""
         if not text:
-            # 후보 구조에서 추출 시도 (SDK 버전에 따라)
+
             candidates = getattr(res, "candidates", None)
             if candidates and len(candidates) > 0:
-                # 첫 후보의 텍스트 파싱
+
                 first = candidates[0]
-                text = getattr(first, "content", '')
+                text = getattr(first, "content", "")
                 if hasattr(text, "parts"):
-                    # parts의 text 합치기
+
                     parts = getattr(text, "parts", []) or []
                     text = "".join(getattr(p, "text", "") for p in parts)
                 elif isinstance(text, str):
@@ -135,7 +195,6 @@ def get_gemini_response(
         if not text:
             raise RuntimeError("Gemini가 빈 응답을 반환했습니다.")
 
-        # 길이 로그
         length_no_space = len(re.sub(r"\s+", "", text))
         print(f"{model} 문서 생성 완료 (공백 제외 길이: {length_no_space})")
 
