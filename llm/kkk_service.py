@@ -13,6 +13,9 @@ from analyzer.request_문장해체분석기 import get_문장해체
 
 model_name: str = Model.GPT4_1
 
+client = OpenAI(api_key=OPENAI_API_KEY)
+system = KkkPrompt.get_kkk_system_prompt_v2()
+
 
 def kkk_gen(
     user_instructions: str,
@@ -22,38 +25,36 @@ def kkk_gen(
     KKK 테스트용 생성 함수 - DB 의존성 제거
     - 프롬프트만 사용하여 원고 생성
     - GptPrompt의 gpt_5_v2_kkk 사용
-    
+
     Returns:
         생성된 원고 텍스트 (str)
-        
+
     Raises:
         RuntimeError: 모델이 빈 응답을 반환한 경우 등
         ValueError: API 키 미설정 등의 환경 이슈
         Exception: OpenAI 호출 실패 등 기타 예외
     """
-    
+
     if not OPENAI_API_KEY:
         raise ValueError("OPENAI_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요.")
-    
+
     print(f"KKK 테스트 시작: {user_instructions}")
-    
+
     parsed = parse_query(user_instructions)
-    
+
     if not parsed["keyword"]:
         raise ValueError("키워드가 없습니다.")
-    
+
     # 참조원고 분석 (gpt_5_v2_service에서 가져온 로직)
     참조분석 = get_문장해체(ref)
     print(f"참조분석 결과: {참조분석}")
-    
+
     # gpt_5_v2_kkk 프롬프트 사용
     기본_프롬프트 = GptPrompt.gpt_5_v2_kkk(
         keyword=parsed["keyword"],
-        min_length=1800,
-        max_length=2000,
-        note=parsed.get("note", "")
+        note=parsed.get("note", ""),
     )
-    
+
     # gpt_5_v2_service의 참조원고 분석 프롬프트 구조 차용
     참조_분석_프롬프트 = f"""
 [참조원고 분석 데이터 활용 지침]
@@ -70,8 +71,10 @@ def kkk_gen(
 - 부제는 그대로 사용하나 예외 사항은 하단 참조
 - 사용자 요청에 (부제X)가 있다면 필수로 숫자만 제거 된 부제 사용
 """
-    
-    prompt: str = f"""
+
+    user: str = (
+        f"""
+    {system}
 ---
 
 [참조 문서 - KKK 테스트]
@@ -96,45 +99,43 @@ def kkk_gen(
 
 ---
 """.strip()
-    
+    )
+
     print(f"KKK 테스트 파싱 결과: {parsed}")
-    
-    client = OpenAI(api_key=OPENAI_API_KEY)
-    system = KkkPrompt.get_kkk_system_prompt_v2()
-    
+
     try:
         print(f"KKK GPT 생성 시작 | keyword={user_instructions!r} | model={model_name}")
         response = client.chat.completions.create(
             model=model_name,
             messages=[
                 {
-                    "role": "system", 
+                    "role": "system",
                     "content": system,
                 },
-                {"role": "user", "content": prompt},
+                {"role": "user", "content": user},
             ],
         )
-        
+
         usage = getattr(response, "usage", None)
         if usage is not None:
             in_tokens = getattr(usage, "prompt_tokens", None)
             out_tokens = getattr(usage, "completion_tokens", None)
             total_tokens = getattr(usage, "total_tokens", None)
             print(f"KKK tokens in={in_tokens}, out={out_tokens}, total={total_tokens}")
-        
+
         choices = getattr(response, "choices", []) or []
         if not choices or not getattr(choices[0], "message", None):
             raise RuntimeError("모델이 유효한 choices/message를 반환하지 않았습니다.")
-        
+
         text: str = (choices[0].message.content or "").strip()
         if not text:
             raise RuntimeError("모델이 빈 응답을 반환했습니다.")
-        
+
         length_no_space = len(re.sub(r"\s+", "", text))
         print(f"KKK {model_name} 문서 생성 완료 (공백 제외 길이: {length_no_space})")
-        
+
         return text
-        
+
     except Exception as e:
         print("KKK OpenAI 호출 실패:", repr(e))
         raise

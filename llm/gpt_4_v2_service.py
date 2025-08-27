@@ -10,6 +10,7 @@ from config import OPENAI_API_KEY
 from constants.Model import Model
 from mongodb_service import MongoDBService
 from prompts.get_gpt_prompt import GptPrompt
+from prompts.get_kkk_prompts import KkkPrompt
 from prompts.get_system_prompt import get_system_prompt_v2
 from utils.categorize_keyword_with_ai import categorize_keyword_with_ai
 from utils.query_parser import parse_query
@@ -19,6 +20,7 @@ from analyzer.request_문장해체분석기 import get_문장해체
 
 
 model_name: str = Model.GPT4_1
+기본_프롬프트 = ""
 
 
 def gpt_4_v2_gen(
@@ -50,7 +52,6 @@ def gpt_4_v2_gen(
 
     if not parsed["keyword"]:
         raise
-    user_prompt: str = GptPrompt.test(parsed["keyword"])
 
     category = ""
     if user_instructions:
@@ -58,6 +59,14 @@ def gpt_4_v2_gen(
 
     if not category:
         category = os.getenv("MONGO_DB_NAME", "wedding")
+
+    if category == "legalese":
+        기본_프롬프트 = KkkPrompt.kkk_prompt_gpt_5(parsed["keyword"])
+    else:
+        기본_프롬프트 = GptPrompt.gpt_4_v2(parsed["keyword"])
+
+    참조분석 = get_문장해체(ref)
+    system = get_system_prompt_v2()
 
     db_service = MongoDBService()
 
@@ -87,9 +96,9 @@ def gpt_4_v2_gen(
     )
 
     print(f"지금 연결 된 DB: {db_service.db.name}")
-    참조분석 = get_문장해체(ref)
+
     print(참조분석)
-    기본_프롬프트 = GptPrompt.gpt_4_v2(keyword=parsed["keyword"])
+
     참조_분석_프롬프트 = f"""
 
 [분석 지시]
@@ -144,8 +153,11 @@ def gpt_4_v2_gen(
 ---
 """
 
-    prompt: str = (
+    user: str = (
         f"""
+    {기본_프롬프트}
+
+    {system}
 
     {_mongo_data}
         
@@ -179,8 +191,6 @@ def gpt_4_v2_gen(
 
     client = OpenAI(api_key=OPENAI_API_KEY)
 
-    system = get_system_prompt_v2()
-
     try:
         print(f"GPT 생성 시작 | keyword={user_instructions!r} | model={model_name}")
         response = client.chat.completions.create(
@@ -190,7 +200,7 @@ def gpt_4_v2_gen(
                     "role": "system",
                     "content": system,
                 },
-                {"role": "user", "content": prompt},
+                {"role": "user", "content": user},
             ],
         )
 

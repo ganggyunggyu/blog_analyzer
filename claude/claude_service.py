@@ -5,81 +5,58 @@ import os
 import re
 from typing import Any, Dict, List, Optional
 
-from openai import OpenAI
-from analyzer import request_문장해체분석기
-from config import OPENAI_API_KEY
-from constants.Model import Model
+from analyzer.request_문장해체분석기 import get_문장해체
+from config import MONGO_DB_NAME
 from mongodb_service import MongoDBService
 from prompts.get_gpt_prompt import GptPrompt
-from prompts.get_kkk_prompts import KkkPrompt
-from prompts.get_ko_prompt import getKoPrompt
 from prompts.get_system_prompt import get_system_prompt_v2
 from utils.categorize_keyword_with_ai import categorize_keyword_with_ai
 from utils.query_parser import parse_query
 
-from config import MONGO_DB_NAME
-from analyzer.request_문장해체분석기 import get_문장해체
 
-
-model_name: str = Model.GPT5
-
-기본_프롬프트 = ""
-
-
-def gpt_5_gen(
-    user_instructions: str,
+def claude_blog_generator(
+    keyword: str,
     ref: str = "",
+    min_length: int = 1700,
+    max_length: int = 2000,
+    note: str = "",
 ) -> str:
     """
-    분석 산출물 + 사용자 지시 → 원고 텍스트를 생성한다.
-    - MongoDB의 최신 분석 결과(expressions/parameters)를 읽어 프롬프트에 포함.
-    - OpenAI Chat Completions 호출.
-    - 기존 출력 포맷과 흐름 유지, 타입/널 안전성 강화.
+    Claude를 사용한 블로그 원고 생성기
+    MongoDB 데이터와 gpt_v2 프롬프트를 결합하여 원고 생성
+
+    Args:
+        keyword: 블로그 원고의 키워드
+        ref: 참조할 문서 (선택사항)
+        min_length: 최소 글자수 (공백 제외)
+        max_length: 최대 글자수 (공백 제외)
+        note: 추가 요청사항
 
     Returns:
-        생성된 원고 텍스트 (str)
-
-    Raises:
-        RuntimeError: 모델이 빈 응답을 반환한 경우 등
-        ValueError: API 키 미설정 등의 환경 이슈
-        Exception: OpenAI 호출 실패 등 기타 예외
+        생성된 블로그 원고 텍스트
     """
 
     category = ""
-    if user_instructions:
-        category = categorize_keyword_with_ai(user_instructions)
+    if keyword:
+        category = categorize_keyword_with_ai(keyword)
 
     if not category:
         category = os.getenv("MONGO_DB_NAME", "wedding")
 
     db_service = MongoDBService()
-
     db_service.set_db_name(db_name=category)
-
-    parsed = parse_query(user_instructions)
-
-    if parsed["keyword"] == None:
-        raise
-
-    참조분석 = get_문장해체(ref)
-
-    if category == "legalese":
-        기본_프롬프트 = KkkPrompt.kkk_prompt_gpt_5(parsed["keyword"])
-    else:
-        기본_프롬프트 = GptPrompt.gpt_5_v2(parsed["keyword"])
 
     analysis_data: Dict[str, Any] = db_service.get_latest_analysis_data() or {}
 
     unique_words: List[str] = analysis_data.get("unique_words", []) or []
     sentences: List[str] = analysis_data.get("sentences", []) or []
-
     subtitles: List[str] = analysis_data.get("subtitles", []) or []
     expressions: Dict[str, List[str]] = analysis_data.get("expressions", {}) or {}
     parameters: Dict[str, List[str]] = analysis_data.get("parameters", {}) or {}
     templates = analysis_data.get("templates", []) or []
 
     subtitles_str: str = (
-        json.dumps(subtitles, ensure_ascii=False, indent=2) if expressions else "없음"
+        json.dumps(subtitles, ensure_ascii=False, indent=2) if subtitles else "없음"
     )
     expressions_str: str = (
         json.dumps(expressions, ensure_ascii=False, indent=2) if expressions else "없음"
@@ -91,17 +68,19 @@ def gpt_5_gen(
         json.dumps(templates, ensure_ascii=False, indent=2) if templates else "없음"
     )
 
-    print(f"지금 연결 된 DB: {db_service.db.name}")
+    print(f"연결된 DB: {db_service.db.name}")
 
-    print(user_instructions)
+    참조분석 = get_문장해체(ref) if ref else ""
 
-    print(참조분석)
+    기본_프롬프트 = GptPrompt.gpt_4_v2(
+        keyword=keyword, min_length=min_length, max_length=max_length, note=note
+    )
 
-    참조_분석_프롬프트 = f"""
+    참조_분석_프롬프트 = (
+        f"""
 [참조원고 분석 데이터 활용 지침]
 아래 데이터는 참고 문서에서 추출한 화자/구성/스타일 분석 결과물입니다.  
 원고 생성 시 반드시 다음 조건을 반영해야 합니다.
-    
 
 {참조분석}
 
@@ -111,11 +90,13 @@ def gpt_5_gen(
 - JSON에 기재된 단어/형태소는 반복적으로 등장해야 하며, 실제 경험담+정보 설명이 혼합된 톤을 유지해야 합니다.  
 
 - 부제는 그대로 사용하나 예외 사항은 하단 참조
-- 사용자 요청에 (부제X)가 있다면 필수로 숫자만 제거 된 부제 사용
-
+- 사용자 요청에 (부제X)가 있다면 필수로 숫자만 제거된 부제 사용
 """
+        if 참조분석
+        else ""
+    )
 
-    _mongo_data = f"""
+    mongo_data_prompt = f"""
 
 ---
 
@@ -133,7 +114,7 @@ def gpt_5_gen(
     1. 부제1
     2. 부제2
     ... 5개
-- 사용자 요청에 (부제X)가 있다면 필수로 숫자만 제거 된 부제 사용
+- 사용자 요청에 (부제X)가 있다면 필수로 숫자만 제거된 부제 사용
 
 아래는 분석 결과 JSON입니다.  
 
@@ -145,7 +126,6 @@ def gpt_5_gen(
 - 출력 문서는 반드시 템플릿과 **유사한 어휘, 문장 구조, 문단 흐름**을 유지해야 한다.  
 - 새로운 주제로 변형하더라도 템플릿의 **톤, 반복 구조, 문장 길이, 순서**를 그대로 모방해야 한다.  
 - 예시와 다른 어휘·문장 구조를 사용하지 말고, 가능한 한 **템플릿의 스타일을 복제**하라.  
-
 
 {templates_str}
 
@@ -162,21 +142,15 @@ def gpt_5_gen(
 [AI 개체 인식 및 그룹화 결과]
 {parameters_str}
 
-- 스타일을 복제하나 파라미터를 가져다 쓸 경우에는 변경될 수 있는 값은 유동적으로 변경해야합니다.
-    - 예시: 33평 -> 28평
-    - 예시: 60L -> 90L
-    - 예시: 50db -> 50db
-
 ---
 
 """
 
-    user: str = (
-        f"""
+    final_prompt = f"""
 
 ---
 
-{_mongo_data}
+{mongo_data_prompt}
 
 ---
 
@@ -189,8 +163,6 @@ def gpt_5_gen(
 [참조 원고 분석]
 {참조_분석_프롬프트}
 
-
-
 ---
 
 [필수 사항]
@@ -199,52 +171,51 @@ def gpt_5_gen(
 ---
 
 [필수로 이행해야하는 추가 요청]
-{parsed['note']}
+{note}
 
 ---
 
 """.strip()
-    )
-    print(parsed)
 
-    client = OpenAI(api_key=OPENAI_API_KEY)
+    return final_prompt
 
-    system = get_system_prompt_v2()
 
-    try:
-        print(f"GPT 생성 시작 | keyword={user_instructions!r} | model={model_name}")
-        response = client.chat.completions.create(
-            model=model_name,
-            messages=[
-                {
-                    "role": "system",
-                    "content": system,
-                },
-                {"role": "user", "content": user},
-            ],
-        )
+def generate_blog_content(
+    keyword: str,
+    ref: str = "",
+    min_length: int = 1700,
+    max_length: int = 2000,
+    note: str = "",
+) -> str:
+    """
+    블로그 콘텐츠 생성 (프롬프트만 반환)
+    실제 AI 모델 호출은 별도로 처리
+    """
+    return claude_blog_generator(keyword, ref, min_length, max_length, note)
 
-        usage = getattr(response, "usage", None)
-        if usage is not None:
-            in_tokens = getattr(usage, "prompt_tokens", None)
-            out_tokens = getattr(usage, "completion_tokens", None)
-            total_tokens = getattr(usage, "total_tokens", None)
-            print(f"tokens in={in_tokens}, out={out_tokens}, total={total_tokens}")
 
-        choices = getattr(response, "choices", []) or []
-        if not choices or not getattr(choices[0], "message", None):
-            raise RuntimeError("모델이 유효한 choices/message를 반환하지 않았습니다.")
+def save_blog_content(content: str, keyword: str, output_dir: str = "output") -> str:
+    """
+    생성된 블로그 콘텐츠를 파일로 저장
 
-        text: str = (choices[0].message.content or "").strip()
-        if not text:
-            raise RuntimeError("모델이 빈 응답을 반환했습니다.")
+    Args:
+        content: 생성된 블로그 원고
+        keyword: 키워드 (파일명에 사용)
+        output_dir: 저장할 디렉토리
 
-        length_no_space = len(re.sub(r"\s+", "", text))
-        print(f"{model_name} 문서 생성 완료 (공백 제외 길이: {length_no_space})")
+    Returns:
+        저장된 파일의 경로
+    """
 
-        return text
+    length = len(re.sub(r"\s+", "", content))
 
-    except Exception as e:
+    clean_keyword = keyword.replace(" ", "").replace("/", "")
+    filename = f"{clean_keyword}_{length}자.txt"
 
-        print("OpenAI 호출 실패:", repr(e))
-        raise
+    output_path = os.path.join(output_dir, filename)
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(content)
+
+    print(f"블로그 원고 저장 완료: {output_path} ({length}자)")
+    return output_path
