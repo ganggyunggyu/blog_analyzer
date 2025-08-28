@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 import json
@@ -10,18 +9,18 @@ from config import OPENAI_API_KEY
 
 from constants.Model import Model
 
-_DEFAULT_MODEL = Model.GPT5_MINI  
+_DEFAULT_MODEL = Model.GPT5_MINI
 
 
 def _normalize_subtitle(s: str) -> str:
     """부제 정규화: 공백/기호 정리, 끝문장부호 제거, 과도한 띄어쓰기 축소."""
     s = (s or "").strip()
-    
+
     s = re.sub(r"\s+", " ", s)
     s = re.sub(r"[\"'·•▷▶️\-\–\—\·\•\●\■\□\◇\◆\+]+", "", s).strip()
-    
+
     s = re.sub(r"[.!?]+$", "", s).strip()
-    
+
     if len(s) > 40:
         s = s[:40].strip()
     return s
@@ -49,45 +48,54 @@ def _rule_based_subtitles(full_text: str) -> List[str]:
     - 문단 첫 문장 요약
     """
     lines = [re.sub(r"\s+", " ", ln).strip() for ln in full_text.splitlines()]
-    lines = [ln for ln in lines if ln]  
+    lines = [ln for ln in lines if ln]
 
-    
     heads: List[str] = []
     pat_num = re.compile(r"^(?:\d+\.|\d+\)|\(\d+\))\s*")
     cue_words = [
-        "섭취 시 주의사항", "주의사항", "추천해요", "추천 대상", "효과", "변화", "비용", "정리",
-        "체감한 시점", "복용 방법", "복용 시간", "TIP", "체크포인트", "결론", "한줄평",
+        "섭취 시 주의사항",
+        "주의사항",
+        "추천해요",
+        "추천 대상",
+        "효과",
+        "변화",
+        "비용",
+        "정리",
+        "체감한 시점",
+        "복용 방법",
+        "복용 시간",
+        "TIP",
+        "체크포인트",
+        "결론",
+        "한줄평",
     ]
 
     for ln in lines:
         if pat_num.match(ln):
             heads.append(pat_num.sub("", ln))
             continue
-        
+
         if any(cw in ln for cw in cue_words):
             heads.append(ln)
             continue
 
-    
     paragraphs = [p.strip() for p in re.split(r"\n\s*\n", full_text) if p.strip()]
     for p in paragraphs:
         first = re.split(r"(?<=[.!?。…])\s+", p.strip())[0]
         if len(first) > 10:
             heads.append(first)
 
-    
     heads = [_normalize_subtitle(h) for h in heads]
     heads = [h for h in heads if 4 <= len(h) <= 40]
     heads = _dedupe_keeping_order(heads)
 
-    
     return heads[:12]
 
 
 def extract_subtitles_with_ai(
     full_text: str,
     model_name: Optional[str] = None,
-    max_items: int = 12,
+    max_items: int = 5,
 ) -> List[str]:
     """
     원고 본문에서 '부제목(소제목)'만 뽑아 리스트로 반환.
@@ -95,7 +103,7 @@ def extract_subtitles_with_ai(
     2) 실패/비정상 응답 시 룰 기반 백업
 
     Returns:
-        subtitles: List[str]  
+        subtitles: List[str]
     """
     if not OPENAI_API_KEY:
         raise ValueError("OPENAI_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요.")
@@ -103,7 +111,6 @@ def extract_subtitles_with_ai(
     model = model_name or _DEFAULT_MODEL
     client = OpenAI(api_key=OPENAI_API_KEY)
 
-    
     system = (
         "You are a precise subtitle extractor for Korean blog manuscripts. "
         "Return ONLY JSON. No commentary."
@@ -136,21 +143,21 @@ JSON만 반환해.
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
             ],
-            
-            
-            
         )
 
         content = (resp.choices[0].message.content or "").strip()
 
-        
         if content.startswith("```"):
-            content = re.sub(r"^```(?:json)?\s*|\s*```$", "", content.strip(), flags=re.IGNORECASE | re.DOTALL)
+            content = re.sub(
+                r"^```(?:json)?\s*|\s*```$",
+                "",
+                content.strip(),
+                flags=re.IGNORECASE | re.DOTALL,
+            )
 
         data: Dict[str, Any] = json.loads(content)
         raw_items = data.get("subtitles", []) if isinstance(data, dict) else []
 
-        
         texts = []
         for item in raw_items:
             if isinstance(item, dict) and "text" in item:
@@ -158,18 +165,10 @@ JSON만 반환해.
             elif isinstance(item, str):
                 texts.append(item)
 
-        
-        
-        
-        
-
-        
-        
-        
         print(texts)
         return texts
 
     except Exception as e:
-        
+
         print(f"[extract_subtitles_with_ai] OpenAI 호출 실패 -> 룰기반 백업 사용: {e}")
         return _rule_based_subtitles(full_text)[:max_items]

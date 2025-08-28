@@ -3,16 +3,14 @@ from __future__ import annotations
 import json
 import os
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from openai import OpenAI
-from analyzer import request_문장해체분석기
 from config import OPENAI_API_KEY
 from constants.Model import Model
 from mongodb_service import MongoDBService
 from prompts.get_gpt_prompt import GptPrompt
 from prompts.get_kkk_prompts import KkkPrompt
-from prompts.get_ko_prompt import getKoPrompt
 from prompts.get_system_prompt import get_system_prompt_v2
 from utils.categorize_keyword_with_ai import categorize_keyword_with_ai
 from utils.query_parser import parse_query
@@ -70,9 +68,6 @@ def gpt_5_gen(
 
     analysis_data: Dict[str, Any] = db_service.get_latest_analysis_data() or {}
 
-    unique_words: List[str] = analysis_data.get("unique_words", []) or []
-    sentences: List[str] = analysis_data.get("sentences", []) or []
-
     subtitles: List[str] = analysis_data.get("subtitles", []) or []
     expressions: Dict[str, List[str]] = analysis_data.get("expressions", {}) or {}
     parameters: Dict[str, List[str]] = analysis_data.get("parameters", {}) or {}
@@ -119,8 +114,8 @@ def gpt_5_gen(
 
 ---
 
-[분석 지시]
-아래 JSON 데이터는 참고 문서에서 추출한 화자/구성/스타일 분석 결과물입니다.  
+[참조 분석 지시]
+아래 JSON 데이터는 참조 문서에서 추출한 화자/구성/스타일 분석 결과물입니다.  
 원고 생성 시 반드시 다음 조건을 반영해야 합니다.  
 
 - "화자 지시"에 따른 인물 설정, 말투, 단어 빈도와 형태소 패턴을 그대로 따릅니다.  
@@ -138,6 +133,17 @@ def gpt_5_gen(
 아래는 분석 결과 JSON입니다.  
 
 {참조_분석_프롬프트}
+
+---
+
+[부제 예시]
+- 동일하게 사용하지 않습니다.
+- 이음세 혹은 표현을 살짝 변형해서 창의적으로 사용합니다.
+- 부제는 간결하게 한문장에 끝내야합니다.
+- 상단 참조 분석지시의 부제의 흐름과 부제 예시 데이터를 참고해서 작성합니다.
+- 부제는 본문과 자연스럽게 내용이 이어져야 합니다.
+
+{subtitles_str}
 
 ---
 
@@ -166,6 +172,7 @@ def gpt_5_gen(
     - 예시: 33평 -> 28평
     - 예시: 60L -> 90L
     - 예시: 50db -> 50db
+    - 예시: A씨 -> F씨
 
 ---
 
