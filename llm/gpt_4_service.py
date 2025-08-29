@@ -7,9 +7,9 @@ from typing import Any, Dict, List, Optional
 
 from openai import OpenAI
 from config import OPENAI_API_KEY
-from constants.Model import Model
+from _constants.Model import Model
 from mongodb_service import MongoDBService
-from prompts.get_gpt_prompt import GptPrompt
+from _prompts.get_gpt_prompt import GptPrompt
 from utils.categorize_keyword_with_ai import categorize_keyword_with_ai
 from utils.query_parser import parse_query
 
@@ -18,6 +18,7 @@ from analyzer.request_문장해체분석기 import get_문장해체
 
 
 model_name: str = Model.GPT4_1
+
 
 def gpt_4_gen(
     user_instructions: str,
@@ -38,55 +39,55 @@ def gpt_4_gen(
         Exception: OpenAI 호출 실패 등 기타 예외
     """
 
-    
     if not OPENAI_API_KEY:
         raise ValueError("OPENAI_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요.")
 
-    
-
-
-    
-    
     parsed = parse_query(user_instructions)
 
     # 문장해체 = get_문장해체(ref)
-    문장해체 = ''
-    
+    문장해체 = ""
 
-    if not parsed['keyword']:
+    if not parsed["keyword"]:
         raise
-    user_prompt: str = GptPrompt.gpt_4(parsed['keyword'])
+    user_prompt: str = GptPrompt.gpt_4(parsed["keyword"])
 
-    category = ''
+    category = ""
     if user_instructions:
         category = categorize_keyword_with_ai(user_instructions)
 
     if not category:
         category = os.getenv("MONGO_DB_NAME", "wedding")
-    
+
     db_service = MongoDBService()
 
     db_service.set_db_name(db_name=category)
 
-    print(f'지금 연결 된 DB: {db_service.db.name}')
+    print(f"지금 연결 된 DB: {db_service.db.name}")
 
     analysis_data: Dict[str, Any] = db_service.get_latest_analysis_data() or {}
 
     unique_words: List[str] = analysis_data.get("unique_words", []) or []
     sentences: List[str] = analysis_data.get("sentences", []) or []
 
-    subtitles: List[str] = analysis_data.get('subtitles', []) or []
+    subtitles: List[str] = analysis_data.get("subtitles", []) or []
     expressions: Dict[str, List[str]] = analysis_data.get("expressions", {}) or {}
     parameters: Dict[str, List[str]] = analysis_data.get("parameters", {}) or {}
-    templates  = analysis_data.get("templates", []) or []
+    templates = analysis_data.get("templates", []) or []
 
+    subtitles_str: str = (
+        json.dumps(subtitles, ensure_ascii=False, indent=2) if expressions else "없음"
+    )
+    expressions_str: str = (
+        json.dumps(expressions, ensure_ascii=False, indent=2) if expressions else "없음"
+    )
+    parameters_str: str = (
+        json.dumps(parameters, ensure_ascii=False, indent=2) if parameters else "없음"
+    )
+    templates_str = (
+        json.dumps(templates, ensure_ascii=False, indent=2) if templates else "없음"
+    )
 
-    subtitles_str: str = json.dumps(subtitles, ensure_ascii=False, indent=2) if expressions else "없음"
-    expressions_str: str = json.dumps(expressions, ensure_ascii=False, indent=2) if expressions else "없음"
-    parameters_str: str = json.dumps(parameters, ensure_ascii=False, indent=2) if parameters else "없음"
-    templates_str  = json.dumps(templates,  ensure_ascii=False, indent=2) if templates  else "없음"
-
-    _분석본 = f'''
+    _분석본 = f"""
 [분석 지시]
 아래 JSON 데이터는 참고 문서에서 추출한 화자/구성/스타일 분석 결과물입니다.  
 원고 생성 시 반드시 다음 조건을 반영해야 합니다.  
@@ -99,9 +100,9 @@ def gpt_4_gen(
 아래는 분석 결과 JSON입니다.  
 
 {문장해체}
-'''
+"""
 
-    _mongo_data = f'''
+    _mongo_data = f"""
 
 ---
 
@@ -131,10 +132,10 @@ def gpt_4_gen(
 {parameters_str}
 
 ---
-'''
+"""
 
-
-    prompt: str = f"""
+    prompt: str = (
+        f"""
 
 {_mongo_data}
 
@@ -153,8 +154,9 @@ def gpt_4_gen(
 [요청]
 {user_prompt}
 """.strip()
+    )
     print(parsed)
-    
+
     client = OpenAI(api_key=OPENAI_API_KEY)
 
     try:
@@ -162,7 +164,10 @@ def gpt_4_gen(
         response = client.chat.completions.create(
             model=model_name,
             messages=[
-                {"role": "system", "content": "You are a professional blog post writer."},
+                {
+                    "role": "system",
+                    "content": "You are a professional blog post writer.",
+                },
                 {"role": "user", "content": prompt},
             ],
         )
@@ -174,7 +179,6 @@ def gpt_4_gen(
             total_tokens = getattr(usage, "total_tokens", None)
             print(f"tokens in={in_tokens}, out={out_tokens}, total={total_tokens}")
 
-        
         choices = getattr(response, "choices", []) or []
         if not choices or not getattr(choices[0], "message", None):
             raise RuntimeError("모델이 유효한 choices/message를 반환하지 않았습니다.")
@@ -189,6 +193,6 @@ def gpt_4_gen(
         return text
 
     except Exception as e:
-        
+
         print("OpenAI 호출 실패:", repr(e))
         raise

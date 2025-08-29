@@ -7,9 +7,9 @@ from typing import Any, Dict, List, Optional
 
 from openai import OpenAI
 from config import OPENAI_API_KEY
-from constants.Model import Model
+from _constants.Model import Model
 from mongodb_service import MongoDBService
-from prompts.get_gpt_prompt import GptPrompt
+from _prompts.get_gpt_prompt import GptPrompt
 from utils.categorize_keyword_with_ai import categorize_keyword_with_ai
 from utils.query_parser import parse_query
 

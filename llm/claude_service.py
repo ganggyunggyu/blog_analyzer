@@ -1,8 +1,9 @@
 import json
 import anthropic
 from config import CLAUDE_API_KEY
-from prompts.get_ko_prompt import getKoPrompt
+from _prompts.get_ko_prompt import getKoPrompt
 from utils.text_len import length_no_space, is_len_between  # ✅ 길이 검사 헬퍼
+
 
 def get_claude_response(
     unique_words: list,
@@ -10,13 +11,13 @@ def get_claude_response(
     expressions: dict,
     parameters: dict,
     user_instructions: str,
-    ref: str = '',
+    ref: str = "",
     *,
     min_length_no_space: int = 1700,
     max_length_no_space: int = 2000,
     max_retry: int = 3,
     model: str = "claude-opus-4-1-20250805",
-    max_tokens: int = 3000
+    max_tokens: int = 3000,
 ) -> str:
     """
     Claude로 원고 생성. 공백 제외 길이가 [min, max] 이내가 아니면 최대 max_retry까지 재시도.
@@ -29,8 +30,12 @@ def get_claude_response(
 
     words_str = ", ".join(unique_words) if unique_words else "없음"
     sentences_str = "\n- ".join(sentences) if sentences else "없음"
-    expressions_str = json.dumps(expressions, ensure_ascii=False, indent=2) if expressions else "없음"
-    parameters_str = json.dumps(parameters, ensure_ascii=False, indent=2) if parameters else "없음"
+    expressions_str = (
+        json.dumps(expressions, ensure_ascii=False, indent=2) if expressions else "없음"
+    )
+    parameters_str = (
+        json.dumps(parameters, ensure_ascii=False, indent=2) if parameters else "없음"
+    )
 
     prompt = f"""
     [고유 단어 리스트]
@@ -82,7 +87,9 @@ def get_claude_response(
             n = length_no_space(text)
             print(f"[Claude 시도 {retry+1}] 공백 제외 길이: {n}")
 
-            if is_len_between(text, min_length_no_space, max_length_no_space, inclusive=True):
+            if is_len_between(
+                text, min_length_no_space, max_length_no_space, inclusive=True
+            ):
                 print("✅ Claude 조건 충족 — 문서 생성 완료")
                 return text
 
@@ -92,7 +99,9 @@ def get_claude_response(
                 best_distance = dist
                 best_result = text
 
-            print(f"⚠ Claude 길이 {min_length_no_space}~{max_length_no_space} 밖 — 재시도")
+            print(
+                f"⚠ Claude 길이 {min_length_no_space}~{max_length_no_space} 밖 — 재시도"
+            )
             retry += 1
 
         except Exception as e:

@@ -1,6 +1,6 @@
 import json
 
-# import word_role from 'prompts'
+from _rule import WORD_RULES
 
 
 class GptPrompt:
@@ -554,37 +554,13 @@ assert 2200 <= n <= 2400, flength={{n}}
         note: str | None = "",
     ) -> str:
 
-        형태소 = {
-            "rule": "모든 단어나 동일한 표현이 절대 4개 이상 넘어가면 안됨",
-            "guideline": [
-                "다양한 표현 사용으로 반복적 단어/문장 피하기",
-                "중복 사용을 줄이고 문맥에 맞는 대체어 활용",
-            ],
-            "example": {
-                "keyword": "증거",
-                "alternatives": [
-                    {"word": "자료", "context": "포괄적이고 일상적인 표현"},
-                    {"word": "입증 자료", "context": "법적 입증에 초점"},
-                    {"word": "증빙", "context": "행정/법적 절차에서 자주 쓰는 말"},
-                    {"word": "기록", "context": "캡처, 녹취 등 남겨진 흔적에 적합"},
-                    {"word": "근거", "context": "논리적·법적 주장 뒷받침"},
-                    {"word": "정황", "context": "직접 증거가 아니더라도 상황 설명"},
-                ],
-            },
-            "example2": {
-                "keyword": "위고비",
-                "alternatives": [{"word": "Wegovy", "context": "위고비의 영어단어"}],
-            },
-        }
-
         return f"""
 키워드: {keyword}  
 
 [지시사항]
 
 - 키워드는 한 곳에 집중해서 작성하지 않고 글 초, 중, 후반에 적절히 배치합니다.
-
-{json.dumps(형태소, ensure_ascii=False, indent=2)}
+  - 예시: {json.dumps(WORD_RULES, ensure_ascii=False, indent=2)}
 
 - 글 분량  
   - 공백 제외 {min_length}~{max_length}자  

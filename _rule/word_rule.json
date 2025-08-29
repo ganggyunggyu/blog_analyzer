@@ -1,0 +1,111 @@
+{
+  "rule": "모든 단어나 동일한 표현이 절대 4개 이상 넘어가면 안됨",
+  "guideline": [
+    "다양한 표현 사용으로 반복적 단어/문장 피하기",
+    "중복 사용을 줄이고 문맥에 맞는 대체어 활용",
+    "아래의 예시를 참고하세요."
+  ],
+  "examples": [
+    {
+      "keyword": "증거",
+      "alternatives": [
+        { "word": "자료", "context": "포괄적이고 일상적인 표현" },
+        { "word": "입증 자료", "context": "법적 입증에 초점" },
+        { "word": "증빙", "context": "행정/법적 절차에서 자주 쓰는 말" },
+        { "word": "기록", "context": "캡처, 녹취 등 흔적" },
+        { "word": "근거", "context": "논리적·법적 주장 뒷받침" },
+        { "word": "정황", "context": "직접 증거가 아니더라도 상황 설명" }
+      ]
+    },
+    {
+      "keyword": "위고비",
+      "alternatives": [
+        { "word": "Wegovy", "context": "위고비의 영어단어" },
+        { "word": "비만 치료제", "context": "의학적 효능 설명" },
+        { "word": "GLP-1 주사제", "context": "작용 기전 기반 표현" },
+        { "word": "체중 감량 주사", "context": "일상적 표현" }
+      ]
+    },
+    {
+      "keyword": "효과",
+      "alternatives": [
+        { "word": "결과", "context": "중립적·사실 기반" },
+        { "word": "영향", "context": "긍정/부정 모두 포함" },
+        { "word": "성과", "context": "긍정적 성취 강조" },
+        { "word": "작용", "context": "의약품·기능적 맥락" },
+        { "word": "효능", "context": "의학·약리학적 맥락" },
+        { "word": "결실", "context": "비유적·성과 중심" }
+      ]
+    },
+    {
+      "keyword": "부작용",
+      "alternatives": [
+        { "word": "이상 반응", "context": "의학적으로 공식적인 용어" },
+        { "word": "예상치 못한 반응", "context": "일상적 설명" },
+        { "word": "불편함", "context": "경미한 상황 묘사" },
+        { "word": "위험 요인", "context": "잠재적 리스크 강조" },
+        { "word": "부정적 영향", "context": "광범위한 대체 표현" }
+      ]
+    },
+    {
+      "keyword": "검사",
+      "alternatives": [
+        { "word": "테스트", "context": "일상적·간단한 맥락" },
+        { "word": "진단", "context": "의학적·정밀 맥락" },
+        { "word": "측정", "context": "수치화·수량화 강조" },
+        { "word": "평가", "context": "결과 확인 중심" },
+        { "word": "체크", "context": "일상 대화체" }
+      ]
+    },
+    {
+      "keyword": "치료",
+      "alternatives": [
+        { "word": "요법", "context": "전문적·의학적 표현" },
+        { "word": "시술", "context": "의료 현장에서 쓰는 말" },
+        { "word": "관리", "context": "생활 습관 중심" },
+        { "word": "회복 과정", "context": "일상적 설명" },
+        { "word": "치유", "context": "자연적·심리적 맥락" }
+      ]
+    },
+    {
+      "keyword": "가격",
+      "alternatives": [
+        { "word": "비용", "context": "공식적·계산적 표현" },
+        { "word": "금액", "context": "숫자 기반 표현" },
+        { "word": "지출", "context": "소비자 입장 강조" },
+        { "word": "비싸다/저렴하다", "context": "일상적 감각" },
+        { "word": "투자", "context": "가치 대비 표현" }
+      ]
+    },
+    {
+      "keyword": "리뷰",
+      "alternatives": [
+        { "word": "후기", "context": "소비자 경험 기반" },
+        { "word": "평가", "context": "객관적 결과 설명" },
+        { "word": "체험담", "context": "개인 경험 강조" },
+        { "word": "사용 기록", "context": "기록 기반 표현" },
+        { "word": "소감", "context": "주관적 감정 포함" }
+      ]
+    },
+    {
+      "keyword": "추천",
+      "alternatives": [
+        { "word": "권장", "context": "공식적·격식 있는 표현" },
+        { "word": "제안", "context": "중립적·비공식적 표현" },
+        { "word": "권유", "context": "상대에게 권하는 맥락" },
+        { "word": "소개", "context": "알려주거나 안내할 때" },
+        { "word": "선호", "context": "개인적 선택에 초점" }
+      ]
+    },
+    {
+      "keyword": "증상",
+      "alternatives": [
+        { "word": "징후", "context": "의학적·공식 표현" },
+        { "word": "현상", "context": "넓은 맥락에서 사용 가능" },
+        { "word": "반응", "context": "즉각적 변화" },
+        { "word": "이상 징후", "context": "부정적 의미 강조" },
+        { "word": "상태", "context": "일반적 묘사" }
+      ]
+    }
+  ]
+}

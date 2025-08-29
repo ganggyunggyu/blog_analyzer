@@ -1,6 +1,6 @@
 from openai import OpenAI
 import os
-from constants.Model import Model
+from _constants.Model import Model
 from textwrap import dedent
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))

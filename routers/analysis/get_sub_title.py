@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from openai import OpenAI
 from config import OPENAI_API_KEY
-from constants.Model import Model
+from _constants.Model import Model
 
 router = APIRouter(prefix="/analysis", tags=["analysis"])
 client = OpenAI(api_key=OPENAI_API_KEY)

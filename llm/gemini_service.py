@@ -7,11 +7,11 @@ from typing import Any, Dict, List
 from openai import OpenAI
 from analyzer.request_문장해체분석기 import get_문장해체
 from config import OPENAI_API_KEY
-from constants.Model import Model
+from _constants.Model import Model
 from mongodb_service import MongoDBService
-from prompts.get_gpt_prompt import GptPrompt
-from prompts.get_gemini_prompt import get_gemini_v2_prompt
-from prompts.get_system_prompt import get_system_prompt
+from _prompts.get_gpt_prompt import GptPrompt
+from _prompts.get_gemini_prompt import get_gemini_v2_prompt
+from _prompts.get_system_prompt import get_system_prompt
 
 from config import GEMINI_API_KEY
 
