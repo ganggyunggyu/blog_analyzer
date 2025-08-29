@@ -61,12 +61,10 @@ def gpt_5_gen(
 
     참조분석 = get_문장해체(ref)
 
-    # if category == "legalese":
-    #     기본_프롬프트 = KkkPrompt.kkk_prompt_gpt_5(parsed["keyword"])
-    # else:
-    #     기본_프롬프트 = GptPrompt.gpt_5_v2(parsed["keyword"])
-
-    기본_프롬프트 = KkkPrompt.kkk_prompt_gpt_5(parsed["keyword"])
+    if category == "legalese":
+        기본_프롬프트 = KkkPrompt.kkk_prompt_gpt_5(parsed["keyword"])
+    else:
+        기본_프롬프트 = GptPrompt.gpt_5_v2(parsed["keyword"])
 
     analysis_data: Dict[str, Any] = db_service.get_latest_analysis_data() or {}
 
