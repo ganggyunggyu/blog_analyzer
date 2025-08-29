@@ -1,3 +1,8 @@
+import json
+
+# import word_role from 'prompts'
+
+
 class GptPrompt:
     """
     블로그 원고 작성용 프롬프트 생성기
@@ -544,29 +549,42 @@ assert 2200 <= n <= 2400, flength={{n}}
     @staticmethod
     def gpt_5_v2(
         keyword: str | None = "",
-        min_length: int | None = 2000,
-        max_length: int | None = 2100,
+        min_length: int | None = 2300,
+        max_length: int | None = 2400,
         note: str | None = "",
     ) -> str:
+
+        형태소 = {
+            "rule": "모든 단어나 동일한 표현이 절대 4개 이상 넘어가면 안됨",
+            "guideline": [
+                "다양한 표현 사용으로 반복적 단어/문장 피하기",
+                "중복 사용을 줄이고 문맥에 맞는 대체어 활용",
+            ],
+            "example": {
+                "keyword": "증거",
+                "alternatives": [
+                    {"word": "자료", "context": "포괄적이고 일상적인 표현"},
+                    {"word": "입증 자료", "context": "법적 입증에 초점"},
+                    {"word": "증빙", "context": "행정/법적 절차에서 자주 쓰는 말"},
+                    {"word": "기록", "context": "캡처, 녹취 등 남겨진 흔적에 적합"},
+                    {"word": "근거", "context": "논리적·법적 주장 뒷받침"},
+                    {"word": "정황", "context": "직접 증거가 아니더라도 상황 설명"},
+                ],
+            },
+            "example2": {
+                "keyword": "위고비",
+                "alternatives": [{"word": "Wegovy", "context": "위고비의 영어단어"}],
+            },
+        }
+
         return f"""
 키워드: {keyword}  
 
 [지시사항]
 
 - 키워드는 한 곳에 집중해서 작성하지 않고 글 초, 중, 후반에 적절히 배치합니다.
-- 키워드 제외하고 다른 단어나 동일한 표현이 절대 5개 이상 넘어가면 안됩니다.
-   - 다양한 표현 사용으로 반복적으로 겹치는 단어 및 문장 사용을 하지 않도록 합니다.
-   - 예시: "증거"라는 단어(형태소)가 있다면? 
-      `
-      법률/수사 맥락에서 쓸 수 있는 대체어
-	•	자료 → 좀 더 포괄적이고 일상적인 표현
-	•	입증 자료 → 법적 입증에 초점
-	•	증빙 → 행정/법적 절차에서 자주 쓰는 말
-	•	기록 → 캡처, 녹취 같은 걸 담을 때 적합
-	•	근거 → 논리적·법적 주장 뒷받침할 때 적합
-	•	정황 → 직접 증거가 아니더라도 상황을 나타낼 때
-      `
-      위 키워드 등으로 대체 가능합니다.
+
+{json.dumps(형태소, ensure_ascii=False, indent=2)}
 
 - 글 분량  
   - 공백 제외 {min_length}~{max_length}자  
