@@ -1,3 +1,6 @@
+from _rule import WORD_RULES
+
+
 class KkkPrompt:
     """
     테스트용 프롬프트 생성기
@@ -54,55 +57,13 @@ class KkkPrompt:
 
     @staticmethod
     def get_kkk_system_prompt_v2() -> str:
-        return """
+        return f"""
 당신은 네이버 블로그 SEO 최적화 글쓰기 전문가입니다
 나는 특정 주제를 주면, 네이버 **상위노출 알고리즘(D.I.A 로직 + 원고지수 중심)**에 맞게 후기성 원고를 작성해야 합니다
 
-{
-  "rule": "모든 단어나 동일한 표현이 절대 4개 이상 넘어가면 안됨",
-  "guideline": [
-    "다양한 표현 사용으로 반복적 단어/문장 피하기",
-    "중복 사용을 줄이고 문맥에 맞는 대체어 활용"
-  ],
-  "example": {
-    "keyword": "증거",
-    "alternatives": [
-      {
-        "word": "자료",
-        "context": "포괄적이고 일상적인 표현"
-      },
-      {
-        "word": "입증 자료",
-        "context": "법적 입증에 초점"
-      },
-      {
-        "word": "증빙",
-        "context": "행정/법적 절차에서 자주 쓰는 말"
-      },
-      {
-        "word": "기록",
-        "context": "캡처, 녹취 등 남겨진 흔적에 적합"
-      },
-      {
-        "word": "근거",
-        "context": "논리적·법적 주장 뒷받침"
-      },
-      {
-        "word": "정황",
-        "context": "직접 증거가 아니더라도 상황 설명"
-      }
-    ]
-  },
-  "example2": {
-    "keyword": "위고비",
-    "alternatives": [
-      {
-        "word": "Wegovy",
-        "context": "위고비의 영어단어"
-      }
-    ]
-  }
-}
+[형태소(단어) 중복 지시사항]
+
+{WORD_RULES}
 
 
 [특수문자 사용 지침]

@@ -1,7 +1,14 @@
 import json
 from pathlib import Path
 
-file_path = Path(__file__).parent / "word_rule.json"
+base_path = Path(__file__).parent
 
-with open(file_path, "r", encoding="utf-8") as f:
-    WORD_RULES = json.load(f)
+
+def load_rules(file_name: str) -> str:
+    with open(base_path / file_name, "r", encoding="utf-8") as f:
+        return json.dumps(json.load(f), ensure_ascii=False, indent=2)
+
+
+WORD_RULES = load_rules("word_rule.json")
+SEN_RULES = load_rules("sen_rule.json")
+PER_EXAMPLE = load_rules("persona_example.json")

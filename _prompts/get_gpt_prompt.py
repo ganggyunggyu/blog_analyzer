@@ -560,7 +560,7 @@ assert 2200 <= n <= 2400, flength={{n}}
 [지시사항]
 
 - 키워드는 한 곳에 집중해서 작성하지 않고 글 초, 중, 후반에 적절히 배치합니다.
-  - 예시: {json.dumps(WORD_RULES, ensure_ascii=False, indent=2)}
+  - 예시: {WORD_RULES}
 
 - 글 분량  
   - 공백 제외 {min_length}~{max_length}자  
