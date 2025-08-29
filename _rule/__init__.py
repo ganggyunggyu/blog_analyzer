@@ -12,3 +12,4 @@ def load_rules(file_name: str) -> str:
 WORD_RULES = load_rules("word_rule.json")
 SEN_RULES = load_rules("sen_rule.json")
 PER_EXAMPLE = load_rules("persona_example.json")
+STORY_RULE = load_rules("story_rule.json")

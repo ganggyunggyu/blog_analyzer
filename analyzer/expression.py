@@ -2,11 +2,14 @@ import re
 from openai import OpenAI
 import json
 from config import OPENAI_API_KEY
-from constants.Model import Model
+from _constants.Model import Model
+
 
 def extract_expressions_with_ai(text: str) -> dict:
     if not OPENAI_API_KEY:
-        raise ValueError("API 키가 설정되지 않았습니다. .env 파일에 OPENAI_API_KEY를 추가해주세요.")
+        raise ValueError(
+            "API 키가 설정되지 않았습니다. .env 파일에 OPENAI_API_KEY를 추가해주세요."
+        )
 
     client = OpenAI(api_key=OPENAI_API_KEY)
 
@@ -34,12 +37,11 @@ def extract_expressions_with_ai(text: str) -> dict:
             messages=[
                 {
                     "role": "system",
-                    "content": "You are an expert in marketing content analysis. Your task is to extract useful expressions from the given text, categorize them into mid-level categories, and return them in a JSON format of 'category_key': ['expression1', 'expression2']."
+                    "content": "You are an expert in marketing content analysis. Your task is to extract useful expressions from the given text, categorize them into mid-level categories, and return them in a JSON format of 'category_key': ['expression1', 'expression2'].",
                 },
-                {"role": "user", "content": prompt}
+                {"role": "user", "content": prompt},
             ],
             # temperature=0.5,
-            
         )
 
         content = response.choices[0].message.content

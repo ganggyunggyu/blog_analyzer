@@ -7,7 +7,7 @@ from typing import Dict, Any, Optional
 
 from openai import OpenAI
 from config import OPENAI_API_KEY
-from constants.Model import Model
+from _constants.Model import Model
 
 _DEFAULT_MODEL = Model.GPT5_MINI
 
@@ -19,7 +19,12 @@ def _extract_json_block(text: str) -> Optional[str]:
 
     # 코드펜스 제거
     if text.strip().startswith("```"):
-        text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text.strip(), flags=re.IGNORECASE | re.DOTALL)
+        text = re.sub(
+            r"^```(?:json)?\s*|\s*```$",
+            "",
+            text.strip(),
+            flags=re.IGNORECASE | re.DOTALL,
+        )
 
     # 전체가 JSON이면 그대로
     try:
@@ -55,7 +60,9 @@ def extract_and_group_entities_with_ai(
         Dict[str, list]  예) {"상호명": ["땀땀","토끼정"], "제품명": ["갤럭시S24","아이폰16"]}
     """
     if not OPENAI_API_KEY:
-        raise ValueError("API 키가 설정되지 않았습니다. .env 파일에 OPENAI_API_KEY를 추가해주세요.")
+        raise ValueError(
+            "API 키가 설정되지 않았습니다. .env 파일에 OPENAI_API_KEY를 추가해주세요."
+        )
 
     client = client or OpenAI(api_key=OPENAI_API_KEY)
 

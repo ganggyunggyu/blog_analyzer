@@ -7,7 +7,7 @@ from typing import List, Dict, Any, Optional
 from openai import OpenAI
 from config import OPENAI_API_KEY
 
-from constants.Model import Model
+from _constants.Model import Model
 
 _DEFAULT_MODEL = Model.GPT5_MINI
 
