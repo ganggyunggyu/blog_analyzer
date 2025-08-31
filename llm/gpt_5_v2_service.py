@@ -66,6 +66,8 @@ def gpt_5_gen(
     else:
         기본_프롬프트 = GptPrompt.gpt_5_v2(parsed["keyword"])
 
+    # 기본_프롬프트 = KkkPrompt.kkk_prompt_gpt_5(parsed["keyword"])
+
     analysis_data: Dict[str, Any] = db_service.get_latest_analysis_data() or {}
 
     subtitles: List[str] = analysis_data.get("subtitles", []) or []

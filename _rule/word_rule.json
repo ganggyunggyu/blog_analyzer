@@ -153,6 +153,111 @@
         { "word": "확보", "context": "필수 자원을 지켜냄" },
         { "word": "존속", "context": "법적·제도적으로 계속 살아있음" }
       ]
+    },
+    {
+      "keyword": "그리고",
+      "alternatives": [
+        { "word": "또", "context": "간단한 나열" },
+        { "word": "게다가", "context": "강조된 추가" },
+        { "word": "뿐만 아니라", "context": "격식 있고 강조" },
+        { "word": "아울러", "context": "공식/문어체" },
+        { "word": "동시에", "context": "병렬적 사건" },
+        { "word": "함께", "context": "행동·상태 동반" },
+        { "word": "거기에", "context": "보태는 의미" },
+        { "word": "그리고 나서", "context": "순차적 연결" },
+        { "word": "이어서", "context": "시간적 연속" },
+        { "word": "연이어", "context": "끊김 없는 연결" },
+        { "word": "뿐더러", "context": "격식·강조" },
+        { "word": "또한", "context": "서술적 강조" },
+        { "word": "게다가 말이지", "context": "구어체 강조" },
+        { "word": "그뿐만 아니라", "context": "더 큰 확장" },
+        { "word": "뿐만 아니고", "context": "대화체" },
+        { "word": "거기다", "context": "친근한 구어체" }
+      ]
+    },
+    {
+      "keyword": "그리고",
+      "alternatives": [
+        { "word": "또", "context": "간단한 나열" },
+        { "word": "게다가", "context": "강조된 추가" },
+        { "word": "뿐만 아니라", "context": "격식 있고 강조" },
+        { "word": "아울러", "context": "공식/문어체" },
+        { "word": "동시에", "context": "병렬적 사건" },
+        { "word": "함께", "context": "행동·상태 동반" },
+        { "word": "거기에", "context": "보태는 의미" },
+        { "word": "그리고 나서", "context": "순차적 연결" },
+        { "word": "이어서", "context": "시간적 연속" },
+        { "word": "연이어", "context": "끊김 없는 연결" },
+        { "word": "뿐더러", "context": "격식·강조" },
+        { "word": "또한", "context": "서술적 강조" },
+        { "word": "게다가 말이지", "context": "구어체 강조" },
+        { "word": "그뿐만 아니라", "context": "더 큰 확장" },
+        { "word": "뿐만 아니고", "context": "대화체" },
+        { "word": "거기다", "context": "친근한 구어체" }
+      ]
+    },
+    {
+      "keyword": "보다",
+      "alternatives": [
+        { "word": "살펴보다", "context": "정밀 관찰" },
+        { "word": "관찰하다", "context": "객관적·과학적 맥락" },
+        { "word": "바라보다", "context": "거리감 있는 시선" },
+        { "word": "지켜보다", "context": "지속적 관찰" },
+        { "word": "확인하다", "context": "사실 점검" },
+        { "word": "검토하다", "context": "공식 문서·자료" },
+        { "word": "읽다", "context": "텍스트 맥락" },
+        { "word": "들여다보다", "context": "깊이 탐색" },
+        { "word": "분석하다", "context": "데이터·상황 판단" },
+        { "word": "살피다", "context": "보살핌·배려 맥락" },
+        { "word": "조망하다", "context": "넓은 시각" },
+        { "word": "응시하다", "context": "집중된 시선" },
+        { "word": "감시하다", "context": "통제·통찰" }
+      ]
+    },
+    {
+      "keyword": "그래서",
+      "alternatives": [
+        { "word": "따라서", "context": "격식·논리 연결" },
+        { "word": "그러므로", "context": "문어체·결론 강조" },
+        { "word": "그 결과", "context": "원인-결과 구조" },
+        { "word": "결국", "context": "최종 귀결" },
+        { "word": "이에 따라", "context": "공식 문서체" },
+        { "word": "그래서 그런지", "context": "구어체 원인 추측" },
+        { "word": "그렇기 때문에", "context": "강조형 연결" },
+        { "word": "그 탓에", "context": "부정적 결과" },
+        { "word": "덕분에", "context": "긍정적 결과" },
+        { "word": "그 까닭에", "context": "격식 있는 원인" },
+        { "word": "그로 인해", "context": "사건 연결" },
+        { "word": "결과적으로", "context": "분석·정리" }
+      ]
+    },
+    {
+      "keyword": "또한",
+      "alternatives": [
+        { "word": "게다가", "context": "추가 강조" },
+        { "word": "아울러", "context": "격식 문체" },
+        { "word": "뿐만 아니라", "context": "확장 강조" },
+        { "word": "더불어", "context": "함께 강조" },
+        { "word": "같이", "context": "일상 구어" },
+        { "word": "마찬가지로", "context": "비교 강조" },
+        { "word": "동시에", "context": "시간·조건 병렬" },
+        { "word": "그 외에도", "context": "추가 나열" },
+        { "word": "곁들여", "context": "부수적 덧붙임" }
+      ]
+    },
+    {
+      "keyword": "있다",
+      "alternatives": [
+        { "word": "존재하다", "context": "격식적 존재 표현" },
+        { "word": "자리하다", "context": "위치 맥락" },
+        { "word": "위치하다", "context": "지리·구조 맥락" },
+        { "word": "남아 있다", "context": "잔여 상태" },
+        { "word": "머물다", "context": "시간·공간 체류" },
+        { "word": "살아있다", "context": "생명·생존" },
+        { "word": "놓여 있다", "context": "사물 배치" },
+        { "word": "지속되다", "context": "상태 유지" },
+        { "word": "발견되다", "context": "새로 확인됨" }
+      ]
     }
   ]
 }
