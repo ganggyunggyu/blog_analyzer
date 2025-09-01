@@ -11,15 +11,12 @@ from _prompts.service.get_mongo_prompt import get_mongo_prompt
 from utils.query_parser import parse_query
 
 
-model_name: str = Model.GPT5
+model_name: str = Model.GPT4_1
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 
-def kkk_gen(
-    user_instructions: str,
-    ref: str = "",
-) -> str:
+def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     """
     Returns:
         생성된 원고 텍스트 (str)
@@ -40,29 +37,27 @@ def kkk_gen(
     if not parsed["keyword"]:
         raise ValueError("키워드가 없습니다.")
 
-    기본_프롬프트 = GptPrompt.gpt_5_v2_kkk(
+    기본_프롬프트 = KkkPrompt.kkk_prompt_gpt_5(
         keyword=parsed["keyword"],
         note=parsed.get("note", ""),
     )
     참조_분석_프롬프트 = get_ref_prompt(ref)
 
-    system = KkkPrompt.get_kkk_system_prompt_v2()
+    system = KkkPrompt.get_kkk_system_prompt_v2(category)
 
-    _mongo_data = get_mongo_prompt()
+    # _mongo_data = get_mongo_prompt()
 
     user: str = (
         f"""
 
----
-
 {system}
 
+---
 [참조 문서]
 - 참조 문서의 업체명은 절대 원고에 포함하지 않습니다.
 - 참조 문서와 동일하게 작성하지 않습니다.
 - 아래의 분석본과 함께 사용해서 전체적인 흐름과 화자의 어투를 유사하게 가져갑니다.
 - 없다면 넘어갑니다.
-- 부제는 하단 참조 원고 분석의 내용을 그대로 사용합니다.
 
 {ref}
 
@@ -84,6 +79,7 @@ def kkk_gen(
     )
 
     print(f"KKK Service 파싱 결과: {parsed}")
+    # print(참조_분석_프롬프트)
 
     try:
         print(f"KKK GPT 생성 시작 | keyword={user_instructions!r} | model={model_name}")
@@ -92,11 +88,12 @@ def kkk_gen(
             messages=[
                 {
                     "role": "system",
-                    "content": """당신은 네이버 블로그 SEO 최적화 글쓰기 전문가입니다
-특정 주제를 주면, 네이버 **상위노출 알고리즘(D.I.A 로직 + 원고지수 중심)**에 맞게 후기성 원고를 작성해야 합니다
-사람이 말하 듯 자연스럽게 말해야합니다""",
+                    "content": system,
                 },
-                {"role": "user", "content": user},
+                {
+                    "role": "user",
+                    "content": user,
+                },
             ],
         )
 

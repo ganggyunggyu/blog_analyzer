@@ -3,17 +3,14 @@ from _prompts.service.get_ref_prompt import get_ref_prompt
 from _rule import PER_EXAMPLE, SEN_RULES, STORY_RULE, WORD_RULES
 
 
-mongo_data = get_mongo_prompt()
-
-
 class KkkPrompt:
     """ """
 
     @staticmethod
     def kkk_prompt_gpt_5(
         keyword: str | None = "",
-        min_length: int | None = 2400,
-        max_length: int | None = 2600,
+        min_length: int | None = 1900,
+        max_length: int | None = 2100,
         note: str | None = "",
     ) -> str:
         return f"""
@@ -33,8 +30,16 @@ class KkkPrompt:
 """
 
     @staticmethod
-    def get_kkk_system_prompt_v2() -> str:
+    def get_kkk_system_prompt_v2(keyword: str) -> str:
+        mongo_data = get_mongo_prompt(keyword)
         return f"""
+당신은 네이버 블로그 SEO 최적화 글쓰기 전문가입니다
+나는 특정 주제를 주면, 네이버 **상위노출 알고리즘(D.I.A 로직 + 원고지수 중심)**에 맞게 후기성 원고를 작성해야 합니다
+
+- 본문 최상단에 부제 및 제목을 넣지 않는다.
+- 답변은 무조건 원고에 대한 내용으로만 한다.
+
+[데이터 활용 본]
 
 {mongo_data}
 
@@ -61,17 +66,14 @@ class KkkPrompt:
 - 한 줄은 50자를 넘기지 않도록 작성
 - 줄바꿈 시 반드시 이음세(그래서, 그리고, 또한, 하지만 등)를 활용하여 문장이 매끄럽게 이어지도록 할 것
    - {SEN_RULES}
-
+,가 아닌 줄바꿈을 합니다. ,가 나올때마다 줄바꿈 하지 않는다. 하단의 예시를 참고하여 가독성을 위해 원고를 인간이 읽기 편하도록 문장 흐름에 맞춰서 줄바꿈을 해줘야합니다. 한 줄당 30자 이후 자연스러운 줄바꿈, 모든 한 줄은 일정한 길이로 출력, 한줄 우측 공백 금지
 - 짧은 문장을 마구 끊지 말고 자연스럽게 흐르는 리듬으로 작성해야 함
 - 부제 하단은 줄바꿈 두 번
 - 2~3줄마다 줄바꿈
 - 한 문단은 3~5줄 유지
-- 문장의 끝에는 항상 "몽!"을 추가해
-   - 예시: 고의의 흔적을 표로 정리하면 진정성이 또렷해집니다 몽!
-   - 예시2: 이번 주에 한 번 시간을 내 보세요 몽!
 - 문장의 끝맺음은 다양하게 사용할 것
-   - '요', '봤답니다', '죠', '구요', '답니다', 등 여러 표현을 섞어 같은 어미가 3회 이상 반복되지 않도록 조정해야 함
-
+   - '요', '봤답니다', '했죠', '그랬었죠','있었죠, '그랬어요', '구요', '답니다', 등 여러 표현을 섞어 같은 어미가 3회 이상 반복되지 않도록 조정해야 함
+   
 [화자 및 스토리텔링 가이드]
 - 어떤 화자든 공손한 존댓말은 꼭 유지해야 합니다
 - 그래서 산업용 제습기 한 번 알아보기로 했다 (금지)

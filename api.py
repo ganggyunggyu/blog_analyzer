@@ -12,6 +12,7 @@ from routers.test import test
 from routers.generate import gemini, gpt, gpt_5, gpt_4_v2, gpt_5_v2, kkk
 from routers.category import keyword
 from routers.analysis import get_sub_title, upload_text
+from routers.ref import get_ref
 
 LLM_CONCURRENCY = int(os.getenv("LLM_CONCURRENCY", "3"))
 llm_semaphore = asyncio.Semaphore(LLM_CONCURRENCY)
@@ -38,3 +39,4 @@ app.include_router(gpt_4_v2.router)
 app.include_router(gpt_5_v2.router)
 app.include_router(kkk.router)
 app.include_router(upload_text.router)
+app.include_router(get_ref.router)

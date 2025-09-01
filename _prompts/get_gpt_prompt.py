@@ -760,9 +760,3 @@ assert 2200 <= n <= 2400, flength={{n}}
 {note}
 
 """
-
-    @staticmethod
-    def test(keyword: str) -> str:
-        return f"""
-         
-      """

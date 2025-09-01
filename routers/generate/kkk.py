@@ -5,6 +5,7 @@ from mongodb_service import MongoDBService
 from utils.categorize_keyword_with_ai import categorize_keyword_with_ai
 from schema.generate import GenerateRequest
 from llm.kkk_service import kkk_gen, model_name
+from utils.query_parser import parse_query
 
 
 router = APIRouter()
@@ -24,11 +25,13 @@ async def generator_kkk(request: GenerateRequest):
     db_service = MongoDBService()
     db_service.set_db_name(db_name=category)
 
+    is_ref = len(ref) != 0
+
     print(
         f"""
 서비스: {service}
 키워드: {request.keyword}
-참조문서 유무: {len(ref) != 0}
+참조문서 유무: {is_ref}
 선택된 카테고리: {category}
 KKK 테스트 모드 활성화
 """
@@ -36,25 +39,32 @@ KKK 테스트 모드 활성화
 
     try:
         generated_manuscript = await run_in_threadpool(
-            kkk_gen, user_instructions=keyword, ref=ref
+            kkk_gen, user_instructions=keyword, ref=ref, category=category
         )
 
         if generated_manuscript:
             import time
+
+            parsed = parse_query(keyword)
 
             current_time = time.time()
             document = {
                 "content": generated_manuscript,
                 "timestamp": current_time,
                 "engine": model_name,
-                "service": f"{service}_kkk_test",  # 테스트임을 명시
+                "service": f"{service}_kkk_test",
                 "category": category,
                 "keyword": keyword,
-                "test_mode": True,  # 테스트 모드 플래그
+                "test_mode": True,
             }
 
             try:
                 db_service.insert_document("manuscripts", document)
+
+                if is_ref:
+                    ref_document = {"content": ref, "keyword": parsed["keyword"]}
+                    db_service.insert_document("ref", ref_document)
+
                 document["_id"] = str(document["_id"])
 
                 return document
