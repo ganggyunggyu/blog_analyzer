@@ -258,6 +258,18 @@
         { "word": "지속되다", "context": "상태 유지" },
         { "word": "발견되다", "context": "새로 확인됨" }
       ]
+    },
+    {
+      "keyword": "자료",
+      "alternatives": [
+        { "word": "데이터", "context": "수치·통계 기반" },
+        { "word": "문서", "context": "형식화된 기록" },
+        { "word": "기록", "context": "남겨진 흔적·저장된 내용" },
+        { "word": "정보", "context": "일상적·광범위한 사용" },
+        { "word": "파일", "context": "디지털 형식 표현" },
+        { "word": "근거", "context": "논리·주장 뒷받침" },
+        { "word": "자료집", "context": "모아둔 형태 강조" }
+      ]
     }
   ]
 }

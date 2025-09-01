@@ -10,7 +10,7 @@ from llm.kkk_service import kkk_gen, model_name
 router = APIRouter()
 
 
-@router.post("/generate/kkk")
+@router.post("/generate/test")
 async def generator_kkk(request: GenerateRequest):
     """
     KKK 테스트용 텍스트 생성기
@@ -52,7 +52,7 @@ KKK 테스트 모드 활성화
                 "keyword": keyword,
                 "test_mode": True,  # 테스트 모드 플래그
             }
-            
+
             try:
                 db_service.insert_document("manuscripts", document)
                 document["_id"] = str(document["_id"])
