@@ -2,7 +2,7 @@ import anthropic
 import os
 from _prompts.get_claude_prompts import ClaudePrompt
 from config import CLAUDE_API_KEY
-from llm.claude_file_uploader import get_file_ids
+from _claude_file_uploader import get_file_ids
 from enum import Enum
 
 
