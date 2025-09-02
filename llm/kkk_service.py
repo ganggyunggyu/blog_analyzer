@@ -11,7 +11,7 @@ from _prompts.service.get_mongo_prompt import get_mongo_prompt
 from utils.query_parser import parse_query
 
 
-model_name: str = Model.GPT4_1
+model_name: str = Model.GPT5
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
@@ -44,8 +44,6 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     참조_분석_프롬프트 = get_ref_prompt(ref)
 
     system = KkkPrompt.get_kkk_system_prompt_v2(category)
-
-    # _mongo_data = get_mongo_prompt()
 
     user: str = (
         f"""

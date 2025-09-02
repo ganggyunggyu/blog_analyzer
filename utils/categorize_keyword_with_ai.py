@@ -26,6 +26,7 @@ def categorize_keyword_with_ai(keyword: str) -> str:
         "traval",
         "dentistry",
         "wedding",
+        "anime",
     ]
 
     prompt = f"""

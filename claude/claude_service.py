@@ -8,8 +8,6 @@ from typing import Any, Dict, List, Optional
 from analyzer.request_문장해체분석기 import get_문장해체
 from config import MONGO_DB_NAME
 from mongodb_service import MongoDBService
-from prompts.get_gpt_prompt import GptPrompt
-from prompts.get_system_prompt import get_system_prompt_v2
 from utils.categorize_keyword_with_ai import categorize_keyword_with_ai
 from utils.query_parser import parse_query
 
