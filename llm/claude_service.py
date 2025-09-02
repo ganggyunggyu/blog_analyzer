@@ -14,11 +14,13 @@ class ClaudeModel(Enum):
     HAIKU_3_5 = "claude-3-5-haiku-20241022"
 
 
-def claude_gen(keyword: str, ref: str = "") -> str:
+from anthropic._exceptions import BadRequestError, RateLimitError
 
+
+def claude_gen(keyword: str, ref: str = "") -> str:
     user = ClaudePrompt.get_user_prompt()
     system = ClaudePrompt.get_system_prompt()
-    model = ClaudeModel.HAIKU_3_5.value
+    model = ClaudeModel.SONNET_3_7.value
 
     client = anthropic.Anthropic(api_key=CLAUDE_API_KEY)
     file_ids = get_file_ids()
@@ -34,9 +36,9 @@ def claude_gen(keyword: str, ref: str = "") -> str:
         for fid in file_ids
     ]
 
-    print(document_blocks)
+    prompt = f"""
+{user}
 
-    user = f"""
 [키워드]
 {keyword}
 
@@ -44,28 +46,44 @@ def claude_gen(keyword: str, ref: str = "") -> str:
 {ref}
 """
 
-    response = client.beta.messages.create(
-        model=model,
-        max_tokens=4000,
-        system=system,
-        messages=[
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "text",
-                        "text": user,
-                    },
-                    *document_blocks,
-                ],
-            }
-        ],
-        extra_headers={"anthropic-beta": "files-api-2025-04-14"},
-    )
+    try:
+        response = client.beta.messages.create(
+            model=model,
+            max_tokens=4000,
+            system=system,
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": prompt,
+                        },
+                        *document_blocks,
+                    ],
+                }
+            ],
+            extra_headers={"anthropic-beta": "files-api-2025-04-14"},
+        )
 
-    text_parts = []
-    for block in response.content:
-        if block.type == "text":
-            text_parts.append(block.text)
+        text_parts = []
+        for block in response.content:
+            if block.type == "text":
+                text_parts.append(block.text)
 
-    return "".join(text_parts).strip()
+        return "".join(text_parts).strip()
+
+    except (BadRequestError, RateLimitError) as e:
+        if hasattr(e, "body") and isinstance(e.body, dict):
+            print(e.body)
+            usage = e.body.get("usage", {})
+            input_tokens = usage.get("input_tokens")
+            output_tokens = usage.get("output_tokens")
+            total = usage.get("total_tokens")
+
+            print("❌ Claude 호출 실패: 토큰 초과 또는 오류 발생")
+            print(f"입력 토큰 수: {input_tokens}")
+            print(f"출력 토큰 수: {output_tokens}")
+            print(f"총합 토큰 수: {total}")
+
+        raise e  # 필요 시 에러 다시 raise

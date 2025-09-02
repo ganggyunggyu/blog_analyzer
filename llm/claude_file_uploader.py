@@ -1,8 +1,7 @@
 import anthropic
 
-from config import CLAUDE_API_KEY
 
-APP_KEY = CLAUDE_API_KEY
+APP_KEY = ""
 
 
 def file_upload(file_name):
@@ -53,11 +52,11 @@ def get_file_ids():
     return all_ids
 
 
-print(len(get_file_ids()))
-
-# for i in range(3, 61):
+# for i in range(1, 61):
 #     try:
 #         file_upload(str(i))
 #         print(f"{i}.txt 업로드 완료")
 #     except Exception as e:
 #         print(f"{i}.txt 업로드 실패: {e}")
+
+# print(len(get_file_ids()))
