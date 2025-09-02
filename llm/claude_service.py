@@ -20,7 +20,7 @@ from anthropic._exceptions import BadRequestError, RateLimitError
 def claude_gen(keyword: str, ref: str = "") -> str:
     user = ClaudePrompt.get_user_prompt()
     system = ClaudePrompt.get_system_prompt()
-    model = ClaudeModel.SONNET_3_7.value
+    model = ClaudeModel.OPUS_4_1.value
 
     client = anthropic.Anthropic(api_key=CLAUDE_API_KEY)
     file_ids = get_file_ids()
@@ -37,7 +37,7 @@ def claude_gen(keyword: str, ref: str = "") -> str:
     ]
 
     prompt = f"""
-
+[지시사항]
 {user}
 
 [키워드]
@@ -60,7 +60,7 @@ def claude_gen(keyword: str, ref: str = "") -> str:
                             "type": "text",
                             "text": prompt,
                         },
-                        *document_blocks,
+                        # *document_blocks,
                     ],
                 }
             ],
