@@ -13,7 +13,7 @@ from utils.get_category_dir import get_category_by_keyword
 from utils.text_cleaner import comprehensive_text_clean
 
 
-model_name: str = Model.GPT5_CHAT
+model_name: str = Model.GPT5
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
