@@ -7,7 +7,7 @@ from main import run_manuscript_generation
 from mongodb_service import MongoDBService
 
 from llm.gemini_service import get_gemini_response
-from utils.categorize_keyword_with_ai import categorize_keyword_with_ai
+from utils.get_category_db_name import get_category_db_name
 from typing import Optional
 from fastapi.concurrency import run_in_threadpool
 import asyncio
@@ -37,7 +37,7 @@ async def generate_manuscript_claude_api(request: GenerateRequest):
         raise HTTPException(status_code=400, detail="keyword는 필수입니다.")
 
     # 1) 카테고리 판별
-    category = categorize_keyword_with_ai(keyword=keyword)
+    category = get_category_db_name(keyword=keyword)
 
     db_service = MongoDBService()
     db_service.set_db_name(db_name=category)

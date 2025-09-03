@@ -2,7 +2,7 @@ from openai import OpenAI
 from config import OPENAI_API_KEY
 
 
-def categorize_keyword_with_ai(keyword: str) -> str:
+def get_category_db_name(keyword: str) -> str:
     """
     주어진 키워드를 AI를 사용하여 분석하고, 가장 적합한 카테고리를 반환합니다.
     """

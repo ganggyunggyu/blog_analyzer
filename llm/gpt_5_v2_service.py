@@ -12,7 +12,7 @@ from mongodb_service import MongoDBService
 from _prompts.get_gpt_prompt import GptPrompt
 from _prompts.get_kkk_prompts import KkkPrompt
 from _prompts.get_system_prompt import get_system_prompt_v2
-from utils.categorize_keyword_with_ai import categorize_keyword_with_ai
+from utils.get_category_db_name import get_category_db_name
 from utils.query_parser import parse_query
 
 from config import MONGO_DB_NAME
@@ -45,7 +45,7 @@ def gpt_5_gen(
 
     category = ""
     if user_instructions:
-        category = categorize_keyword_with_ai(user_instructions)
+        category = get_category_db_name(user_instructions)
 
     if not category:
         category = os.getenv("MONGO_DB_NAME", "wedding")

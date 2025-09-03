@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional
 from analyzer.request_문장해체분석기 import get_문장해체
 from config import MONGO_DB_NAME
 from mongodb_service import MongoDBService
-from utils.categorize_keyword_with_ai import categorize_keyword_with_ai
+from utils.get_category_db_name import get_category_db_name
 from utils.query_parser import parse_query
 
 

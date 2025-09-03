@@ -16,5 +16,3 @@ __pycache__/
 *.pem
 
 .DS_Store
-
-# _claude_file_uploader.py

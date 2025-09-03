@@ -1,20 +1,20 @@
 from fastapi import HTTPException, APIRouter
+from fastapi.concurrency import run_in_threadpool
 
 from mongodb_service import MongoDBService
 from utils.get_category_db_name import get_category_db_name
-from fastapi.concurrency import run_in_threadpool
-from fastapi.concurrency import run_in_threadpool
-
 from schema.generate import GenerateRequest
-from llm.gpt_4_v2_service import gpt_4_v2_gen, model_name
+from llm.my_service import my_gen, model_name
+from utils.query_parser import parse_query
+
 
 router = APIRouter()
 
 
-@router.post("/generate/gpt-4-v2")
-async def generator_gpt(request: GenerateRequest):
+@router.post("/generate/my")
+async def generator_my(request: GenerateRequest):
     """
-    Generates text using the specified service (gpt, claude, or solar).
+    MY 서비스 텍스트 생성기
     """
     service = request.service.lower()
     keyword = request.keyword.strip()
@@ -25,45 +25,57 @@ async def generator_gpt(request: GenerateRequest):
     db_service = MongoDBService()
     db_service.set_db_name(db_name=category)
 
+    is_ref = len(ref) != 0
+
     print(
         f"""
 서비스: {service}
 키워드: {request.keyword}
-참조문서 유무: {len(ref) != 0}
+참조문서 유무: {is_ref}
 선택된 카테고리: {category}
+MY 서비스 활성화
 """
     )
 
     try:
-
         generated_manuscript = await run_in_threadpool(
-            gpt_4_v2_gen, user_instructions=keyword, ref=ref
+            my_gen, user_instructions=keyword, ref=ref, category=category
         )
 
         if generated_manuscript:
             import time
+
+            parsed = parse_query(keyword)
 
             current_time = time.time()
             document = {
                 "content": generated_manuscript,
                 "timestamp": current_time,
                 "engine": model_name,
+                "service": f"{service}_my",
+                "category": category,
                 "keyword": keyword,
             }
+
             try:
                 db_service.insert_document("manuscripts", document)
+
+                if is_ref:
+                    ref_document = {"content": ref, "keyword": parsed["keyword"]}
+                    db_service.insert_document("ref", ref_document)
+
                 document["_id"] = str(document["_id"])
 
                 return document
             except Exception as e:
-                print(f"데이터베이스에 저장 실패: {e}")
+                print(f"MY 데이터베이스에 저장 실패: {e}")
         else:
             raise HTTPException(
                 status_code=500,
-                detail="원고 생성에 실패했습니다. 내부 로그를 확인하세요.",
+                detail="MY 원고 생성에 실패했습니다. 내부 로그를 확인하세요.",
             )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"원고 생성 중 오류 발생: {e}")
+        raise HTTPException(status_code=500, detail=f"MY 원고 생성 중 오류 발생: {e}")
     finally:
         if db_service:
             db_service.close_connection()

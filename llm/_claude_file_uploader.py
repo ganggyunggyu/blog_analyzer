@@ -5,8 +5,6 @@ from config import CLAUDE_API_KEY
 
 APP_KEY = CLAUDE_API_KEY
 
-print(APP_KEY)
-
 
 def file_upload(file_name):
     client = anthropic.Anthropic(api_key=APP_KEY)

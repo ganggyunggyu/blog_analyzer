@@ -3,7 +3,7 @@ from fastapi.concurrency import run_in_threadpool
 
 from llm.chunk_service import chunk_gen
 from mongodb_service import MongoDBService
-from utils.categorize_keyword_with_ai import categorize_keyword_with_ai
+from utils.get_category_db_name import get_category_db_name
 from schema.generate import GenerateRequest
 from llm.kkk_service import kkk_gen, model_name
 from utils.query_parser import parse_query
@@ -21,7 +21,7 @@ async def generator_kkk(request: GenerateRequest):
     keyword = request.keyword.strip()
     ref = request.ref
 
-    category = categorize_keyword_with_ai(keyword=keyword)
+    category = get_category_db_name(keyword=keyword)
 
     db_service = MongoDBService()
     db_service.set_db_name(db_name=category)

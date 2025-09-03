@@ -1,5 +1,5 @@
-from fastapi import  HTTPException, APIRouter
-from utils.categorize_keyword_with_ai import categorize_keyword_with_ai
+from fastapi import HTTPException, APIRouter
+from utils.get_category_db_name import get_category_db_name
 
 router = APIRouter()
 
@@ -9,9 +9,9 @@ def category_test(keyword: str):
     try:
         if not keyword.strip():
             raise ValueError("키워드가 비어 있습니다.")
-        
-        result = categorize_keyword_with_ai(keyword)
-        
+
+        result = get_category_db_name(keyword)
+
         return result
 
     except ValueError as e:

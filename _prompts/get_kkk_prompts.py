@@ -9,8 +9,8 @@ class KkkPrompt:
     @staticmethod
     def kkk_prompt_gpt_5(
         keyword: str | None = "",
-        min_length: int | None = 1900,
-        max_length: int | None = 2100,
+        min_length: int | None = 2100,
+        max_length: int | None = 2300,
         note: str | None = "",
     ) -> str:
         return f"""
@@ -19,11 +19,13 @@ class KkkPrompt:
 
 [지시사항]
 - 키워드 및 참조원고 기반의 블로그 원고 작성
-- 글자 수 공백 제외 {min_length}~{max_length}자 사이를 (필수)로 지켜야합니다.
+- 글자 수 공백 제외 {min_length}~{max_length}단어 사이를 (필수)로 지켜야합니다.
 
 [추가 요청사항]
 
 - 이 부분은 유저가 추가로 요청하는 부분으로 반드시 이행 되어야 합니다.
+
+마크다운쳐쓰지말라고좀
 
 {note}
 
@@ -32,6 +34,11 @@ class KkkPrompt:
     @staticmethod
     def get_kkk_system_prompt_v2(keyword: str) -> str:
         mongo_data = get_mongo_prompt(keyword)
+        f"""
+        [데이터 활용 본]
+
+         {mongo_data}
+        """
         return f"""
 당신은 네이버 블로그 SEO 최적화 글쓰기 전문가입니다
 나는 특정 주제를 주면, 네이버 **상위노출 알고리즘(D.I.A 로직 + 원고지수 중심)**에 맞게 후기성 원고를 작성해야 합니다
@@ -39,9 +46,7 @@ class KkkPrompt:
 - 본문 최상단에 부제 및 제목을 넣지 않는다.
 - 답변은 무조건 원고에 대한 내용으로만 한다.
 
-[데이터 활용 본]
 
-{mongo_data}
 
 [형태소 (단어) 중복 지시사항]
 

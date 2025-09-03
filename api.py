@@ -8,8 +8,20 @@ from fastapi.middleware.cors import CORSMiddleware
 
 # 라우터
 from routers import ingest
+
 from routers.test import test
-from routers.generate import chunk, claude, gemini, gpt, gpt_5, gpt_4_v2, gpt_5_v2, kkk
+from routers.generate import (
+    chunk,
+    claude,
+    gemini,
+    gpt,
+    gpt_5,
+    gpt_4_v2,
+    gpt_5_v2,
+    kkk,
+    gpt_merge,
+    my,
+)
 from routers.category import keyword
 from routers.analysis import get_sub_title, upload_text
 from routers.ref import get_ref
@@ -42,3 +54,5 @@ app.include_router(kkk.router)
 app.include_router(upload_text.router)
 app.include_router(get_ref.router)
 app.include_router(chunk.router)
+app.include_router(gpt_merge.router)
+app.include_router(my.router)
