@@ -8,12 +8,13 @@ from _prompts.get_kkk_prompts import KkkPrompt
 from _rule import SEN_RULES
 from config import OPENAI_API_KEY
 from _constants.Model import Model
+from utils.format_paragraphs import format_paragraphs
 from utils.query_parser import parse_query
 from utils.get_category_dir import get_category_by_keyword
 from utils.text_cleaner import comprehensive_text_clean
 
 
-model_name: str = Model.GPT5
+model_name: str = Model.GPT4_1
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
@@ -36,7 +37,8 @@ class MergePrompt:
 
  글자수는 원고데이터와 비슷하게
  소제목(부제)은 반드시 5~6개 (과다/부족 금지)
- 소제목 앞에 반드시 숫자(1,2,3,4,5) 붙이기
+ 소제목(부제) 앞에 반드시 숫자(1,2,3,4,5) 붙이기
+ 소제목(부제) 절대 6개를 넘어가지 않습니다
 
 ---
 
@@ -156,11 +158,9 @@ class MergePrompt:
    - 네이버 블로그는 이를 지원하지 않으므로 가독성을 해침
 - 짧은 문장을 마구 끊지 말고 자연스럽게 이어진 문장으로 작성해야 함
 
-원고 글자수 2000자 이상으로 작성
+원고 2500자 이상 작성
 
 내가 제목도 같이보내줄건데 내용을 제목이랑 연관성 아주 높게 작성해줘
-
-줄바꿈좀 쳐 하라고 이 개같은거
         """.strip()
 
     @staticmethod
@@ -306,6 +306,8 @@ def gpt_merge_gen(user_input: str, title: str = "", category: str = "") -> str:
         print(
             f"Merge {user_input} {model_name} 문서 생성 완료 (공백 제외 길이: {length_no_space})"
         )
+
+        text = format_paragraphs(text)
 
         return text
 

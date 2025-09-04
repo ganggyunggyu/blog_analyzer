@@ -50,6 +50,9 @@ def categorize_keyword_with_ai_fixed(keyword: str) -> str:
 
     prompt = f"""
     다음 키워드가 어떤 카테고리에 가장 적합한지 아래 폴더 목록에서 하나만 골라주세요.
+    - 라미네이트: 치과
+    - 스마일라식: 안과
+    - 인천공항택시: 
     다른 설명 없이 폴더명만 정확하게 반환해야 합니다.
     어떻게든 연관점을 찾아서 반환해야합니다.
 
@@ -62,7 +65,7 @@ def categorize_keyword_with_ai_fixed(keyword: str) -> str:
 
     try:
         response = client.chat.completions.create(
-            model=Model.GPT5_NANO,
+            model=Model.GPT5_MINI,
             messages=[
                 {
                     "role": "system",

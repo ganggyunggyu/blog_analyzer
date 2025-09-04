@@ -4,10 +4,9 @@ import re
 from openai import OpenAI
 from config import OPENAI_API_KEY
 from _constants.Model import Model
-from _prompts.get_gpt_prompt import GptPrompt
 from _prompts.get_kkk_prompts import KkkPrompt
 from _prompts.service.get_ref_prompt import get_ref_prompt
-from _prompts.service.get_mongo_prompt import get_mongo_prompt
+from utils.format_paragraphs import format_paragraphs
 from utils.query_parser import parse_query
 
 
@@ -77,7 +76,6 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     )
 
     print(f"KKK Service 파싱 결과: {parsed}")
-    # print(참조_분석_프롬프트)
 
     try:
         print(f"KKK GPT 생성 시작 | keyword={user_instructions!r} | model={model_name}")
@@ -114,6 +112,8 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
 
         length_no_space = len(re.sub(r"\s+", "", text))
         print(f"KKK {model_name} 문서 생성 완료 (공백 제외 길이: {length_no_space})")
+
+        text = format_paragraphs(text)
 
         return text
 
