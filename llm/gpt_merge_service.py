@@ -300,14 +300,14 @@ def gpt_merge_gen(user_input: str, title: str = "", category: str = "") -> str:
         if not text:
             raise RuntimeError("모델이 빈 응답을 반환했습니다.")
 
+        text = format_paragraphs(text)
+
         text = comprehensive_text_clean(text)
 
         length_no_space = len(re.sub(r"\s+", "", text))
         print(
             f"Merge {user_input} {model_name} 문서 생성 완료 (공백 제외 길이: {length_no_space})"
         )
-
-        text = format_paragraphs(text)
 
         return text
 
