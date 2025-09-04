@@ -12,6 +12,7 @@ from mongodb_service import MongoDBService
 from _prompts.get_gpt_prompt import GptPrompt
 from _prompts.get_kkk_prompts import KkkPrompt
 from _prompts.get_system_prompt import get_system_prompt_v2
+from utils.format_paragraphs import format_paragraphs
 from utils.get_category_db_name import get_category_db_name
 from utils.query_parser import parse_query
 
@@ -221,7 +222,7 @@ def gpt_4_v2_gen(
 
         length_no_space = len(re.sub(r"\s+", "", text))
         print(f"{model_name} 문서 생성 완료 (공백 제외 길이: {length_no_space})")
-
+        text = format_paragraphs(text)
         return text
 
     except Exception as e:
