@@ -18,7 +18,7 @@ class MyPrompt:
     @staticmethod
     def get_system_prompt() -> str:
         return """
-        
+        당신은 문단 정리 도우미입니다 원본을 절대 건드리지 않고 줄바꿈으로 가독성을 높여줘야합니다
         """.strip()
 
     @staticmethod
@@ -42,25 +42,30 @@ def my_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     if not OPENAI_API_KEY:
         raise ValueError("OPENAI_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요.")
 
-    print(f"My Service {user_instructions}")
-
-    parsed = parse_query(user_instructions)
-
-    if not parsed["keyword"]:
-        raise ValueError("키워드가 없습니다.")
-
     system = MyPrompt.get_system_prompt()
     user = MyPrompt.get_user_prompt()
-
-    print(f"My Service 파싱 결과: {parsed}")
 
     prompt = f"""
 {user}
 {user_instructions}
+
+- 원고 원본은 절대 변형시키지 않는다
+- 한 줄은 50자를 넘기지 않도록 작성  
+- 한 줄은 가급적 약 45자 이후 자연스럽게 줄바꿈  
+- 줄바꿈 시 이음세(그래서, 그리고, 또한, 하지만 등)를 활용하여 문장이 매끄럽게 이어지도록 함  
+- `,` 때문에 줄바꿈하지 않는다  
+- 부제 하단은 줄바꿈 두 번  
+- 2~3줄마다 줄바꿈  
+- 한 문단은 3~5줄 유지  
+- 짧은 문장을 마구 끊지 않고 자연스러운 리듬으로 작성  
+- 모든 한 줄은 일정한 길이로 출력하며, 우측 공백 금지  
+- 문장의 끝맺음은 다양하게:
+  - ~요, ~봤답니다, ~했죠, ~그랬었죠, ~있었죠, ~그랬어요, ~구요, ~답니다 등  
+- 같은 어미가 3회 이상 반복되지 않도록 조정  
 """
 
     try:
-        print(f"My GPT 생성 시작 | keyword={user_instructions!r} | model={model_name}")
+        print(f"My GPT 생성 시작 model={model_name}")
         response = client.chat.completions.create(
             model=model_name,
             messages=[
