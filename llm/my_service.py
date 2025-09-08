@@ -7,7 +7,7 @@ from _constants.Model import Model
 from utils.query_parser import parse_query
 
 
-model_name: str = Model.GPT5_CHAT
+model_name: str = Model.GPT5
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
