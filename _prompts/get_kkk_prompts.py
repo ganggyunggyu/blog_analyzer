@@ -10,7 +10,7 @@ class KkkPrompt:
     def kkk_prompt_gpt_5(
         keyword: str | None = "",
         min_length: int | None = 2200,
-        max_length: int | None = 2300,
+        max_length: int | None = 2400,
         note: str | None = "",
     ) -> str:
         return f"""
