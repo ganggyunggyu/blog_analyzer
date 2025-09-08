@@ -15,7 +15,6 @@ from _prompts.get_system_prompt import get_system_prompt_v2
 from utils.get_category_db_name import get_category_db_name
 from utils.query_parser import parse_query
 
-from config import MONGO_DB_NAME
 from analyzer.request_문장해체분석기 import get_문장해체
 
 
