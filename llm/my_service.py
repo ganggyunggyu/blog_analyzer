@@ -149,6 +149,19 @@ def my_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     prompt = f"""
 {user}
 {user_instructions}
+
+- 키워드: ({user_instructions})
+
+[지시사항]
+- 키워드 및 참조원고 기반의 블로그 원고 작성
+- 글자 수 공백 제외 {2000}~{2300}자 사이를 (필수)로 지켜야합니다.
+
+[추가 요청사항]
+
+- 이 부분은 유저가 추가로 요청하는 부분으로 반드시 이행 되어야 합니다.
+
+마크다운쳐쓰지말라고좀
+
 """
 
     try:
