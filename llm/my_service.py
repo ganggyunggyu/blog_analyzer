@@ -5,6 +5,8 @@ from openai import OpenAI
 from config import OPENAI_API_KEY
 from _constants.Model import Model
 from utils.query_parser import parse_query
+from utils.format_paragraphs import format_paragraphs
+from utils.text_cleaner import comprehensive_text_clean
 
 
 model_name: str = Model.GPT5
@@ -196,6 +198,10 @@ def my_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
         text: str = (choices[0].message.content or "").strip()
         if not text:
             raise RuntimeError("모델이 빈 응답을 반환했습니다.")
+
+        text = format_paragraphs(text)
+
+        text = comprehensive_text_clean(text)
 
         length_no_space = len(re.sub(r"\s+", "", text))
         print(f"My {model_name} 문서 생성 완료 (공백 제외 길이: {length_no_space})")
