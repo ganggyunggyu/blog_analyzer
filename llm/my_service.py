@@ -204,7 +204,9 @@ def my_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
         text = comprehensive_text_clean(text)
 
         length_no_space = len(re.sub(r"\s+", "", text))
-        print(f"My {model_name} 문서 생성 완료 (공백 제외 길이: {length_no_space})")
+        print(
+            f"My {user_instructions} {model_name} 문서 생성 완료 (공백 제외 길이: {length_no_space})"
+        )
 
         return text
 
