@@ -16,6 +16,7 @@ from utils.get_category_db_name import get_category_db_name
 from utils.query_parser import parse_query
 
 from analyzer.request_문장해체분석기 import get_문장해체
+from utils.text_cleaner import comprehensive_text_clean
 
 
 model_name: str = Model.GPT5
@@ -249,6 +250,8 @@ def gpt_5_gen(
 
         length_no_space = len(re.sub(r"\s+", "", text))
         print(f"{model_name} 문서 생성 완료 (공백 제외 길이: {length_no_space})")
+
+        text = comprehensive_text_clean(text)
 
         return text
 

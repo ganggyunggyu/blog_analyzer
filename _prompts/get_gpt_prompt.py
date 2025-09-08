@@ -549,8 +549,8 @@ assert 2200 <= n <= 2400, flength={{n}}
     @staticmethod
     def gpt_5_v2(
         keyword: str | None = "",
-        min_length: int | None = 2200,
-        max_length: int | None = 2500,
+        min_length: int | None = 2100,
+        max_length: int | None = 2300,
         note: str | None = "",
     ) -> str:
 

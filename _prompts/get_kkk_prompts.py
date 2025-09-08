@@ -9,7 +9,7 @@ class KkkPrompt:
     @staticmethod
     def kkk_prompt_gpt_5(
         keyword: str | None = "",
-        min_length: int | None = 2100,
+        min_length: int | None = 2200,
         max_length: int | None = 2300,
         note: str | None = "",
     ) -> str:
@@ -19,7 +19,7 @@ class KkkPrompt:
 
 [지시사항]
 - 키워드 및 참조원고 기반의 블로그 원고 작성
-- 글자 수 공백 제외 {min_length}~{max_length}단어 사이를 (필수)로 지켜야합니다.
+- 글자 수 공백 제외 {min_length}~{max_length}자 사이를 (필수)로 지켜야합니다.
 
 [추가 요청사항]
 
