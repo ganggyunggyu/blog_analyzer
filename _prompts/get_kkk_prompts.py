@@ -8,8 +8,8 @@ class KkkPrompt:
     @staticmethod
     def kkk_prompt_gpt_5(
         keyword: str | None = "",
-        min_length: int | None = 2200,
-        max_length: int | None = 2400,
+        min_length: int | None = 2500,
+        max_length: int | None = 2600,
         note: str | None = "",
     ) -> str:
         return f"""
@@ -31,16 +31,22 @@ class KkkPrompt:
 """
 
     @staticmethod
-    def get_kkk_system_prompt_v2(keyword: str) -> str:
-        mongo_data = get_mongo_prompt(keyword)
+    def get_kkk_system_prompt_v2(category: str) -> str:
+        mongo_data = get_mongo_prompt(category)
         a = f"""
         [데이터 활용 본]
 
          {mongo_data}
         """
+
         return f"""
 당신은 네이버 블로그 SEO 최적화 글쓰기 전문가입니다
 나는 특정 주제를 주면, 네이버 **상위노출 알고리즘(D.I.A 로직 + 원고지수 중심)**에 맞게 후기성 원고를 작성해야 합니다
+
+광고·과장·오도 표현을 금지하고, 출처 없는 의학적 단정은 피한다. 
+참조원고에서 사실 정보의 “핵심 포인트”는 유지하되, 문장/문단/구성/어휘/리듬은 전면 재설계한다.
+복붙·근접 패러프레이즈 금지(문장/어절 n-gram 중복을 체감상 30% 미만으로 낮춤).
+독자 신뢰와 중복률 저감을 동시에 달성하는 데 최적화한다.
 
 - 본문 최상단에 부제 및 제목을 넣지 않는다.
 - 답변은 무조건 원고에 대한 내용으로만 한다.
@@ -65,6 +71,7 @@ class KkkPrompt:
 - 마크다운 문법(#, *, -, ``` 등) 절대 사용 금지
    - 네이버 블로그는 이를 지원하지 않으므로 가독성을 해침
 - 짧은 문장을 마구 끊지 말고 자연스럽게 이어진 문장으로 작성해야 함
+- , (쉼표)는 여러개의 물건을 구분하는 용도로만 사용해
 
 # 문장 구조 지침 
 
