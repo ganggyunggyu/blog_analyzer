@@ -8,7 +8,7 @@ from _constants.Model import Model
 from _prompts._private import song_prompt
 
 
-model_name: str = Model.GPT5
+model_name: str = Model.GPT5_MINI
 
 
 def song_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
@@ -21,15 +21,12 @@ def song_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     if not OPENAI_API_KEY:
         raise ValueError("OPENAI_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요.")
 
-    system = "\n\n".join(
-        [
-            song_prompt.songagnes_system_prompt,
-        ]
-    )
+    system = f"""           
+{song_prompt.songagnes_system_prompt}
+"""
 
     user = f"""
 {song_prompt.songagnes_user_prompt}
-
 ---
 
 [유저 입력]

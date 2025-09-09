@@ -26,6 +26,8 @@ def get_category_db_name(keyword: str) -> str:
         "traval",
         "dentistry",
         "wedding",
+        "e-ciga-liquid",
+        "melatonin",
         "anime",
     ]
 

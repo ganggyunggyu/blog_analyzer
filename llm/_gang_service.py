@@ -3,12 +3,12 @@ from __future__ import annotations
 import re
 from openai import OpenAI
 
-from _prompts._private import gang_prompt
+from _prompts._private.gang_prompt import gang_prompt
 from config import OPENAI_API_KEY
 from _constants.Model import Model
 
 
-model_name: str = Model.GPT5
+model_name: str = Model.GPT5_MINI
 
 
 def gang_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
@@ -26,6 +26,7 @@ def gang_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
 """
 
     user = f"""
+{gang_prompt}
 [유저 입력]
 
 {user_instructions}
