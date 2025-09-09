@@ -112,9 +112,8 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
         length_no_space = len(re.sub(r"\s+", "", text))
         print(f"KKK {model_name} 문서 생성 완료 (공백 제외 길이: {length_no_space})")
 
-        text = comprehensive_text_clean(text)
-
         text = format_paragraphs(text)
+        text = comprehensive_text_clean(text)
 
         return text
 
