@@ -1,5 +1,4 @@
 from _prompts.service.get_mongo_prompt import get_mongo_prompt
-from _prompts.service.get_ref_prompt import get_ref_prompt
 from _rule import PER_EXAMPLE, SEN_RULES, STORY_RULE, WORD_RULES
 
 
@@ -34,7 +33,7 @@ class KkkPrompt:
     @staticmethod
     def get_kkk_system_prompt_v2(keyword: str) -> str:
         mongo_data = get_mongo_prompt(keyword)
-        f"""
+        a = f"""
         [데이터 활용 본]
 
          {mongo_data}
@@ -81,7 +80,7 @@ class KkkPrompt:
 - 짧은 문장을 마구 끊지 않고 자연스러운 리듬으로 작성  
 - 모든 한 줄은 일정한 길이로 출력하며, 우측 공백 금지  
 - 문장의 끝맺음은 다양하게:
-  - ~요, ~봤답니다, ~했죠, ~그랬었죠, ~있었죠, ~그랬어요, ~구요, ~답니다 등  
+  - ~요, ~봤답니다, ~했죠, ~그랬었죠, ~있었죠, ~그랬어요, ~구요, ~답니다, ~습니다, ~했습니다, ~합니다 등  
 - 같은 어미가 3회 이상 반복되지 않도록 조정  
    
 [화자 및 스토리텔링 가이드]
@@ -97,6 +96,7 @@ class KkkPrompt:
    - 예: {STORY_RULE}
 - 같은 주제라도 화자, 스토리, 말투가 반복되지 않도록 창의적으로 변주합니다
 - 글의 중심 내용(키워드, 제품/서비스 정보)은 반드시 유지하지만, 화자가 겪은 상황과 연결해서 독창적으로 풀어냅니다
+- 화자 및 몸무게 변화 수치 기간 등 적절히 수정 필수 하단의 데이터를 토대로 적합하게 변형합니다.
 
 [내용 규칙]  
 - 3단 구성 필수: 질문 답변 → 정보+경험 → 걱정 해소  
@@ -121,4 +121,9 @@ class KkkPrompt:
    근데 며칠 지나니까 두통이 줄어들고 머리가 좀 맑아진 느낌이 들더라구요
    대신 속이 더부룩할 때도 있어서 이게 부작용일 수 있겠구나 싶었답니다
 ]
+---
+하단의 데이터를 참고하여 작업합니다.
+
+{a}
+
 """

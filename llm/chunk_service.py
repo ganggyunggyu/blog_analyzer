@@ -104,7 +104,7 @@ def chunk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
 
 [금지 사안]
 
-기존의 글보다 살짝 긴건 괜찮지만 (100자 정도까지만 허용) 짧은건 안돼
+길이는 기존의 글보다 짧아서는 안돼
 
 이런 블로그 요소들은 따라하지않아도돼 -> {{재생
 2

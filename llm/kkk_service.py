@@ -8,6 +8,7 @@ from _prompts.get_kkk_prompts import KkkPrompt
 from _prompts.service.get_ref_prompt import get_ref_prompt
 from utils.format_paragraphs import format_paragraphs
 from utils.query_parser import parse_query
+from utils.text_cleaner import comprehensive_text_clean
 
 
 model_name: str = Model.GPT5_CHAT
@@ -46,8 +47,6 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
 
     user: str = (
         f"""
-
-{system}
 
 ---
 [참조 문서]
@@ -112,6 +111,8 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
 
         length_no_space = len(re.sub(r"\s+", "", text))
         print(f"KKK {model_name} 문서 생성 완료 (공백 제외 길이: {length_no_space})")
+
+        text = comprehensive_text_clean(text)
 
         text = format_paragraphs(text)
 
