@@ -21,6 +21,8 @@ from routers.generate import (
     kkk,
     gpt_merge,
     my,
+    song,
+    gang,
 )
 from routers.category import keyword
 from routers.analysis import get_sub_title, upload_text
@@ -56,3 +58,5 @@ app.include_router(get_ref.router)
 app.include_router(chunk.router)
 app.include_router(gpt_merge.router)
 app.include_router(my.router)
+app.include_router(song.router)
+app.include_router(gang.router)
