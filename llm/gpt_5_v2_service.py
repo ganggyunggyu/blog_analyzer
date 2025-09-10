@@ -73,8 +73,6 @@ def gpt_5_gen(
     else:
         min_length, max_length = 2800, 3000
 
-    print(min_length, max_length)
-
     if category == "legalese":
         기본_프롬프트 = KkkPrompt.kkk_prompt_gpt_5(
             min_length=min_length,
@@ -268,14 +266,15 @@ def gpt_5_gen(
 
         length_no_space = len(re.sub(r"\s+", "", text))
         print(f"원고 길이 체크: {length_no_space}")
-        elapsed = time.time() - start_ts
-        print(f"원고 소요시간: {elapsed:.2f}s")
+
         print("원고작성 완료")
         if model_name != Model.GPT5:
             print(f"{parsed['keyword']} 원고 문단정리 시작")
             text = format_paragraphs(text)
 
         text = comprehensive_text_clean(text)
+        elapsed = time.time() - start_ts
+        print(f"원고 소요시간: {elapsed:.2f}s")
 
         return text
 
