@@ -2,12 +2,13 @@ from __future__ import annotations
 import re
 
 from openai import OpenAI
+from _prompts.get_kkk_prompts import KkkPrompt
 from config import OPENAI_API_KEY
 from _constants.Model import Model
 from utils.query_parser import parse_query
 
 
-model_name: str = Model.GPT5
+model_name: str = Model.GPT5_CHAT
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
@@ -29,6 +30,8 @@ def chunk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     # 디버그 출력 제거
     parsed = parse_query(user_instructions)
 
+    sys = KkkPrompt.get_kkk_system_prompt_v2(category=category)
+
     if not parsed["keyword"]:
         raise ValueError("키워드가 없습니다.")
 
@@ -38,15 +41,31 @@ def chunk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
         f"""
 
 [개요]
+
+{keyword}
+
+위 키워드를 기반으로 원고를 작성해줘
+
 하단에 있는 참조원고 한줄한줄 전부 꼼꼼히 쪼갠 후에 어투나 이음세만 살짝 바꿔서 완전히 유사한 모양새의 원고로 다시 줘
 이렇게 하면 글씨 길이도 당연히 참조 원고랑 비슷해야하고 그 안에 있는 표현같은것도 전부 비슷하겠지?
 
+min_length: int | None = 3000,
+max_length: int | None = 3200,
+
+문자 길이는 위 공백제외 길이 사이로 진행해줘
+
+3000단어 이상
+
 핵심 키워드를 파악해서 그런 것들의 개수도 유사해야해
+형태소 개수와 토큰의 개수도 유사해야해
+### ## # 등등을 포함한 마크다운 문법은 절대 금지야
 
 그리고 스토리텔링 같은 것만 살짝 변화하는거야
 예를 들어 4명이 간다 그러면 3명
 20대 여성이다 그러면 30대 여성 이런 식으로
 고등학생 위탁 교육 과정이라면 성인반 성인 교육과정 이런 식으로
+
+아래 사항들을 무시해서라도 절대 두 원고의 유사도 자카드가 50%이상이 되어야해
 
 교육에 관련된 거라면 해당 교육기관에서 배울만한 카테고리로 변경해서 해줘
 
@@ -54,6 +73,8 @@ def chunk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
 예시는 참고만 하고 모든걸 그대로 사용하지말고 창의적으로 글을 만들어줘야해
 
 말투도 화자에 맞게 해주면 좋아
+
+각 문단마다 부제는 필수야
 
 [이행 사안]
 
@@ -122,7 +143,16 @@ def chunk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
 pf.kakao.com}}
 
 
-    {keyword}
+    {ref}
+
+
+---
+
+[추가 이행사항]
+- 필수로 이행되어야해
+- 없다면 위 사항만으로 원고 작성
+
+{parsed['note']}
 ---
 """.strip()
     )
@@ -136,7 +166,7 @@ pf.kakao.com}}
             messages=[
                 {
                     "role": "system",
-                    "content": "너는 원고를 청크로 쪼개서 다시 만들어주는 전문가야",
+                    "content": sys,
                 },
                 {
                     "role": "user",
