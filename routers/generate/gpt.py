@@ -25,13 +25,10 @@ async def generator_gpt(request: GenerateRequest):
     db_service = MongoDBService()
     db_service.set_db_name(db_name=category)
 
+    # 디버그 출력: 어떤 서비스/모델/키워드/참조 여부로 실행하는지 표시
+    is_ref = bool(ref and ref.strip())
     print(
-        f"""
-서비스: {service}
-키워드: {request.keyword}
-참조문서 유무: {len(ref) != 0}
-선택된 카테고리: {category}
-"""
+        f"[GEN] service={service} | model={model_name} | category={category} | keyword={keyword} | hasRef={is_ref}"
     )
 
     try:
@@ -56,7 +53,7 @@ async def generator_gpt(request: GenerateRequest):
 
                 return document
             except Exception as e:
-                print(f"데이터베이스에 저장 실패: {e}")
+                _ = e  # suppress noisy print
         else:
             raise HTTPException(
                 status_code=500,

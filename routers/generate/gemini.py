@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 
 from mongodb_service import MongoDBService
+from _constants.Model import Model
 from utils.get_category_db_name import get_category_db_name
 from llm.gemini_service import get_gemini_response
 
@@ -15,6 +16,7 @@ class GenerateRequest(BaseModel):
 
 
 router = APIRouter()
+GEMINI_MODEL_NAME = Model.GEMINI_2_5_PRO
 
 
 @router.post("/generate/gemini")
@@ -36,13 +38,10 @@ async def generate_manuscript_gemini_api(request: GenerateRequest):
     db_service = MongoDBService()
     db_service.set_db_name(db_name=category)
 
+    # 디버그 출력: 어떤 서비스/모델/키워드/참조 여부로 실행하는지 표시
+    is_ref = bool(ref and ref.strip())
     print(
-        f"""
-서비스: {service}
-키워드: {request.keyword}
-참조문서 유무: {len(ref) != 0}
-선택된 카테고리: {category}
-"""
+        f"[GEN] service={service} | model={GEMINI_MODEL_NAME} | category={category} | keyword={keyword} | hasRef={is_ref}"
     )
 
     try:
@@ -85,9 +84,8 @@ async def generate_manuscript_gemini_api(request: GenerateRequest):
             db_service.insert_document("manuscripts", doc)
             doc["_id"] = str(doc["_id"])
             return doc
-        except Exception as e:
+        except Exception:
             # 저장 실패해도 생성물은 반환할지, 에러낼지 정책에 따라 결정
-            print(f"데이터베이스 저장 실패: {e}")
             return doc  # 또는 raise HTTPException(500, "생성 성공했지만 DB 저장 실패")
 
     except HTTPException:

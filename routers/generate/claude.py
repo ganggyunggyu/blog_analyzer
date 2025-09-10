@@ -2,7 +2,7 @@ from fastapi import HTTPException, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from claude.claude_service import claude_blog_generator
-from llm.claude_service import claude_gen
+from llm.claude_service import claude_gen, ClaudeModel
 from main import run_manuscript_generation
 from mongodb_service import MongoDBService
 
@@ -42,13 +42,11 @@ async def generate_manuscript_claude_api(request: GenerateRequest):
     db_service = MongoDBService()
     db_service.set_db_name(db_name=category)
 
+    # 디버그 출력: 어떤 서비스/모델/키워드/참조 여부로 실행하는지 표시
+    model_name = ClaudeModel.SONNET_3_7.value
+    is_ref = bool(ref and ref.strip())
     print(
-        f"""
-서비스: {service}
-키워드: {request.keyword}
-참조문서 유무: {len(ref) != 0}
-선택된 카테고리: {category}
-"""
+        f"[GEN] service={service} | model={model_name} | category={category} | keyword={keyword} | hasRef={is_ref}"
     )
 
     try:
@@ -72,8 +70,7 @@ async def generate_manuscript_claude_api(request: GenerateRequest):
                 # pymongo insert 후 document에 _id가 주입됨
                 document["_id"] = str(document["_id"])
                 return document
-            except Exception as e:
-                print(f"데이터베이스에 저장 실패: {e}")
+            except Exception:
                 # 저장 실패 시에도 생성물은 돌려주고 싶다면:
                 # return {"content": generated_manuscript, "timestamp": current_time}
                 raise HTTPException(

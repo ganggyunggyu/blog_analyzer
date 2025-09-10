@@ -27,14 +27,10 @@ async def generator_my(request: GenerateRequest):
 
     is_ref = len(ref) != 0
 
+    # 디버그 출력: 어떤 서비스/모델/키워드/참조 여부로 실행하는지 표시
+    is_ref = bool(ref and ref.strip())
     print(
-        f"""
-서비스: {service}
-키워드: {request.keyword}
-참조문서 유무: {is_ref}
-선택된 카테고리: {category}
-MY 서비스 활성화
-"""
+        f"[GEN] service={service} | model={model_name} | category={category} | keyword={keyword} | hasRef={is_ref}"
     )
 
     try:
@@ -67,8 +63,9 @@ MY 서비스 활성화
                 document["_id"] = str(document["_id"])
 
                 return document
-            except Exception as e:
-                print(f"MY 데이터베이스에 저장 실패: {e}")
+            except Exception:
+                # 저장 실패는 조용히 무시
+                pass
         else:
             raise HTTPException(
                 status_code=500,
