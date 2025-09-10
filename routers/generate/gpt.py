@@ -6,6 +6,7 @@ from fastapi.concurrency import run_in_threadpool
 from fastapi.concurrency import run_in_threadpool
 
 from schema.generate import GenerateRequest
+from utils.progress_logger import progress
 from llm.gpt_4_service import gpt_4_gen, model_name
 
 router = APIRouter()
@@ -32,10 +33,10 @@ async def generator_gpt(request: GenerateRequest):
     )
 
     try:
-
-        generated_manuscript = await run_in_threadpool(
-            gpt_4_gen, user_instructions=keyword, ref=ref
-        )
+        with progress(label=f"{service}:{model_name}"):
+            generated_manuscript = await run_in_threadpool(
+                gpt_4_gen, user_instructions=keyword, ref=ref
+            )
 
         if generated_manuscript:
             import time
