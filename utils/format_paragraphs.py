@@ -49,7 +49,6 @@ def format_paragraphs(doc: str) -> str:
 """
 
     try:
-        print("원고검토 시작")
         response = client.chat.completions.create(
             model=model_name,
             messages=[
@@ -69,9 +68,6 @@ def format_paragraphs(doc: str) -> str:
             in_tokens = getattr(usage, "prompt_tokens", None)
             out_tokens = getattr(usage, "completion_tokens", None)
             total_tokens = getattr(usage, "total_tokens", None)
-            print(
-                f"줄바꿈 tokens in={in_tokens}, out={out_tokens}, total={total_tokens}"
-            )
 
         choices = getattr(response, "choices", []) or []
         if not choices or not getattr(choices[0], "message", None):
@@ -81,10 +77,8 @@ def format_paragraphs(doc: str) -> str:
         if not text:
             raise RuntimeError("모델이 빈 응답을 반환했습니다.")
 
-        print("줄바꿈 완료")
 
         return text
 
-    except Exception as e:
-        print("My OpenAI 호출 실패:", repr(e))
+    except Exception:
         raise

@@ -26,7 +26,7 @@ def chunk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     if not OPENAI_API_KEY:
         raise ValueError("OPENAI_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요.")
 
-    print(f"Chunk Service {user_instructions}")
+    # 디버그 출력 제거
     parsed = parse_query(user_instructions)
 
     if not parsed["keyword"]:
@@ -127,12 +127,10 @@ pf.kakao.com}}
 """.strip()
     )
 
-    print(f"Chunk Service 파싱 결과: {parsed}")
+    # 디버그 출력 제거
 
     try:
-        print(
-            f"Chunk GPT 생성 시작 | keyword={user_instructions!r} | model={model_name}"
-        )
+        # 생성 시작 로그 제거
         response = client.chat.completions.create(
             model=model_name,
             messages=[
@@ -152,9 +150,7 @@ pf.kakao.com}}
             in_tokens = getattr(usage, "prompt_tokens", None)
             out_tokens = getattr(usage, "completion_tokens", None)
             total_tokens = getattr(usage, "total_tokens", None)
-            print(
-                f"KKK Service tokens in={in_tokens}, out={out_tokens}, total={total_tokens}"
-            )
+            # 토큰 사용량 로깅 제거
 
         choices = getattr(response, "choices", []) or []
         if not choices or not getattr(choices[0], "message", None):
@@ -165,10 +161,9 @@ pf.kakao.com}}
             raise RuntimeError("모델이 빈 응답을 반환했습니다.")
 
         length_no_space = len(re.sub(r"\s+", "", text))
-        print(f"KKK {model_name} 문서 생성 완료 (공백 제외 길이: {length_no_space})")
+        # 완료 로그 제거
 
         return text
 
     except Exception as e:
-        print("KKK OpenAI 호출 실패:", repr(e))
         raise

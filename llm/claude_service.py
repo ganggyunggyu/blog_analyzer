@@ -66,7 +66,7 @@ def claude_gen(keyword: str, ref: str = "") -> str:
             ],
             extra_headers={"anthropic-beta": "files-api-2025-04-14"},
         )
-        print(response)
+        # 디버그 출력 제거
 
         text_parts = []
         for block in response.content:
@@ -77,15 +77,12 @@ def claude_gen(keyword: str, ref: str = "") -> str:
 
     except (BadRequestError, RateLimitError) as e:
         if hasattr(e, "body") and isinstance(e.body, dict):
-            print(e.body)
+            # 오류 상세 출력 제거
             usage = e.body.get("usage", {})
             input_tokens = usage.get("input_tokens")
             output_tokens = usage.get("output_tokens")
             total = usage.get("total_tokens")
 
-            print("❌ Claude 호출 실패: 토큰 초과 또는 오류 발생")
-            print(f"입력 토큰 수: {input_tokens}")
-            print(f"출력 토큰 수: {output_tokens}")
-            print(f"총합 토큰 수: {total}")
+            # 토큰 사용량 출력 제거
 
         raise e  # 필요 시 에러 다시 raise

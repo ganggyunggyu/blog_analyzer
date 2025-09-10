@@ -53,6 +53,5 @@ def extract_expressions_with_ai(text: str) -> dict:
         cleaned = re.sub(r"^```json|```$", "", raw).strip()
         return json.loads(cleaned)
 
-    except Exception as e:
-        print(f"OpenAI API 호출 중 오류가 발생했습니다: {e}")
+    except Exception:
         return {}

@@ -28,15 +28,7 @@ async def generator_kkk(request: GenerateRequest):
 
     is_ref = len(ref) != 0
 
-    print(
-        f"""
-서비스: {service}
-키워드: {request.keyword}
-참조문서 유무: {is_ref}
-선택된 카테고리: {category}
-KKK 테스트 모드 활성화
-"""
-    )
+    # 디버그 출력 제거
 
     try:
         generated_manuscript = await run_in_threadpool(

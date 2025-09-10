@@ -66,8 +66,7 @@ def get_category_db_name(keyword: str) -> str:
 
         return category
 
-    except Exception as e:
-        print(f"OpenAI API 호출 중 오류가 발생했습니다: {e}")
+    except Exception:
         return "기타"  # 오류 발생 시 기본값 반환
 
 

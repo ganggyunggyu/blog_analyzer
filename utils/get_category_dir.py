@@ -24,7 +24,6 @@ def get_data_folder_categories() -> list[str]:
 
         if os.path.isdir(item_path) and not item.startswith("."):
             categories.append(item)
-    print(categories)
     return sorted(categories)
 
 
@@ -76,7 +75,6 @@ def categorize_keyword_with_ai_fixed(keyword: str) -> str:
         )
 
         content = response.choices[0].message.content
-        print(content)
         if content is None:
             return (
                 folder_categories[0] if folder_categories else "01_영양제_건강보조식품"
@@ -92,8 +90,7 @@ def categorize_keyword_with_ai_fixed(keyword: str) -> str:
                 folder_categories[0] if folder_categories else "01_영양제_건강보조식품"
             )
 
-    except Exception as e:
-        print(f"AI 카테고리 분석 실패: {e}")
+    except Exception:
         return folder_categories[0] if folder_categories else "영양제_건강보조식품"
 
 

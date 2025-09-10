@@ -119,7 +119,6 @@ def extract_and_group_entities_with_ai(
                     cleaned[k] = [v]
         return cleaned
 
-    except Exception as e:
-        # 콘솔 로그만 남기고 타입은 항상 dict
-        print(f"[extract_and_group_entities_with_ai] OpenAI 호출 실패: {e}")
+    except Exception:
+        # 실패 시에도 타입은 항상 dict
         return {}

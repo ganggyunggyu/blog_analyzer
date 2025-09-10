@@ -62,7 +62,7 @@ def get_mongo_prompt(category: str) -> str:
         else "없음"
     )
 
-    print(subtitles_str)
+    # 디버그 출력 제거
 
     _mongo_prompt = f"""
 [부제 예시]

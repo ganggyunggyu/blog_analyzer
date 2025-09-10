@@ -55,6 +55,5 @@ def generate_template_from_segment(
         templated_text: str = content.strip() if content else ""
         return templated_text
 
-    except Exception as e:
-        print(f"OpenAI API 호출 중 오류가 발생했습니다: {e}")
+    except Exception:
         return ''

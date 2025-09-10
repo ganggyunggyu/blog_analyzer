@@ -165,10 +165,7 @@ JSON만 반환해.
             elif isinstance(item, str):
                 texts.append(item)
 
-        print(texts)
         return texts
 
-    except Exception as e:
-
-        print(f"[extract_subtitles_with_ai] OpenAI 호출 실패 -> 룰기반 백업 사용: {e}")
+    except Exception:
         return _rule_based_subtitles(full_text)[:max_items]

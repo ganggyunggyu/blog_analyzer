@@ -80,6 +80,6 @@ async def upload_text(files: list[UploadFile] = File(...)):
             }
         )
 
-        print(res)
+        # 디버그 출력 제거
 
     return res

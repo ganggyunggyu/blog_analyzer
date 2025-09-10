@@ -154,7 +154,7 @@ def get_gemini_response(
     client = OpenAI(api_key=OPENAI_API_KEY)
 
     try:
-        print(f"GEMINI 생성 시작 | keyword={user_instructions!r} | model={model}")
+        # 생성 시작 로그 제거
         client = genai.Client(api_key=GEMINI_API_KEY)
         res = client.models.generate_content(
             model=model,
@@ -170,9 +170,7 @@ def get_gemini_response(
                 in_tokens = getattr(meta, "prompt_token_count", None)
                 out_tokens = getattr(meta, "candidates_token_count", None)
                 total = (in_tokens or 0) + (out_tokens or 0)
-                print(
-                    f"입력 토큰: {in_tokens}, 출력 토큰: {out_tokens}, 총 토큰: {total}"
-                )
+                # 토큰 사용량 로깅 제거
         except Exception:
             pass
 
@@ -196,10 +194,8 @@ def get_gemini_response(
             raise RuntimeError("Gemini가 빈 응답을 반환했습니다.")
 
         length_no_space = len(re.sub(r"\s+", "", text))
-        print(f"{model} 문서 생성 완료 (공백 제외 길이: {length_no_space})")
 
         return text
 
     except Exception as e:
-        print("OpenAI 호출 실패:", repr(e))
         raise

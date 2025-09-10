@@ -70,7 +70,7 @@ def gpt_5_gen(
 
     db_service.set_db_name(db_name=category)
 
-    print(f"지금 연결 된 DB: {db_service.db.name}")
+    # 디버그 출력 제거
 
     analysis_data: Dict[str, Any] = db_service.get_latest_analysis_data() or {}
 
@@ -165,12 +165,12 @@ def gpt_5_gen(
 
 """.strip()
     )
-    print(parsed)
+    # 디버그 출력 제거
 
     client = OpenAI(api_key=OPENAI_API_KEY)
 
     try:
-        print(f"GPT 생성 시작 | keyword={user_instructions!r} | model={model_name}")
+        # 생성 시작 로그 제거
         response = client.chat.completions.create(
             model=model_name,
             messages=[
@@ -187,7 +187,7 @@ def gpt_5_gen(
             in_tokens = getattr(usage, "prompt_tokens", None)
             out_tokens = getattr(usage, "completion_tokens", None)
             total_tokens = getattr(usage, "total_tokens", None)
-            print(f"tokens in={in_tokens}, out={out_tokens}, total={total_tokens}")
+            # 토큰 사용량 로깅 제거
 
         choices = getattr(response, "choices", []) or []
         if not choices or not getattr(choices[0], "message", None):
@@ -198,11 +198,9 @@ def gpt_5_gen(
             raise RuntimeError("모델이 빈 응답을 반환했습니다.")
 
         length_no_space = len(re.sub(r"\s+", "", text))
-        print(f"{model_name} 문서 생성 완료 (공백 제외 길이: {length_no_space})")
+        # 완료 로그 제거
 
         return text
 
     except Exception as e:
-
-        print("OpenAI 호출 실패:", repr(e))
         raise
