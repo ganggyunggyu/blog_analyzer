@@ -22,10 +22,12 @@ async def generator_gang(request: GenerateRequest):
 
     category = get_category_db_name(keyword=keyword)
 
+    is_ref: bool = False
+
     db_service = MongoDBService()
     db_service.set_db_name(db_name=category)
-
-    is_ref = len(ref) != 0
+    if ref is not None:
+        is_ref = len(ref) != 0
 
     # 디버그 출력: 어떤 서비스/모델/키워드/참조 여부로 실행하는지 표시
     is_ref = bool(ref and ref.strip())
@@ -35,7 +37,7 @@ async def generator_gang(request: GenerateRequest):
 
     try:
         generated_manuscript = await run_in_threadpool(
-            gang_gen, user_instructions=keyword, ref=ref, category=category
+            gang_gen, user_instructions=keyword, ref="", category=category
         )
 
         if generated_manuscript:
