@@ -1,6 +1,5 @@
 from fastapi import HTTPException, APIRouter
 from fastapi.concurrency import run_in_threadpool
-from fastapi.concurrency import run_in_threadpool
 
 from mongodb_service import MongoDBService
 from utils.get_category_db_name import get_category_db_name
@@ -25,17 +24,13 @@ async def generator_gpt(request: GenerateRequest):
     db_service = MongoDBService()
     db_service.set_db_name(db_name=category)
 
+    # 디버그 출력: 어떤 서비스/모델/키워드/참조 여부로 실행하는지 표시
+    is_ref = bool(ref and ref.strip())
     print(
-        f"""
-서비스: {service}
-키워드: {request.keyword}
-참조문서 유무: {len(ref) != 0}
-선택된 카테고리: {category}
-"""
+        f"[GEN] service={service} | model={model_name} | category={category} | keyword={keyword} | hasRef={is_ref}"
     )
 
     try:
-
         generated_manuscript = await run_in_threadpool(
             gpt_5_gen, user_instructions=keyword, ref=ref
         )
@@ -53,10 +48,11 @@ async def generator_gpt(request: GenerateRequest):
             try:
                 db_service.insert_document("manuscripts", document)
                 document["_id"] = str(document["_id"])
-
                 return document
             except Exception as e:
+                # 데이터베이스 저장 실패는 에러로 전파하지 않고 메시지만 남김
                 print(f"데이터베이스에 저장 실패: {e}")
+                return document
         else:
             raise HTTPException(
                 status_code=500,
