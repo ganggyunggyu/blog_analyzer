@@ -4,6 +4,7 @@ import os
 import glob
 
 from openai import OpenAI
+import time
 from _prompts.get_kkk_prompts import KkkPrompt
 from _rule import SEN_RULES
 from config import OPENAI_API_KEY
@@ -266,7 +267,8 @@ def gpt_merge_gen(user_input: str, title: str = "", category: str = "") -> str:
     # 디버그 출력 제거
 
     try:
-        # 생성 시작 로그 제거
+        start_ts = time.time()
+        print("원고작성 시작")
         response = client.chat.completions.create(
             model=model_name,
             messages=[
@@ -301,7 +303,10 @@ def gpt_merge_gen(user_input: str, title: str = "", category: str = "") -> str:
         text = comprehensive_text_clean(text)
 
         length_no_space = len(re.sub(r"\s+", "", text))
-        # 완료 로그 제거
+        print(f"원고 길이 체크: {length_no_space}")
+        elapsed = time.time() - start_ts
+        print(f"원고 소요시간: {elapsed:.2f}s")
+        print("원고작성 완료")
 
         return text
 

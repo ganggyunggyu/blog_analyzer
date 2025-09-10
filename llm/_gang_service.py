@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from openai import OpenAI
+import time
 
 from _prompts._private.gang_prompt import gang_prompt
 from config import OPENAI_API_KEY
@@ -35,7 +36,8 @@ def gang_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     client = OpenAI(api_key=OPENAI_API_KEY)
 
     try:
-        print(f"Gang 생성 시작 model={model_name}")
+        start_ts = time.time()
+        print("원고작성 시작")
         response = client.chat.completions.create(
             model=model_name,
             messages=[
@@ -62,9 +64,10 @@ def gang_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
         # 원본 그대로 반환 (후처리 없음)
 
         length_no_space = len(re.sub(r"\s+", "", text))
-        print(
-            f"Gang {user_instructions} {model_name} 생성 완료 (공백 제외 길이: {length_no_space})"
-        )
+        print(f"원고 길이 체크: {length_no_space}")
+        elapsed = time.time() - start_ts
+        print(f"원고 소요시간: {elapsed:.2f}s")
+        print("원고작성 완료")
 
         return text
 

@@ -1,4 +1,5 @@
 import anthropic
+import time
 import os
 from llm._claude_file_uploader import get_file_ids
 from _prompts.get_claude_prompts import ClaudePrompt
@@ -48,6 +49,8 @@ def claude_gen(keyword: str, ref: str = "") -> str:
 """
 
     try:
+        start_ts = time.time()
+        print("원고작성 시작")
         response = client.beta.messages.create(
             model=model,
             max_tokens=4000,
@@ -73,7 +76,13 @@ def claude_gen(keyword: str, ref: str = "") -> str:
             if block.type == "text":
                 text_parts.append(block.text)
 
-        return "".join(text_parts).strip()
+        text = "".join(text_parts).strip()
+        length_no_space = len(re.sub(r"\s+", "", text))
+        print(f"원고 길이 체크: {length_no_space}")
+        elapsed = time.time() - start_ts
+        print(f"원고 소요시간: {elapsed:.2f}s")
+        print("원고작성 완료")
+        return text
 
     except (BadRequestError, RateLimitError) as e:
         if hasattr(e, "body") and isinstance(e.body, dict):

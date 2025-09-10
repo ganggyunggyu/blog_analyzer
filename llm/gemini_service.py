@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import re
 from typing import Any, Dict, List
+import time
 
 from openai import OpenAI
 from analyzer.request_문장해체분석기 import get_문장해체
@@ -154,7 +155,8 @@ def get_gemini_response(
     client = OpenAI(api_key=OPENAI_API_KEY)
 
     try:
-        # 생성 시작 로그 제거
+        start_ts = time.time()
+        print("원고작성 시작")
         client = genai.Client(api_key=GEMINI_API_KEY)
         res = client.models.generate_content(
             model=model,
@@ -194,6 +196,10 @@ def get_gemini_response(
             raise RuntimeError("Gemini가 빈 응답을 반환했습니다.")
 
         length_no_space = len(re.sub(r"\s+", "", text))
+        print(f"원고 길이 체크: {length_no_space}")
+        elapsed = time.time() - start_ts
+        print(f"원고 소요시간: {elapsed:.2f}s")
+        print("원고작성 완료")
 
         return text
 
