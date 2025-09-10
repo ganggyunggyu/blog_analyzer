@@ -128,6 +128,7 @@ def solar_generate(user_instructions: str, ref: str = "", category: str = "") ->
 
     system, user = _build_solar_prompts(keyword, parsed.get("note"), ref, category)
 
+    start_ts = time.time()
     print("원고작성 시작")
     response = solar_client.chat.completions.create(
         model=SOLAR_MODEL_NAME,
@@ -150,6 +151,8 @@ def solar_generate(user_instructions: str, ref: str = "", category: str = "") ->
     text = comprehensive_text_clean(text)
     length_no_space = len(re.sub(r"\s+", "", text))
     print(f"원고 길이 체크: {length_no_space}")
+    elapsed = time.time() - start_ts
+    print(f"원고 소요시간: {elapsed:.2f}s")
     print("원고작성 완료")
     return text
 

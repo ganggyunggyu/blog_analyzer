@@ -1,5 +1,6 @@
 from __future__ import annotations
 import re
+import time
 
 from openai import OpenAI
 from config import OPENAI_API_KEY
@@ -87,6 +88,7 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     # 디버그 출력: 프롬프트 구성 완료
 
     try:
+        start_ts = time.time()
         print("원고작성 시작")
         response = client.chat.completions.create(
             model=model_name,
@@ -119,6 +121,8 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
 
         length_no_space = len(re.sub(r"\s+", "", text))
         print(f"원고 길이 체크: {length_no_space}")
+        elapsed = time.time() - start_ts
+        print(f"원고 소요시간: {elapsed:.2f}s")
         print("원고작성 완료")
 
         text = format_paragraphs(text)
