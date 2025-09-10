@@ -88,11 +88,7 @@ def gpt_5_gen(
         json.dumps(templates, ensure_ascii=False, indent=2) if templates else "없음"
     )
 
-    print(f"지금 연결 된 DB: {db_service.db.name}")
-
-    print(user_instructions)
-
-    print(참조분석)
+    # 디버그 출력 준비
 
     참조_분석_프롬프트 = f"""
 [참조원고 분석 데이터 활용 지침]
@@ -214,14 +210,14 @@ def gpt_5_gen(
 
 """.strip()
     )
-    print(parsed)
+    # 디버그 출력: 원고작성 시작
 
     client = OpenAI(api_key=OPENAI_API_KEY)
 
     system = get_system_prompt_v2()
 
     try:
-        print(f"GPT 생성 시작 | keyword={user_instructions!r} | model={model_name}")
+        print("원고작성 시작")
         response = client.chat.completions.create(
             model=model_name,
             messages=[
@@ -238,7 +234,7 @@ def gpt_5_gen(
             in_tokens = getattr(usage, "prompt_tokens", None)
             out_tokens = getattr(usage, "completion_tokens", None)
             total_tokens = getattr(usage, "total_tokens", None)
-            print(f"tokens in={in_tokens}, out={out_tokens}, total={total_tokens}")
+            # 토큰 사용량 로깅 제거
 
         choices = getattr(response, "choices", []) or []
         if not choices or not getattr(choices[0], "message", None):
@@ -249,13 +245,12 @@ def gpt_5_gen(
             raise RuntimeError("모델이 빈 응답을 반환했습니다.")
 
         length_no_space = len(re.sub(r"\s+", "", text))
-        print(f"{model_name} 문서 생성 완료 (공백 제외 길이: {length_no_space})")
+        print(f"원고 길이 체크: {length_no_space}")
+        print("원고작성 완료")
 
         text = comprehensive_text_clean(text)
 
         return text
 
     except Exception as e:
-
-        print("OpenAI 호출 실패:", repr(e))
         raise
