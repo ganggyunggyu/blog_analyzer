@@ -6,7 +6,9 @@ import time
 from _prompts.get_kkk_prompts import KkkPrompt
 from config import OPENAI_API_KEY
 from _constants.Model import Model
+from utils.format_paragraphs import format_paragraphs
 from utils.query_parser import parse_query
+from utils.text_cleaner import clean_multiple_spaces, clean_text_format
 
 
 model_name: str = Model.GPT5_CHAT
@@ -194,7 +196,13 @@ pf.kakao.com}}
 
         length_no_space = len(re.sub(r"\s+", "", text))
         print(f"원고 길이 체크: {length_no_space}")
+        if model_name != Model.GPT5:
+            text = format_paragraphs(text)
+
+        text = clean_text_format(text)
+
         elapsed = time.time() - start_ts
+
         print(f"원고 소요시간: {elapsed:.2f}s")
         print("원고작성 완료")
 
