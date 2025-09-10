@@ -1,11 +1,11 @@
 from fastapi import HTTPException, APIRouter
 from fastapi.concurrency import run_in_threadpool
 
-from llm.chunk_service import chunk_gen
+from llm.chunk_service import chunk_gen, model_name
 from mongodb_service import MongoDBService
 from utils.get_category_db_name import get_category_db_name
 from schema.generate import GenerateRequest
-from llm.kkk_service import kkk_gen, model_name
+from llm.kkk_service import kkk_gen
 from utils.query_parser import parse_query
 
 
@@ -28,7 +28,10 @@ async def generator_kkk(request: GenerateRequest):
 
     is_ref = len(ref) != 0
 
-    # 디버그 출력 제거
+    # 디버그 출력: 서비스/모델/카테고리/참조 유무 (키워드는 제외)
+    print(
+        f"[GEN] service={service} | model={model_name} | category={category} | hasRef={is_ref}"
+    )
 
     try:
         generated_manuscript = await run_in_threadpool(
