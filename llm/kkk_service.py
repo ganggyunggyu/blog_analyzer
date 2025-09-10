@@ -37,8 +37,20 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     if not parsed["keyword"]:
         raise ValueError("키워드가 없습니다.")
 
+    # 모델에 따른 길이 가이드 설정
+    min_length: int
+    max_length: int
+    if model_name == Model.GPT5_CHAT:
+        min_length, max_length = 2800, 3000
+    elif model_name == Model.GPT5:
+        min_length, max_length = 2200, 2400
+    else:
+        min_length, max_length = 2500, 2600
+
     기본_프롬프트 = KkkPrompt.kkk_prompt_gpt_5(
         keyword=parsed["keyword"],
+        min_length=min_length,
+        max_length=max_length,
         note=parsed.get("note", ""),
     )
     참조_분석_프롬프트 = get_ref_prompt(ref)
