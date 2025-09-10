@@ -12,6 +12,7 @@ from mongodb_service import MongoDBService
 from _prompts.get_gpt_prompt import GptPrompt
 from _prompts.get_kkk_prompts import KkkPrompt
 from _prompts.get_system_prompt import get_system_prompt_v2
+from utils.format_paragraphs import format_paragraphs
 from utils.get_category_db_name import get_category_db_name
 from utils.query_parser import parse_query
 
@@ -19,7 +20,7 @@ from analyzer.request_문장해체분석기 import get_문장해체
 from utils.text_cleaner import comprehensive_text_clean
 
 
-model_name: str = Model.GPT5_CHAT
+model_name: str = Model.GPT5
 
 기본_프롬프트 = ""
 
@@ -64,16 +65,21 @@ def gpt_5_gen(
     # 모델에 따른 길이 가이드 설정
     min_length: int
     max_length: int
-    if model_name == Model.GPT5_CHAT:
+    if model_name == Model.GPT5:
+        min_length, max_length = 2350, 2400
+    elif model_name == Model.GPT5_CHAT:
         min_length, max_length = 2800, 3000
-    elif model_name == Model.GPT5:
-        min_length, max_length = 2200, 2400
     else:
-        min_length, max_length = 2200, 2400
+        min_length, max_length = 2800, 3000
+
+    print(min_length, max_length)
 
     if category == "legalese":
         기본_프롬프트 = KkkPrompt.kkk_prompt_gpt_5(
-            parsed["keyword"], min_length=min_length, max_length=max_length
+            min_length=min_length,
+            max_length=max_length,
+            keyword=parsed["keyword"],
+            note=parsed["note"],
         )
     else:
         기본_프롬프트 = GptPrompt.gpt_5_v2(
@@ -119,6 +125,7 @@ def gpt_5_gen(
 
 - 부제는 그대로 사용하나 예외 사항은 하단 참조
 - 사용자 요청에 (부제X)가 있다면 필수로 숫자만 제거 된 부제 사용
+- 형태소의 개수를 참고하여 작업 필수
 
 """
 
@@ -224,7 +231,6 @@ def gpt_5_gen(
 
 """.strip()
     )
-    # 디버그 출력: 원고작성 시작
 
     client = OpenAI(api_key=OPENAI_API_KEY)
 
@@ -261,6 +267,9 @@ def gpt_5_gen(
         length_no_space = len(re.sub(r"\s+", "", text))
         print(f"원고 길이 체크: {length_no_space}")
         print("원고작성 완료")
+        if model_name != Model.GPT5:
+            print(f"{parsed['keyword']} 원고 문단정리 시작")
+            text = format_paragraphs(text)
 
         text = comprehensive_text_clean(text)
 

@@ -7,8 +7,8 @@ class KkkPrompt:
 
     @staticmethod
     def kkk_prompt_gpt_5(
-        min_length: int | None,
-        max_length: int | None,
+        min_length: int | None = 2200,
+        max_length: int | None = 2400,
         keyword: str | None = "",
         note: str | None = "",
     ) -> str:
@@ -26,6 +26,7 @@ class KkkPrompt:
 - 이 부분은 유저가 추가로 요청하는 부분으로 반드시 이행 되어야 합니다.
 
 마크다운쳐쓰지말라고좀
+---, ###,## ,#, *** 이런 마크다운 절대 금지 제발좀
 
 {note}
 

@@ -19,25 +19,23 @@ async def generator_gang(request: GenerateRequest):
     service = request.service.lower()
     keyword = request.keyword.strip()
     ref = request.ref
-
-    category = get_category_db_name(keyword=keyword)
+    db_service = MongoDBService()
+    db_service.set_db_name("gang")
 
     is_ref: bool = False
 
-    db_service = MongoDBService()
-    db_service.set_db_name(db_name=category)
     if ref is not None:
         is_ref = len(ref) != 0
 
     # 디버그 출력: 어떤 서비스/모델/키워드/참조 여부로 실행하는지 표시
     is_ref = bool(ref and ref.strip())
     print(
-        f"[GEN] service={service} | model={model_name} | category={category} | keyword={keyword} | hasRef={is_ref}"
+        f"[GEN] service={service} | model={model_name} | keyword={keyword} | hasRef={is_ref}"
     )
 
     try:
         generated_manuscript = await run_in_threadpool(
-            gang_gen, user_instructions=keyword, ref="", category=category
+            gang_gen, user_instructions=keyword, ref="", category=""
         )
 
         if generated_manuscript:
@@ -51,16 +49,11 @@ async def generator_gang(request: GenerateRequest):
                 "timestamp": current_time,
                 "engine": model_name,
                 "service": f"{service}_gang",
-                "category": category,
                 "keyword": keyword,
             }
 
             try:
                 db_service.insert_document("manuscripts", document)
-
-                if is_ref:
-                    ref_document = {"content": ref, "keyword": parsed["keyword"]}
-                    db_service.insert_document("ref", ref_document)
 
                 document["_id"] = str(document["_id"])
 

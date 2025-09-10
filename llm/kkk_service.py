@@ -40,6 +40,10 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     # 모델에 따른 길이 가이드 설정
     min_length: int
     max_length: int
+
+    print(model_name == Model.GPT5_CHAT)
+    print(model_name == Model.GPT5)
+
     if model_name == Model.GPT5_CHAT:
         min_length, max_length = 2800, 3000
     elif model_name == Model.GPT5:

@@ -8,7 +8,7 @@ from _constants.Model import Model
 from _prompts._private import song_prompt
 
 
-model_name: str = Model.GPT5_MINI
+model_name: str = Model.GPT5
 
 
 def song_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
