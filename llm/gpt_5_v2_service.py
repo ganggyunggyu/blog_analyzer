@@ -19,7 +19,7 @@ from analyzer.request_문장해체분석기 import get_문장해체
 from utils.text_cleaner import comprehensive_text_clean
 
 
-model_name: str = Model.GPT5
+model_name: str = Model.GPT5_CHAT
 
 기본_프롬프트 = ""
 
@@ -61,10 +61,24 @@ def gpt_5_gen(
 
     참조분석 = get_문장해체(ref)
 
-    if category == "legalese":
-        기본_프롬프트 = KkkPrompt.kkk_prompt_gpt_5(parsed["keyword"])
+    # 모델에 따른 길이 가이드 설정
+    min_length: int
+    max_length: int
+    if model_name == Model.GPT5_CHAT:
+        min_length, max_length = 2800, 3000
+    elif model_name == Model.GPT5:
+        min_length, max_length = 2200, 2400
     else:
-        기본_프롬프트 = GptPrompt.gpt_5_v2(parsed["keyword"])
+        min_length, max_length = 2200, 2400
+
+    if category == "legalese":
+        기본_프롬프트 = KkkPrompt.kkk_prompt_gpt_5(
+            parsed["keyword"], min_length=min_length, max_length=max_length
+        )
+    else:
+        기본_프롬프트 = GptPrompt.gpt_5_v2(
+            parsed["keyword"], min_length=min_length, max_length=max_length
+        )
 
     # 기본_프롬프트 = KkkPrompt.kkk_prompt_gpt_5(parsed["keyword"])
 
