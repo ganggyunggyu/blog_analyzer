@@ -30,6 +30,9 @@ def get_category_db_name(keyword: str) -> str:
         "melatonin",
         "anime",
         "wegovy",
+        "울쎄라",
+        "리쥬란",
+        "리들샷",
     ]
 
     prompt = f"""
