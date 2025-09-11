@@ -7,6 +7,7 @@ from mongodb_service import MongoDBService
 from _constants.Model import Model
 from utils.get_category_db_name import get_category_db_name
 from llm.gemini_service import get_gemini_response
+from utils.progress_logger import progress
 
 
 class GenerateRequest(BaseModel):
@@ -58,11 +59,12 @@ async def generate_manuscript_gemini_api(request: GenerateRequest):
                 detail="MongoDB에 원고 생성을 위한 충분한 분석 데이터가 없습니다. 먼저 분석을 실행하고 저장해주세요.",
             )
 
-        generated = await run_in_threadpool(
-            get_gemini_response,
-            keyword,
-            ref,
-        )
+        with progress(label=f"{service}:{GEMINI_MODEL_NAME}:{keyword}"):
+            generated = await run_in_threadpool(
+                get_gemini_response,
+                keyword,
+                ref,
+            )
 
         if not generated or str(generated).startswith("An error occurred:"):
             raise HTTPException(

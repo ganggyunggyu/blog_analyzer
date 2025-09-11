@@ -6,6 +6,7 @@ from utils.get_category_db_name import get_category_db_name
 from schema.generate import GenerateRequest
 from llm._song_service import song_gen, model_name
 from utils.query_parser import parse_query
+from utils.progress_logger import progress
 
 
 router = APIRouter()
@@ -36,9 +37,10 @@ async def generator_song(request: GenerateRequest):
     )
 
     try:
-        generated_manuscript = await run_in_threadpool(
-            song_gen, user_instructions=keyword, ref="", category=category
-        )
+        with progress(label=f"{service}:{model_name}:{keyword}"):
+            generated_manuscript = await run_in_threadpool(
+                song_gen, user_instructions=keyword, ref="", category=category
+            )
 
         if generated_manuscript:
             import time

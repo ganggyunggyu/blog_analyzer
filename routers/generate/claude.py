@@ -14,6 +14,7 @@ import asyncio
 from fastapi import FastAPI, HTTPException
 from fastapi.concurrency import run_in_threadpool
 import os
+from utils.progress_logger import progress
 
 router = APIRouter()
 
@@ -50,12 +51,12 @@ async def generate_manuscript_claude_api(request: GenerateRequest):
     )
 
     try:
-
-        generated_manuscript = await run_in_threadpool(
-            claude_gen,
-            keyword=keyword,
-            ref=ref,
-        )
+        with progress(label=f"{service}:{model_name}:{keyword}"):
+            generated_manuscript = await run_in_threadpool(
+                claude_gen,
+                keyword=keyword,
+                ref=ref,
+            )
 
         if generated_manuscript:
             import time

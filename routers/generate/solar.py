@@ -16,6 +16,7 @@ from _prompts.get_kkk_prompts import KkkPrompt
 from _prompts.service.get_ref_prompt import get_ref_prompt
 from utils.text_cleaner import comprehensive_text_clean
 from utils.format_paragraphs import format_paragraphs
+from utils.progress_logger import progress
 
 
 router = APIRouter()
@@ -177,9 +178,10 @@ async def generate_solar(request: GenerateRequest):
     )
 
     try:
-        manuscript = await run_in_threadpool(
-            solar_generate, user_instructions=keyword, ref=ref, category=category
-        )
+        with progress(label=f"{service}:{SOLAR_MODEL_NAME}:{keyword}"):
+            manuscript = await run_in_threadpool(
+                solar_generate, user_instructions=keyword, ref=ref, category=category
+            )
 
         if not manuscript:
             raise HTTPException(status_code=500, detail="SOLAR 원고 생성 실패")

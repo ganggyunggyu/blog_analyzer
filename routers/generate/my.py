@@ -6,6 +6,7 @@ from utils.get_category_db_name import get_category_db_name
 from schema.generate import GenerateRequest
 from llm.my_service import my_gen, model_name
 from utils.query_parser import parse_query
+from utils.progress_logger import progress
 
 
 router = APIRouter()
@@ -34,9 +35,10 @@ async def generator_my(request: GenerateRequest):
     )
 
     try:
-        generated_manuscript = await run_in_threadpool(
-            my_gen, user_instructions=keyword, ref=ref, category=category
-        )
+        with progress(label=f"{service}:{model_name}:{keyword}"):
+            generated_manuscript = await run_in_threadpool(
+                my_gen, user_instructions=keyword, ref=ref, category=category
+            )
 
         if generated_manuscript:
             import time
