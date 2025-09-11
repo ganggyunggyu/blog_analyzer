@@ -9,7 +9,7 @@ from config import OPENAI_API_KEY
 from _constants.Model import Model
 
 
-model_name: str = Model.GPT5_MINI
+model_name: str = Model.GPT5
 
 
 def gang_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
