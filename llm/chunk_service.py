@@ -33,7 +33,7 @@ def chunk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     # 디버그 출력 제거
     parsed = parse_query(user_instructions)
 
-    sys = KkkPrompt.get_kkk_system_prompt_v2(category=category)
+    sys = KkkPrompt.get_kkk_system_prompt_v2()
 
     if not parsed["keyword"]:
         raise ValueError("키워드가 없습니다.")
@@ -198,7 +198,7 @@ pf.kakao.com}}
             text = format_paragraphs(text)
 
         text = clean_text_format(text)
-        
+
         length_no_space = len(re.sub(r"\s+", "", text))
         elapsed = time.time() - start_ts
         print(f"원고 길이 체크: {length_no_space}")
