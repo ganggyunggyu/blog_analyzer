@@ -28,11 +28,6 @@ async def generator_kkk(request: GenerateRequest):
 
     is_ref = len(ref) != 0
 
-    # 디버그 출력: 어떤 서비스/모델/키워드/참조 여부로 실행하는지 표시
-    print(
-        f"[GEN] service={service} | model={model_name} | category={category} | keyword={keyword} | hasRef={is_ref}"
-    )
-
     try:
         with progress(label=f"{service}:{model_name}:{keyword}"):
             generated_manuscript = await run_in_threadpool(
