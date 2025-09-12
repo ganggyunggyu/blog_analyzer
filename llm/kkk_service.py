@@ -13,6 +13,8 @@ from utils.text_cleaner import comprehensive_text_clean
 
 
 model_name: str = Model.GPT5_CHAT
+min_length: int
+max_length: int
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
@@ -31,19 +33,18 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     if not OPENAI_API_KEY:
         raise ValueError("OPENAI_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요.")
 
-    # 디버그 출력: 파라메터 파싱 완료
-
     parsed = parse_query(user_instructions)
 
     if not parsed["keyword"]:
         raise ValueError("키워드가 없습니다.")
 
-    # 모델에 따른 길이 가이드 설정
-    min_length: int
-    max_length: int
+    if category == "legalese":
+        model_name = Model.GPT5
+    else:
+        model_name = Model.GPT5_CHAT
 
     if model_name == Model.GPT5_CHAT:
-        min_length, max_length = 3000, 3100
+        min_length, max_length = 5000, 5500
     elif model_name == Model.GPT5:
         min_length, max_length = 2200, 2400
     else:
@@ -54,14 +55,15 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
         min_length=min_length,
         max_length=max_length,
         note=parsed.get("note", ""),
+        category=category,
     )
     참조_분석_프롬프트 = get_ref_prompt(ref)
 
-    system = KkkPrompt.get_kkk_system_prompt_v2(category)
+    system = KkkPrompt.get_kkk_system_prompt_v2()
 
     user: str = (
         f"""
-
+{system}
 ---
 
 [참조 원고 분석]
@@ -82,11 +84,12 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
 """.strip()
     )
 
-    # 디버그 출력: 프롬프트 구성 완료
-
     try:
         start_ts = time.time()
-        print("원고작성 시작")
+        is_ref = len(ref) != 0
+        print(
+            f"[GEN] service={'test-kkk'} | model={model_name} | category={category} | keyword={user_instructions} | is_ref={is_ref}"
+        )
         response = client.chat.completions.create(
             model=model_name,
             messages=[
@@ -106,8 +109,12 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
             in_tokens = getattr(usage, "prompt_tokens", None)
             out_tokens = getattr(usage, "completion_tokens", None)
             total_tokens = getattr(usage, "total_tokens", None)
-            # 토큰 사용량 로깅 제거
-
+            print(
+                f"[🔍 Token Usage] "
+                f"Prompt: {in_tokens:,}  |  "
+                f"Completion: {out_tokens:,}  |  "
+                f"Total: {total_tokens:,}"
+            )
         choices = getattr(response, "choices", []) or []
         if not choices or not getattr(choices[0], "message", None):
             raise RuntimeError("모델이 유효한 choices/message를 반환하지 않았습니다.")
@@ -118,7 +125,7 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
 
         text = format_paragraphs(text)
         text = comprehensive_text_clean(text)
-        
+
         length_no_space = len(re.sub(r"\s+", "", text))
         elapsed = time.time() - start_ts
         print(f"원고 길이 체크: {length_no_space}")
