@@ -48,7 +48,7 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     elif model_name == Model.GPT5:
         min_length, max_length = 2200, 2400
     else:
-        min_length, max_length = 2500, 2600
+        min_length, max_length = 2800, 2900
 
     기본_프롬프트 = KkkPrompt.kkk_prompt_gpt_5(
         keyword=parsed["keyword"],
