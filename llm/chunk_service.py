@@ -11,7 +11,7 @@ from utils.query_parser import parse_query
 from utils.text_cleaner import clean_multiple_spaces, clean_text_format
 
 
-model_name: str = Model.GPT5_CHAT
+model_name: str = Model.GPT5
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 

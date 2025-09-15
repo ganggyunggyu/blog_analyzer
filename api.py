@@ -24,6 +24,7 @@ from routers.generate import (
     my,
     song,
     gang,
+    step_by_step,
 )
 from routers.category import keyword
 from routers.analysis import get_sub_title, upload_text
@@ -62,3 +63,4 @@ app.include_router(gpt_merge.router)
 app.include_router(my.router)
 app.include_router(song.router)
 app.include_router(gang.router)
+app.include_router(step_by_step.router)
