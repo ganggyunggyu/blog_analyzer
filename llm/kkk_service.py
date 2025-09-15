@@ -48,7 +48,7 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     elif model_name == Model.GPT5:
         min_length, max_length = 2200, 2400
     else:
-        min_length, max_length = 2800, 2900
+        min_length, max_length = 3000, 3200
 
     기본_프롬프트 = KkkPrompt.kkk_prompt_gpt_5(
         keyword=parsed["keyword"],
@@ -63,7 +63,10 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
 
     user: str = (
         f"""
-{system}
+if {category} == "legalese":
+    base_prompt += '''
+화자 톤은 법률 전문가로서의 조언
+'''
 ---
 
 [참조 원고 분석]

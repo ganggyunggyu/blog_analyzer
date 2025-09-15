@@ -27,7 +27,7 @@ class KkkPrompt:
 [지시사항]
 - 키워드 및 참조원고 기반의 블로그 원고 작성
 
-- 길이 {min_length} ~ {max_length}단어 사이 필수
+- 길이 {min_length} ~ {max_length}자 사이 필수
 
    키워드 분석 출력 규칙:
    - 키워드는 띄어쓰기로만 구분합니다.  
