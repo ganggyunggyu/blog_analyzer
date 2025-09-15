@@ -12,7 +12,7 @@ from utils.query_parser import parse_query
 from utils.text_cleaner import comprehensive_text_clean
 
 
-model_name: str = Model.GPT5_CHAT
+model_name: str = Model.GPT4_1
 min_length: int
 max_length: int
 
@@ -38,13 +38,13 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     if not parsed["keyword"]:
         raise ValueError("키워드가 없습니다.")
 
-    if category == "legalese":
-        model_name = Model.GPT5
-    else:
-        model_name = Model.GPT5_CHAT
+    # if category == "legalese":
+    #     model_name = Model.GPT5
+    # else:
+    #     model_name = Model.GPT5_CHAT
 
     if model_name == Model.GPT5_CHAT:
-        min_length, max_length = 5000, 5500
+        min_length, max_length = 3000, 3200
     elif model_name == Model.GPT5:
         min_length, max_length = 2200, 2400
     else:
