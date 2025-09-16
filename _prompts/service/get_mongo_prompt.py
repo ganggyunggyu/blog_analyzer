@@ -1,4 +1,5 @@
 from __future__ import annotations
+import random
 
 import json
 from typing import List, Dict, Any
@@ -41,6 +42,17 @@ def get_mongo_prompt(category: str) -> str:
 
     subtitles_str: str = "\n".join(output) if output else "없음"
 
+    chunk_size = 5
+    chunks: List[List[str]] = [
+        subtitles[i : i + chunk_size] for i in range(0, len(subtitles), chunk_size)
+    ]
+    output: List[str] = []
+    for idx, group in enumerate(chunks, start=1):
+        joined = ", ".join(group)
+        output.append(f"{idx}: {{{joined}}}")
+
+    subtitles_str: str = "\n".join(output) if output else "없음"
+
     def _default(o):
         if isinstance(o, ObjectId):
             return str(o)
@@ -56,14 +68,17 @@ def get_mongo_prompt(category: str) -> str:
         if parameters
         else "없음"
     )
-    templates_str: str = (
-        json.dumps(templates, ensure_ascii=False, indent=2, default=_default)
-        if templates
-        else "없음"
-    )
-
-    # 디버그 출력 제거
-
+    templates_str: str = ""
+    if templates:
+        random_template = random.choice(templates)
+        templates_str: str = json.dumps(
+            random_template,
+            ensure_ascii=False,
+            indent=2,
+        )
+    else:
+        templates_str = "없음"
+    print(templates_str)
     _mongo_prompt = f"""
 
 [소제목 예시]
