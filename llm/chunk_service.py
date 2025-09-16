@@ -2,13 +2,9 @@ from __future__ import annotations
 import re
 
 from openai import OpenAI
-import time
-from _prompts.get_kkk_prompts import KkkPrompt
 from config import OPENAI_API_KEY
 from _constants.Model import Model
-from utils.format_paragraphs import format_paragraphs
 from utils.query_parser import parse_query
-from utils.text_cleaner import clean_multiple_spaces, clean_text_format
 
 
 model_name: str = Model.GPT5
@@ -30,6 +26,7 @@ def chunk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     if not OPENAI_API_KEY:
         raise ValueError("OPENAI_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요.")
 
+    print(f"Chunk Service {user_instructions}")
     parsed = parse_query(user_instructions)
 
     if not parsed["keyword"]:
@@ -41,38 +38,20 @@ def chunk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
         f"""
 
 [개요]
-
-{keyword}
-
-위 키워드를 기반으로 원고를 작성해줘
-
 하단에 있는 참조원고 한줄한줄 전부 꼼꼼히 쪼갠 후에 어투나 이음세만 살짝 바꿔서 완전히 유사한 모양새의 원고로 다시 줘
 이렇게 하면 글씨 길이도 당연히 참조 원고랑 비슷해야하고 그 안에 있는 표현같은것도 전부 비슷하겠지?
 
-
-문자 길이는 위 공백제외 길이 사이로 진행해줘
-
-3000단어 이상
-
 핵심 키워드를 파악해서 그런 것들의 개수도 유사해야해
-형태소 개수와 토큰의 개수도 유사해야해
-
 
 그리고 스토리텔링 같은 것만 살짝 변화하는거야
 예를 들어 4명이 간다 그러면 3명
 20대 여성이다 그러면 30대 여성 이런 식으로
 고등학생 위탁 교육 과정이라면 성인반 성인 교육과정 이런 식으로
 
-아래 사항들을 무시해서라도 절대 두 원고의 유사도 자카드가 50%이상이 되어야해
-
 교육에 관련된 거라면 해당 교육기관에서 배울만한 카테고리로 변경해서 해줘
 
 그리고 표현도 에시를 몇개 줄게 참고해 
 예시는 참고만 하고 모든걸 그대로 사용하지말고 창의적으로 글을 만들어줘야해
-
-말투도 화자에 맞게 해주면 좋아
-
-각 문단마다 부제는 필수야
 
 [이행 사안]
 
@@ -106,11 +85,22 @@ def chunk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
 
 일정한 줄바꿈으로 더 깔끔하게 변형을 줘도 괜찮아
 
-업체명은 별도 요청이 없다면 넣지 말고 작성해줘
+- 한 줄은 50자를 넘기지 않도록 작성  
+- 한 줄은 가급적 약 45자 이후 자연스럽게 줄바꿈  
+- 줄바꿈 시 이음세(그래서, 그리고, 또한, 하지만 등)를 활용하여 문장이 매끄럽게 이어지도록 함  
+- `,` 때문에 줄바꿈하지 않는다  
+- 부제 하단은 줄바꿈 두 번  
+- 2~3줄마다 줄바꿈  
+- 한 문단은 3~5줄 유지  
+- 짧은 문장을 마구 끊지 않고 자연스러운 리듬으로 작성  
+- 모든 한 줄은 일정한 길이로 출력하며, 우측 공백 금지  
+- 문장의 끝맺음은 다양하게:
+  - ~요, ~봤답니다, ~했죠, ~그랬었죠, ~있었죠, ~그랬어요, ~구요, ~답니다 등  
+- 같은 어미가 3회 이상 반복되지 않도록 조정  
 
 [금지 사안]
 
-길이는 기존의 글보다 짧아서는 안돼
+기존의 글보다 살짝 긴건 괜찮지만 (100자 정도까지만 허용) 짧은건 안돼
 
 이런 블로그 요소들은 따라하지않아도돼 -> {{재생
 2
@@ -130,29 +120,25 @@ pf.kakao.com}}
 
     {ref}
 
+    [키워드]
 
----
-
-[추가 이행사항]
-- 필수로 이행되어야해
-- 없다면 위 사항만으로 원고 작성
-
-{parsed['note']}
+    {keyword}
 ---
 """.strip()
     )
 
+    print(f"Chunk Service 파싱 결과: {parsed}")
+
     try:
-        start_ts = time.time()
-        print("원고작성 시작")
+        print(
+            f"Chunk GPT 생성 시작 | keyword={user_instructions!r} | model={model_name}"
+        )
         response = client.chat.completions.create(
             model=model_name,
             messages=[
                 {
                     "role": "system",
-                    "content": """너는 원고를 청크 단위로 쪼개서 표현 및 이음세 형태소에 살짝 변환만 주는 원고 카피 전문가야
-                    **🏆 목표: "원본과 동일한 정보를 담으면서도 완전히 새로운 표현으로 재탄생한, 네이버 최적화 콘텐츠"**
-                    """,
+                    "content": "너는 원고를 청크로 쪼개서 다시 만들어주는 전문가야",
                 },
                 {
                     "role": "user",
@@ -166,6 +152,9 @@ pf.kakao.com}}
             in_tokens = getattr(usage, "prompt_tokens", None)
             out_tokens = getattr(usage, "completion_tokens", None)
             total_tokens = getattr(usage, "total_tokens", None)
+            print(
+                f"KKK Service tokens in={in_tokens}, out={out_tokens}, total={total_tokens}"
+            )
 
         choices = getattr(response, "choices", []) or []
         if not choices or not getattr(choices[0], "message", None):
@@ -175,18 +164,11 @@ pf.kakao.com}}
         if not text:
             raise RuntimeError("모델이 빈 응답을 반환했습니다.")
 
-        if model_name != Model.GPT5:
-            text = format_paragraphs(text)
-
-        text = clean_text_format(text)
-
         length_no_space = len(re.sub(r"\s+", "", text))
-        elapsed = time.time() - start_ts
-        print(f"원고 길이 체크: {length_no_space}")
-        print(f"원고 소요시간: {elapsed:.2f}s")
-        print("원고작성 완료")
+        print(f"KKK {model_name} 문서 생성 완료 (공백 제외 길이: {length_no_space})")
 
         return text
 
     except Exception as e:
+        print("KKK OpenAI 호출 실패:", repr(e))
         raise
