@@ -36,7 +36,8 @@ def format_paragraphs(doc: str) -> str:
 - 한 줄은 가급적 약 45자 이후 자연스럽게 줄바꿈  
 - 줄바꿈 시 이음세 부분을(그래서, 그리고, 또한, 하지만 등)를 활용하여 문장이 매끄럽게 이어지도록 함  
 - `,` 때문에 줄바꿈하지 않는다  
-- 부제 하단은 줄바꿈 두 번  
+- {{소제목}} 하단은 줄바꿈 두 번  
+- 앞에 {{숫자}}. 으로 시작하는 {{소제목}}은 줄바꿈 금지  
 - 2~3줄마다 줄바꿈  
 - 한 문단은 3~5줄 유지  
 - 짧은 문장을 마구 끊지 않고 자연스러운 리듬으로 작성  
@@ -76,7 +77,6 @@ def format_paragraphs(doc: str) -> str:
         text: str = (choices[0].message.content or "").strip()
         if not text:
             raise RuntimeError("모델이 빈 응답을 반환했습니다.")
-
 
         return text
 
