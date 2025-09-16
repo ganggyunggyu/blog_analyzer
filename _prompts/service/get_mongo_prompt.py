@@ -78,7 +78,7 @@ def get_mongo_prompt(category: str) -> str:
         )
     else:
         templates_str = "없음"
-    print(templates_str)
+
     _mongo_prompt = f"""
 
 [소제목 예시]
