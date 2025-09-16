@@ -12,7 +12,6 @@ def get_category_db_name(keyword: str) -> str:
         )
     client = OpenAI(api_key=OPENAI_API_KEY)
 
-    # 카테고리 목록 예시입니다. 필요에 따라 수정하거나 확장할 수 있습니다.
     categories = [
         "hospital",
         "legalese",
