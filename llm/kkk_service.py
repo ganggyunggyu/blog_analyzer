@@ -12,7 +12,7 @@ from utils.query_parser import parse_query
 from utils.text_cleaner import comprehensive_text_clean
 
 
-model_name: str = Model.GPT4_1
+model_name: str = Model.GPT5_CHAT
 min_length: int
 max_length: int
 
