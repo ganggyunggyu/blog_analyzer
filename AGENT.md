@@ -1,33 +1,122 @@
-# 🐍 Blog Analyzer Python 개발 컨벤션
+# 🤖 Blog Analyzer AI Agent
 
 ## 🎯 프로젝트 개요
 **FastAPI 기반 블로그 원고 분석 및 AI 생성 도구**
 - **언어**: Python 3.7+
-- **프레임워크**: FastAPI + Uvicorn  
+- **주 목적**: 기존 원고 분석 → AI 기반 신규 원고 자동 생성
+- **프레임워크**: FastAPI + Uvicorn
 - **데이터베이스**: MongoDB (pymongo)
-- **AI 서비스**: OpenAI, Anthropic, Google, Upstage
-- **자연어처리**: KoNLPy, KSS
+- **AI 서비스**: GPT-4/5, Claude, Gemini, Solar(Upstage)
+- **자연어처리**: KoNLPy, KSS (한국어 특화)
+- **CLI 도구**: Click
+
+## 🏗️ 아키텍처
+
+### 🖥️ CLI 도구 (main.py)
+```bash
+# 메뉴형 대화식 CLI - 분석부터 생성까지 전 과정
+python main.py
+```
+**분석 파이프라인**: 형태소 분석 → 문장 분리 → 표현 추출 → 파라미터 분석 → 템플릿 생성 → 원고 생성
+
+### 🌐 API 서버 (api.py)
+```bash
+# FastAPI 서버 - RESTful API 제공
+uvicorn api:app --reload --host 0.0.0.0 --port 8000
+```
+
+### 📡 주요 API 엔드포인트
+```
+🤖 AI 원고 생성
+POST /generate/gpt         # GPT-4 원고 생성
+POST /generate/gpt_5       # GPT-5 원고 생성
+POST /generate/claude      # Claude 원고 생성
+POST /generate/gemini      # Gemini 원고 생성
+POST /generate/solar       # Solar 원고 생성
+POST /generate/kkk         # KKK 프롬프트 특화 생성
+POST /generate/chunk       # 청크 단위 분할 생성
+POST /generate/step_by_step # 단계별 생성
+
+📊 텍스트 분석
+POST /analysis/upload_text     # 텍스트 분석 업로드
+POST /analysis/get_sub_title   # 부제목 추출
+
+🗂️ 카테고리 관리
+POST /category/keyword         # 키워드 카테고리 분류
+```
 
 ---
 
-## 📁 프로젝트 구조 (확정)
+## 📁 핵심 디렉토리 구조
+
 ```
 blog_analyzer/
-├── main.py                 # CLI 메인 스크립트
-├── api.py                  # FastAPI 애플리케이션 진입점
-├── config.py               # 환경변수 및 API 클라이언트 설정
-├── mongodb_service.py      # MongoDB 연결 및 CRUD 서비스
-├── routers/               # FastAPI 라우터들
-│   ├── generate/          # AI 원고 생성 라우터들
-│   ├── analysis/          # 텍스트 분석 라우터들
-│   └── category/          # 카테고리 관련 라우터들
-├── llm/                   # LLM 서비스 로직
-├── analyzer/              # 텍스트 분석 모듈
-├── schema/                # Pydantic 스키마 정의
-├── utils/                 # 유틸리티 함수들
-├── _prompts/              # AI 프롬프트 템플릿
-├── _constants/            # 상수 정의
-└── _docs/                 # 문서 관련 파일들
+├── 🚀 main.py                 # CLI 메인 스크립트 (메뉴형)
+├── 🌐 api.py                  # FastAPI 애플리케이션 진입점
+├── ⚙️ config.py               # 환경변수 및 API 클라이언트 설정
+├── 🗄️ mongodb_service.py      # MongoDB 연결 및 CRUD 서비스
+├── 📡 routers/               # FastAPI 라우터들
+│   ├── generate/             # 🤖 AI 원고 생성 라우터들
+│   │   ├── gpt.py           # GPT-4 생성
+│   │   ├── gpt_5.py         # GPT-5 생성
+│   │   ├── claude.py        # Claude 생성
+│   │   ├── gemini.py        # Gemini 생성
+│   │   ├── solar.py         # Solar 생성
+│   │   ├── kkk.py          # KKK 프롬프트 특화
+│   │   ├── chunk.py        # 청크 분할 생성
+│   │   └── step_by_step.py # 단계별 생성
+│   ├── analysis/             # 📊 텍스트 분석 라우터들
+│   └── category/             # 🗂️ 카테고리 관련 라우터들
+├── 🧠 llm/                   # LLM 서비스 로직
+│   ├── gpt_4_service.py     # GPT-4 구현체
+│   ├── claude_service.py    # Claude 구현체
+│   ├── gemini_service.py    # Gemini 구현체
+│   ├── chunk_service.py     # 청크 처리 로직
+│   └── kkk_service.py      # KKK 프롬프트 처리
+├── 🔬 analyzer/              # 자연어 텍스트 분석 모듈
+│   ├── morpheme.py          # 형태소 분석 (KoNLPy)
+│   ├── sentence.py          # 문장 분리 (KSS)
+│   ├── expression.py        # 표현 추출 (AI 기반)
+│   └── parameter.py         # 파라미터 분석 (AI 기반)
+├── 📄 schema/                # Pydantic 스키마 정의
+├── 🛠️ utils/                 # 유틸리티 함수들
+├── 💬 _prompts/              # AI 프롬프트 템플릿
+├── 📊 _constants/            # 상수 정의 (모델명 등)
+└── 📚 _docs/                 # 문서 관련 파일들
+```
+
+## 🔧 주요 기능 흐름
+
+### 1️⃣ 텍스트 분석 파이프라인
+```
+📝 원고 텍스트 파일들
+    ↓
+🔬 1. 형태소 분석 (KoNLPy) → 단어 추출
+    ↓
+📏 2. 문장 분리 (KSS) → 문장 단위 분리
+    ↓
+🎨 3. 표현 추출 (AI) → 글쓰기 표현 패턴 추출
+    ↓
+🏷️ 4. 파라미터 분석 (AI) → 개체명 인식 및 그룹화
+    ↓
+📋 5. 템플릿 생성 → 파라미터를 변수화한 템플릿
+    ↓
+🗄️ MongoDB 저장 (분석 결과 축적)
+```
+
+### 2️⃣ AI 원고 생성 워크플로우
+```
+📊 사용자 키워드 + 참조 원고 (선택)
+    ↓
+🗄️ MongoDB에서 기존 분석 데이터 로드
+    ↓
+💬 프롬프트 생성 (시스템 + 사용자 + 분석 결과)
+    ↓
+🤖 AI 모델 호출 (GPT/Claude/Gemini/Solar)
+    ↓
+✨ 텍스트 후처리 및 정제
+    ↓
+🗄️ 생성 결과 MongoDB 저장 + API 응답
 ```
 
 ---
