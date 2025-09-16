@@ -3,6 +3,8 @@ import re
 import time
 
 from openai import OpenAI
+from _prompts.constants import alticle_nat_prompt, article_flow_prompt
+from _prompts.service.get_mongo_prompt import get_mongo_prompt
 from config import OPENAI_API_KEY
 from _constants.Model import Model
 from _prompts.get_kkk_prompts import KkkPrompt
@@ -35,52 +37,52 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
 
     parsed = parse_query(user_instructions)
 
+    if category == "legalese":
+        model_name = Model.GPT5
+    else:
+        model_name = Model.GPT5_CHAT
+
     if not parsed["keyword"]:
         raise ValueError("키워드가 없습니다.")
 
-    # if category == "legalese":
-    #     model_name = Model.GPT5
-    # else:
-    #     model_name = Model.GPT5_CHAT
-
     if model_name == Model.GPT5_CHAT:
-        min_length, max_length = 3000, 3200
-    elif model_name == Model.GPT5:
-        min_length, max_length = 2200, 2400
+        [min_length, max_length] = [3000, 3200]
     else:
-        min_length, max_length = 3000, 3200
+        [min_length, max_length] = [2400, 2600]
 
-    기본_프롬프트 = KkkPrompt.kkk_prompt_gpt_5(
+    default_prompt = KkkPrompt.kkk_prompt_gpt_5(
         keyword=parsed["keyword"],
         min_length=min_length,
         max_length=max_length,
-        note=parsed.get("note", ""),
         category=category,
     )
-    참조_분석_프롬프트 = get_ref_prompt(ref)
+    mongo_data = get_mongo_prompt(category)
+    ref_prompt = get_ref_prompt(ref)
 
     system = KkkPrompt.get_kkk_system_prompt_v2()
 
     user: str = (
         f"""
-if {category} == "legalese":
-    base_prompt += '''
-화자 톤은 법률 전문가로서의 조언
-'''
+
+[라이브러리 데이터]
+{mongo_data}
+
+[참조원고 데이터]
+{ref_prompt}
+
+위 데이터를 토대로 블로그 바이럴 마케팅 원고를 작성해
+
+[원고 작성 규칙]
+
+{default_prompt}
+
+{alticle_nat_prompt}
+
+{article_flow_prompt}
+
 ---
 
-[참조 원고 분석]
-{ref}
-{참조_분석_프롬프트}
-
----
-
-[필수 사항]
-{기본_프롬프트}
-
----
-
-[필수로 이행해야하는 추가 요청]
+[유저 추가 요청]
 {parsed.get('note', '')}
 
 ---
