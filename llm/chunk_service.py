@@ -4,7 +4,9 @@ import re
 from openai import OpenAI
 from config import OPENAI_API_KEY
 from _constants.Model import Model
+from utils.format_paragraphs import format_paragraphs
 from utils.query_parser import parse_query
+from utils.text_cleaner import clean_text_format
 
 
 model_name: str = Model.GPT5
@@ -166,6 +168,10 @@ pf.kakao.com}}
 
         length_no_space = len(re.sub(r"\s+", "", text))
         print(f"KKK {model_name} 문서 생성 완료 (공백 제외 길이: {length_no_space})")
+
+        text = format_paragraphs(text)
+
+        text = clean_text_format(text)
 
         return text
 
