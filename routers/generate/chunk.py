@@ -29,7 +29,6 @@ async def generator_kkk(request: GenerateRequest):
 
     is_ref = len(ref) != 0
 
-    # 디버그 출력: 서비스/모델/카테고리/키워드/참조 유무
     print(
         f"[GEN] service={service} | model={model_name} | category={category} | keyword={keyword} | hasRef={is_ref}"
     )
