@@ -23,7 +23,7 @@ async def generator_kkk(request: GenerateRequest):
     ref = request.ref
 
     category = get_category_db_name(keyword=keyword + ref)
-    if any(x in category for x in ["diet", "beauty", "functional"]):
+    if any(x in category for x in ["diet", "beauty"]):
         category = "sowha"
 
     db_service = MongoDBService()
