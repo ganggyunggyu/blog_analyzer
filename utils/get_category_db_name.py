@@ -1,4 +1,5 @@
 from openai import OpenAI
+from _constants import Model
 from config import OPENAI_API_KEY
 
 
@@ -28,8 +29,6 @@ def get_category_db_name(keyword: str) -> str:
         "e-ciga-liquid",
         "melatonin",
         "anime",
-        "리쥬란",
-        "리들샷",
         "edu",
     ]
 
@@ -47,7 +46,7 @@ def get_category_db_name(keyword: str) -> str:
 
     try:
         response = client.chat.completions.create(
-            model="o3-2025-04-16",
+            model=Model.Model.GPT5_MINI,
             messages=[
                 {
                     "role": "system",
