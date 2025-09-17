@@ -14,7 +14,7 @@ from utils.query_parser import parse_query
 from utils.text_cleaner import comprehensive_text_clean
 
 
-model_name: str = Model.GPT5_CHAT
+model_name: str = Model.GPT5
 min_length: int
 max_length: int
 
@@ -30,17 +30,33 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
         RuntimeError: 모델이 빈 응답을 반환한 경우 등
         ValueError: API 키 미설정 등의 환경 이슈
         Exception: OpenAI 호출 실패 등 기타 예외
+
+
+    Lib:
+        [참조원고 데이터]
+        {ref_prompt}
+
+        위 데이터를 토대로 블로그 바이럴 마케팅 원고를 작성해
+
+        [원고 작성 규칙]
+
+        {default_prompt}
+
+        {alticle_nat_prompt}
+
+        {article_flow_prompt}
     """
 
     if not OPENAI_API_KEY:
         raise ValueError("OPENAI_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요.")
 
     parsed = parse_query(user_instructions)
-
-    if category == "legalese":
-        model_name = Model.GPT5
-    else:
-        model_name = Model.GPT5_CHAT
+    keyword, note = parsed.get("keyword", ""), parsed.get("note", "")
+    print(keyword, note)
+    # if category == "legalese":
+    # model_name = Model.GPT5
+    # else:
+    # model_name = Model.GPT5_CHAT
 
     if not parsed["keyword"]:
         raise ValueError("키워드가 없습니다.")
@@ -60,26 +76,23 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     ref_prompt = get_ref_prompt(ref)
 
     system = KkkPrompt.get_kkk_system_prompt_v2()
-
     user: str = (
         f"""
 
-[라이브러리 데이터]
-{mongo_data}
-
-[참조원고 데이터]
+[참조원고]
 {ref_prompt}
-
-위 데이터를 토대로 블로그 바이럴 마케팅 원고를 작성해
+[키워드]
+{parsed.get('keyword', '')}
 
 [원고 작성 규칙]
+"" 쓰지마
+마무리: << 이런거 하지마 문장체로 써 요약해보자면 마무리 해보자면 이런식으로
+비용: 병원비와 1펜 단가, 부대비용까지 합치면 << 이런거 하지마 자연스러운 문장형태로 작성해
 
-{default_prompt}
-
-{alticle_nat_prompt}
-
-{article_flow_prompt}
-
+---
+[라이브러리]
+- 꼭 이 라이브러리 규칙을 참고해서 원고를 작성해야해
+{mongo_data}
 ---
 
 [유저 추가 요청]
@@ -100,7 +113,12 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
             messages=[
                 {
                     "role": "system",
-                    "content": system,
+                    "content": """
+너는 입력된 템플릿과 라이브러리를 받아, 템플릿의 [슬롯]을 의미가 맞는 라이브러리 값으로 자연스럽게 채워 넣는 역할을 한다.  
+반드시 유저가 보내는 키워드를 중심으로 원고를 작성하도록 한다.
+동일 슬롯은 중복되지 않도록 변형·순환하며, 문맥이 맞지 않으면 일반 어휘를 보완하되 과장·확정 표현은 금지한다.  
+출력은 템플릿의 구조와 길이를 유지하되 마크다운·대괄호·링크 없이 완성된 본문만 반환한다.
+""",
                 },
                 {
                     "role": "user",

@@ -1,3 +1,4 @@
+from xml.etree.ElementInclude import include
 from fastapi import HTTPException, APIRouter
 from fastapi.concurrency import run_in_threadpool
 
@@ -22,6 +23,8 @@ async def generator_kkk(request: GenerateRequest):
     ref = request.ref
 
     category = get_category_db_name(keyword=keyword + ref)
+    if any(x in category for x in ["diet", "beauty", "functional"]):
+        category = "sowha"
 
     db_service = MongoDBService()
     db_service.set_db_name(db_name=category)
@@ -40,6 +43,7 @@ async def generator_kkk(request: GenerateRequest):
             parsed = parse_query(keyword)
 
             current_time = time.time()
+
             document = {
                 "content": generated_manuscript,
                 "timestamp": current_time,
