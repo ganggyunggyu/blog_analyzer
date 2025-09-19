@@ -2,10 +2,8 @@ from __future__ import annotations
 import re
 
 from openai import OpenAI
-from _rule import SEN_RULES
 from config import OPENAI_API_KEY
 from _constants.Model import Model
-from utils.query_parser import parse_query
 
 
 model_name: str = Model.GPT4_1
@@ -72,7 +70,15 @@ def format_paragraphs(doc: str) -> str:
         if not choices or not getattr(choices[0], "message", None):
             raise RuntimeError("모델이 유효한 choices/message를 반환하지 않았습니다.")
 
-        text: str = (choices[0].message.content or "").strip()
+        text: str = re.sub(
+            r"\n마무리 멘트.*$",
+            "",
+            re.sub(
+                r"(?s)^서론.*?1\.", "1.", (choices[0].message.content or "").strip()
+            ),
+            flags=re.S,
+        ).strip()
+
         if not text:
             raise RuntimeError("모델이 빈 응답을 반환했습니다.")
 
