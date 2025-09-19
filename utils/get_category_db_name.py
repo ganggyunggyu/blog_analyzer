@@ -17,6 +17,7 @@ def get_category_db_name(keyword: str) -> str:
         "hospital",
         "legalese",
         "beauty-treatment",
+        "beauty-products",
         "functional-food",
         "startup",
         "home-appliances",
@@ -30,6 +31,7 @@ def get_category_db_name(keyword: str) -> str:
         "melatonin",
         "anime",
         "edu",
+        "restaurant",
     ]
 
     prompt = f"""
