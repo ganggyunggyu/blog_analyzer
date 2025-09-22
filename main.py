@@ -306,7 +306,7 @@ def run_manuscript_generation(
 def save_analysis_to_mongodb(directory_path: str):
     try:
         db = MongoDBService()
-        click.echo("MongoDB 연결 성공.")
+        click.echo(f"{directory_path} 데이터베이스에 연결 성공.")
         ts = time.time()
 
         # 1) 형태소
