@@ -225,3 +225,121 @@ Recommend exposing read-only endpoints for each when needed and consuming via ty
 - Add read endpoints to fetch latest aggregates (mirror `get_latest_analysis_data`).
 - Introduce `clients/ts/` with FSD structure (`entities/`, `features/`, `views/`, `shared/`).
 - Optionally add GraphQL proxy (NestJS) if composition across services is needed.
+
+---
+
+## Agent Working Rules (Operational)
+- Do not start servers unless explicitly requested.
+- Keep comments minimal; only essential, task-relevant context.
+- Extract magic numbers to `_constants/` as `UPPER_SNAKE_CASE`.
+- Use shared patterns for exceptions, logging, and settings; avoid ad‑hoc prints or global state.
+- Python: absolute imports, full type hints, Pydantic models for IO; keep analyzer functions pure.
+- TypeScript consumers: absolute imports, TanStack Query, Jotai for state, `cn` utility for class names, Tailwind v4.
+
+## FastAPI Addendum
+- Exceptions: raise domain errors in services, convert to `HTTPException` in routers.
+- Logging: prefer a shared logger util (no `print`), level from settings.
+- Settings: environment variables via a single config module; do not expose secrets at module import time.
+
+## AI Service Addendum
+- Token logging: only when `usage` is present; never log prompts with secrets.
+- Concurrency: control via `LLM_CONCURRENCY` (no hardcoding); prefer threadpool/async boundaries at service edge.
+- Models/limits: manage exclusively in `_constants/`.
+
+## Pydantic Serialization Note
+- Internal Python uses `snake_case`. For TS compatibility, optionally use `Field(serialization_alias="lowerCamel")` and `model_config = {"populate_by_name": True}`.
+
+---
+
+## Frontend (TS) Integration Rules
+
+### Absolute Imports and `cn`
+- Configure path alias (e.g., Vite `@/*`). All imports should be absolute.
+- Class composition must use `cn` (clsx + tailwind-merge):
+
+```ts
+// src/shared/lib/cn/index.ts
+import { clsx, type ClassValue } from 'clsx'
+import { twMerge } from 'tailwind-merge'
+export const cn = (...inputs: ClassValue[]) => twMerge(clsx(inputs))
+```
+
+### TanStack Query Baseline
+```tsx
+// src/app/provider/query-client.tsx
+import React from 'react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
+export const withQueryClient = (node: React.ReactNode) => {
+  const client = new QueryClient()
+  return <QueryClientProvider client={client}>{node}</QueryClientProvider>
+}
+```
+
+### Minimal API Client + Hook
+```ts
+// src/shared/api/client.ts
+export interface ApiClientConfig { baseUrl: string; apiKey?: string }
+export const createApiClient = ({ baseUrl, apiKey }: ApiClientConfig) => {
+  const headers = (): HeadersInit => ({ 'Content-Type': 'application/json', ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}) })
+  const post = async <TReq, TRes>(path: string, body: TReq): Promise<TRes> => {
+    const res = await fetch(`${baseUrl}${path}`, { method: 'POST', headers: headers(), body: JSON.stringify(body) })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    return (await res.json()) as TRes
+  }
+  return { post }
+}
+```
+
+```ts
+// src/entities/manuscript/api/types.ts
+export type GenerateRequestDto = { service: 'gpt'|'claude'|'solar'|'gemini'|'gpt_5'; keyword: string; ref: string }
+export type ManuscriptDoc = { _id?: string; content: string; timestamp: number; engine: string; keyword: string }
+```
+
+```ts
+// src/entities/manuscript/hooks/use-generate.ts
+import { useMutation } from '@tanstack/react-query'
+import type { GenerateRequestDto, ManuscriptDoc } from '@/entities/manuscript/api/types'
+
+export const useGenerateManuscript = (baseUrl: string) => {
+  return useMutation<ManuscriptDoc, Error, GenerateRequestDto>({
+    mutationFn: async (payload) => {
+      const res = await fetch(`${baseUrl}/generate/gpt`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      return (await res.json()) as ManuscriptDoc
+    },
+  })
+}
+```
+
+### Jotai: Actions in Hooks, Not Store
+```ts
+// src/shared/state/manuscript.atoms.ts
+import { atom } from 'jotai'
+import type { ManuscriptDoc } from '@/entities/manuscript/api/types'
+export const manuscriptAtom = atom<ManuscriptDoc | undefined>(undefined)
+```
+
+```ts
+// src/entities/manuscript/hooks/use-manuscript.ts
+import React from 'react'
+import { useSetAtom } from 'jotai'
+import { manuscriptAtom } from '@/shared/state/manuscript.atoms'
+import { useGenerateManuscript } from '@/entities/manuscript/hooks/use-generate'
+
+export const useManuscript = (baseUrl: string) => {
+  const setManuscript = useSetAtom(manuscriptAtom)
+  const gen = useGenerateManuscript(baseUrl)
+  const handleGenerate = React.useCallback(async (payload: Parameters<typeof gen.mutateAsync>[0]) => {
+    const doc = await gen.mutateAsync(payload)
+    setManuscript(doc)
+    return doc
+  }, [gen, setManuscript])
+  return { handleGenerate, isLoading: gen.isPending, error: gen.error }
+}
+```
+
+### Tailwind v4
+- Next.js: https://tailwindcss.com/docs/installation/framework-guides/nextjs
+- React/Vue + Vite: https://tailwindcss.com/docs/installation/using-vite
