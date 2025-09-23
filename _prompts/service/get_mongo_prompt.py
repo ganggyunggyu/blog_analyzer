@@ -82,41 +82,46 @@ def get_mongo_prompt(category: str) -> str:
     clean_templates_str = templates_str.replace("\n", "")
     clean_templates_str = templates_str.replace("\\n", "")
 
-    print(clean_templates_str)
     t_len = len(clean_templates_str)
-    print(t_len)
+    print(f"템플릿 길이: {t_len}자")
     _mongo_prompt = f"""
 [소제목 작성 가이드]
-- {{소제목}}은 한 줄로 간결하게 작성하세요.
-- 키워드와 본문 흐름에 자연스럽게 이어지도록 만드세요.
-- 아래 소제목 예시를 참고하되 그대로 복사하지 말고 창의적으로 변형하세요.
-- 소제목은 5개로 고정
-    서론
-    1. 소제목
-        본문
-    2. 소제목
-        본문
-    3. 소제목
-        본문
-    4. 소제목
-        본문
-    5. 소제목
-        본문
-    마무리 멘트 (2~3줄 정도로 간단히)
+- 소제목은 반드시 5개로 고정합니다.
+- 각 소제목은 한 줄로 간결하게, 본문 흐름과 키워드를 자연스럽게 연결하세요.
+- 소제목 앞에는 넘버링을 필수로 넣어주세요.
 
+[구조 예시]
+서론  
+1. 소제목  
+    본문  
+2. 소제목  
+    본문  
+3. 소제목  
+    본문  
+4. 소제목  
+    본문  
+5. 소제목  
+    본문  
+마무리 멘트 (간단히 2~3줄)
+
+<<<SUb_TITLE_DATA
 {subtitles_str}
+>>>
+
+---
+<<<EXP_DATA
+[표현 라이브러리]
+{expressions_str}
+>>>
 
 ---
 
-[표현 라이브러리]
-{expressions_str}
-
+<<<PARAM_DATA
 [형태소 라이브러리]
 {parameters_str}
-
-※ 형태소를 사용할 때는 값이 상황에 맞게 바뀔 수 있도록 조정하세요.
+>>>
+* 형태소를 사용할 때는 값이 상황에 맞게 바뀔 수 있도록 조정하세요.
    예: 33평 → 28평 / 60L → 90L / A씨 → F씨
-
 ---
 
 [템플릿 예시]
@@ -131,7 +136,9 @@ def get_mongo_prompt(category: str) -> str:
 ---
 
 [템플릿 원문]
+<<<TEM_DATA
 {clean_templates_str}
+>>>
 """
 
     return _mongo_prompt
