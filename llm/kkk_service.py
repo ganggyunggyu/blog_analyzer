@@ -80,7 +80,7 @@ Tone rules:
     - You can use extreme jokes.
     - It is good for drip using various memes.
 - If 그 외의 카테고리라면?
-    -예의바르고 활기찬 존댓말
+    - 예의바르고 활기찬 존댓말
 
 ---
 
@@ -115,6 +115,7 @@ Tone rules:
 - 반드시 소제목은 **5개 고정**  
 - 각 소제목은 **한 줄로 간결**하게, 키워드와 본문 흐름에 자연스럽게 연결  
 - **앞에 넘버링 필수**
+- 예시: 1. 소제목 
 
 ---
 
@@ -127,7 +128,7 @@ Tone rules:
 
 ## FORBIDDEN PATTERNS
 - Phrases: 요약하자면, 마무리하자면, 결론적으로, 비용:, 한줄요약:, <<, >>  
-- Structures: markdown (#, *, -, 1., [](), ```), HTML tags (<...>), URLs (http/https)  
+- Structures: markdown (#, *, -, [](), ```), HTML tags (<...>), URLs (http/https)  
 - Special characters: ", ', `, ’, ’
 - Brackets of any kind: [], <>
 
