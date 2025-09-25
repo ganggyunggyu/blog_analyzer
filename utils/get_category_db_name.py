@@ -3,7 +3,7 @@ from _constants import Model
 from config import OPENAI_API_KEY
 
 
-def get_category_db_name(keyword: str) -> str:
+async def get_category_db_name(keyword: str) -> str:
     """
     주어진 키워드를 AI를 사용하여 분석하고, 가장 적합한 카테고리를 반환합니다.
     """
@@ -14,25 +14,40 @@ def get_category_db_name(keyword: str) -> str:
     client = OpenAI(api_key=OPENAI_API_KEY)
 
     categories = [
-        "hospital",
-        "legalese",
-        "beauty-treatment",
+        "공항_장기주차장:주차대행",
+        "다이어트",
+        "라미네이트",
+        "마운자로가격",
+        "미용학원",
+        "서브웨이다이어트",
+        "스위치온다이어트",
+        "에리스리톨",
+        "위고비",
+        "위고비부작용",
+        "위고비후기",
+        "캐리어",
+        # "텔레그램사기",
+        "파비플로라",
+        "alpha-cd",
+        "anime",
         "beauty-products",
+        "beauty-treatment",
+        # "dalivora사기",
+        "dentistry",
+        "edu",
+        "e-ciga-liquid",
         "functional-food",
-        "startup",
+        "hospital",
         "home-appliances",
-        "diet",
+        "legalese",
+        "luxury",
+        "melatonin",
         "ophthalmology",
         "pets-adoption",
-        "traval",
-        "dentistry",
-        "wedding",
-        "e-ciga-liquid",
-        "melatonin",
-        "anime",
-        "edu",
         "restaurant",
-        "luxury",
+        "startup",
+        "traval",
+        "wedding",
     ]
 
     prompt = f"""
@@ -49,7 +64,7 @@ def get_category_db_name(keyword: str) -> str:
 
     try:
         response = client.chat.completions.create(
-            model=Model.Model.GPT5_MINI,
+            model=Model.Model.GPT4_1,
             messages=[
                 {
                     "role": "system",
@@ -72,7 +87,3 @@ def get_category_db_name(keyword: str) -> str:
 
     except Exception:
         return "기타"  # 오류 발생 시 기본값 반환
-
-
-# model='gpt-5-mini-2025-08-07',
-# model='gpt-5-2025-08-07',
