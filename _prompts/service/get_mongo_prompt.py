@@ -69,8 +69,13 @@ def get_mongo_prompt(category: str) -> str:
         else "없음"
     )
     templates_str: str = ""
+    template_info = ""
     if templates:
         random_template = random.choice(templates)
+        template_file_name = random_template.get("file_name", "파일명 없음")
+        template_id = str(random_template.get("_id", "ID 없음"))
+        template_info = f"{template_file_name}:{template_id}"
+
         templates_str: str = json.dumps(
             random_template,
             ensure_ascii=False,
@@ -78,11 +83,13 @@ def get_mongo_prompt(category: str) -> str:
         )
     else:
         templates_str = "없음"
+        template_info = "템플릿 없음"
 
     clean_templates_str = templates_str.replace("\n", "")
     clean_templates_str = templates_str.replace("\\n", "")
 
     t_len = len(clean_templates_str)
+    print(f"템플릿 [START] {template_info}")
     print(f"템플릿 길이: {t_len}자")
     _mongo_prompt = f"""
 [소제목 작성 가이드]
@@ -136,6 +143,7 @@ def get_mongo_prompt(category: str) -> str:
 ---
 
 [템플릿 원문]
+- 참고 파일: {template_info}
 <<<TEM_DATA
 {clean_templates_str}
 >>>

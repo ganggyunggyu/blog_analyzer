@@ -58,6 +58,7 @@ INDEX_MAP: Dict[str, UniqueIndex] = {
     "sentences": "sentence",
     "expressions": [("category", ASCENDING), ("expression", ASCENDING)],
     "parameters": [("category", ASCENDING), ("parameter", ASCENDING)],
+    "templates": "file_name",
 }
 
 
@@ -252,15 +253,19 @@ class MongoDBService:
         if sub_res:
             subtitles = sorted(sub_res[0].get("subs", []))
 
-        # templates: 필요한 필드만
+        # templates: 필요한 필드만 (_id도 포함)
         templates: List[Dict[str, Any]] = []
         for doc in self.db["templates"].find(
-            {}, {"_id": 0, "file_name": 1, "templated_text": 1}
+            {}, {"_id": 1, "file_name": 1, "templated_text": 1}
         ):
             tt = (doc.get("templated_text") or "").strip()
             if tt:
                 templates.append(
-                    {"file_name": doc.get("file_name"), "templated_text": tt}
+                    {
+                        "_id": str(doc.get("_id")) if doc.get("_id") else None,
+                        "file_name": doc.get("file_name"),
+                        "templated_text": tt
+                    }
                 )
 
         return {
