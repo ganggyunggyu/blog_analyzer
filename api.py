@@ -27,7 +27,7 @@ from routers.generate import (
     step_by_step,
 )
 from routers.category import keyword
-from routers.analysis import get_sub_title, upload_text
+from routers.analysis import get_sub_title, upload_text, analyzer_router
 from routers.ref import get_ref
 
 LLM_CONCURRENCY = int(os.getenv("LLM_CONCURRENCY", "3"))
@@ -64,3 +64,4 @@ app.include_router(my.router)
 app.include_router(song.router)
 app.include_router(gang.router)
 app.include_router(step_by_step.router)
+app.include_router(analyzer_router.router)

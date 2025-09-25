@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from claude.claude_service import claude_blog_generator
 from llm.claude_service import claude_gen, ClaudeModel
-from main import run_manuscript_generation
+
 from mongodb_service import MongoDBService
 
 from llm.gemini_service import get_gemini_response
