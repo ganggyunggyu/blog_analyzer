@@ -1,13 +1,16 @@
 from __future__ import annotations
 import random
+import re
 
 import json
 from typing import List, Dict, Any
 from bson import ObjectId
 from mongodb_service import MongoDBService
+from utils.select_template import select_template
 
 
-def get_mongo_prompt(category: str) -> str:
+def get_mongo_prompt(category: str, keyword: str = "") -> str:
+    print(category)
     db_service = MongoDBService()
     db_service.set_db_name(category)
 
@@ -71,16 +74,34 @@ def get_mongo_prompt(category: str) -> str:
     templates_str: str = ""
     template_info = ""
     if templates:
-        random_template = random.choice(templates)
-        template_file_name = random_template.get("file_name", "파일명 없음")
-        template_id = str(random_template.get("_id", "ID 없음"))
-        template_info = f"{template_file_name}:{template_id}"
-
-        templates_str: str = json.dumps(
-            random_template,
-            ensure_ascii=False,
-            indent=2,
+        result = select_template(
+            collection=db_service.db["templates"],
+            templates=templates,
+            keyword=keyword,
+            top_n=3,
         )
+
+        print("=== SELECT_TEMPLATE RESULT ===")
+        print(f"Selection Method: {result['selection_method']}")
+        print(f"Selected Template Info: {result['selected_template']}")
+        print("=" * 30)
+
+        selected_template = result["selected_template"]
+        selection_method = result["selection_method"]
+
+        if selected_template:
+            template_file_name = selected_template.get("file_name", "파일명 없음")
+            template_id = str(selected_template.get("_id", "ID 없음"))
+            template_info = f"{template_file_name}:{template_id} ({selection_method})"
+
+            templates_str: str = json.dumps(
+                selected_template,
+                ensure_ascii=False,
+                indent=2,
+            )
+        else:
+            templates_str = "없음"
+            template_info = "템플릿 선택 실패"
     else:
         templates_str = "없음"
         template_info = "템플릿 없음"

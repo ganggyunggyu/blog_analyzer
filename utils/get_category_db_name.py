@@ -43,10 +43,10 @@ async def get_category_db_name(keyword: str) -> str:
         "luxury",
         "melatonin",
         "ophthalmology",
-        "pets-adoption",
+        "애견동물_반려동물_분양",
         "restaurant",
         "startup",
-        "traval",
+        # "traval",
         "wedding",
     ]
 
@@ -54,12 +54,15 @@ async def get_category_db_name(keyword: str) -> str:
     다음 키워드가 어떤 카테고리에 가장 적합한지 아래 목록에서 하나만 골라주세요.
     다른 설명 없이 카테고리 이름만 정확하게 반환해야 합니다.    
     프롬프트에 카테고리 언급이 있다면 그것을 기반으로 반환해야합니다.
+    
 
     [키워드]
     {keyword}
 
     [카테고리 목록]
-    {', '.join(categories)}
+    {categories}
+
+    ***반드시 가장 유사한걸 하나라도 반환해야합니다.***
     """
 
     try:

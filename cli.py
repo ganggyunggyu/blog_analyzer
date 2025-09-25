@@ -23,6 +23,13 @@ from config import OPENAI_API_KEY
 API_DELAY_EXPR = 1.0
 
 
+def _get_category_from_path(directory_path: str) -> str:
+    """디렉토리 경로에서 카테고리명 추출"""
+    path = Path(directory_path)
+    # 절대 경로든 상대 경로든 마지막 폴더명을 카테고리로 사용
+    return path.name
+
+
 def _ensure_dir(directory_path: str) -> Path:
     p = Path(directory_path)
     if not p.exists() or not p.is_dir():
@@ -54,7 +61,7 @@ def _need_api_key():
 def run_morpheme_analysis(directory_path: str, category: str = "") -> Set[str]:
     p = _ensure_dir(directory_path)
     files = _iter_txt_files(p)
-    category = directory_path.replace("_docs/", "", 1)
+    category = _get_category_from_path(directory_path)
 
     all_words: Set[str] = set()
     for fp in tqdm(files, desc="형태소 분석 중", unit="파일"):
@@ -71,7 +78,7 @@ def run_sentence_splitting(directory_path: str, category: str = "") -> List[str]
     p = _ensure_dir(directory_path)
     files = _iter_txt_files(p)
     all_sentences: List[str] = []
-    category = directory_path.replace("_docs/", "", 1)
+    category = _get_category_from_path(directory_path)
 
     for fp in tqdm(files, desc="문장 분리 중", unit="파일"):
         content = fp.read_text(encoding="utf-8", errors="ignore")
@@ -89,7 +96,7 @@ def run_expression_extraction(
     _need_api_key()
     p = _ensure_dir(directory_path)
     files = _iter_txt_files(p)
-    category = directory_path.replace("_docs/", "", 1)
+    category = _get_category_from_path(directory_path)
 
     grouped: Dict[str, List[str]] = {}
     click.echo(f"총 {len(files)}개의 파일을 AI로 분석하여 표현을 추출합니다...")
@@ -117,7 +124,7 @@ def run_parameters_analysis(
     _need_api_key()
     p = _ensure_dir(directory_path)
     files = _iter_txt_files(p)
-    category = directory_path.replace("_docs/", "", 1)
+    category = _get_category_from_path(directory_path)
 
     grouped: Dict[str, List[str]] = {}
     click.echo(f"총 {len(files)}개의 파일을 AI로 분석하여 파라미터를 추출합니다...")
@@ -145,7 +152,7 @@ def run_template_generation(
 ) -> List[Dict[str, str]]:
     p = Path(directory_path)
     files = list(p.glob("*.txt"))
-    category = directory_path.replace("_docs/", "", 1)
+    category = _get_category_from_path(directory_path)
     if not files:
         click.echo("⚠️ 텍스트 파일이 없습니다.")
         return []
@@ -198,7 +205,7 @@ def run_subtitle_extraction(
     _need_api_key()
     p = _ensure_dir(directory_path)
     files = _iter_txt_files(p)
-    category = directory_path.replace("_docs/", "", 1)
+    category = _get_category_from_path(directory_path)
 
     result: Dict[str, List[str]] = {}
     for fp in tqdm(files, desc="부제목 추출 중", unit="파일"):

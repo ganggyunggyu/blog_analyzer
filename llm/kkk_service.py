@@ -48,7 +48,7 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
         s = re.sub(r"```.*?```", "", s, flags=re.S)
         return s.strip()
 
-    mongo_data = sanitize(get_mongo_prompt(category))
+    mongo_data = sanitize(get_mongo_prompt(category, user_instructions))
 
     system = f"""
 # System Prompt
