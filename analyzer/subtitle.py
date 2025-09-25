@@ -1,52 +1,146 @@
 from __future__ import annotations
-
+from datetime import datetime
+from typing import List, Optional
+import time
 import json
 import re
-from typing import List, Dict, Any, Optional
 
 from openai import OpenAI
 from config import OPENAI_API_KEY
-
 from _constants.Model import Model
+from mongodb_service import MongoDBService
 
-_DEFAULT_MODEL = Model.GPT5_MINI
+
+model_name: str = Model.GPT5_MINI
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 
-def _normalize_subtitle(s: str) -> str:
-    """부제 정규화: 공백/기호 정리, 끝문장부호 제거, 과도한 띄어쓰기 축소."""
+def gen_subtitles(
+    full_text: str,
+    category: str = "",
+    file_name: str = "",
+    model_name_override: Optional[str] = None,
+    max_items: int = 5,
+) -> List[str]:
+    if not OPENAI_API_KEY:
+        raise ValueError("OPENAI_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요.")
+
+    db_service = MongoDBService()
+    if category:
+        db_service.set_db_name(category)
+
+    model = model_name_override or model_name
+
+    system = """
+You are a precise subtitle extractor for Korean blog manuscripts. Return ONLY JSON. No commentary.
+""".strip()
+
+    prompt = f"""
+다음은 하나의 블로그 원고 본문입니다. 이 글의 **부제목(소제목)** 으로 적절한 문구만 추출해.
+- 한국어, 간결(최대 25~35자), 완결된 명사구/짧은 구
+- 번호/이모지/특수문자/해시태그/따옴표/마침표 제거
+- 본문 흐름을 잘 나누는 핵심 소제목 위주
+- 중복/의미 중복 제거
+- {max_items}개 이내
+
+[원고]
+{full_text}
+
+[반환 JSON 스키마]
+{{
+  "subtitles": [
+    {{"index": 1, "text": "부제목1"}},
+    {{"index": 2, "text": "부제목2"}}
+  ]
+}}
+JSON만 반환해.
+""".strip()
+
+    start_ts = time.time()
+
+    try:
+        res = get_openai(model=model, user=prompt, system=system)
+        text_content = get_openai_text(res)
+        subtitles = parse_subtitle_response(text_content)
+    except Exception:
+        subtitles = rule_based_subtitles(full_text)[:max_items]
+
+    # MongoDB에 저장
+    now = datetime.now()
+    docs_to_save = [
+        {
+            "timestamp": now,
+            "file_name": file_name,
+            "db_category": category,
+            "category": "subtitle",
+            "subtitle": subtitle,
+        }
+        for subtitle in subtitles
+    ]
+
+    if docs_to_save:
+        db_service.insert_many_documents("subtitles", docs_to_save)
+
+    elapsed = time.time() - start_ts
+    print(f"{category}-부제목 추출 소요시간: {elapsed:.2f}s")
+    print(f"추출된 부제목: {len(subtitles)}개")
+
+    db_service.close_connection()
+
+    return subtitles
+
+
+def parse_subtitle_response(text_content: str) -> List[str]:
+    content = text_content.strip()
+    normalized = strip_code_fence(content)
+    data = json.loads(normalized)
+    raw_items = data.get("subtitles", []) if isinstance(data, dict) else []
+
+    subtitles: List[str] = []
+    for item in raw_items:
+        if isinstance(item, dict) and "text" in item:
+            subtitles.append(str(item["text"]))
+        elif isinstance(item, str):
+            subtitles.append(item)
+    return subtitles
+
+
+def strip_code_fence(text: str) -> str:
+    if text.startswith("```"):
+        return re.sub(
+            r"^```(?:json)?\s*|\s*```$",
+            "",
+            text,
+            flags=re.IGNORECASE | re.DOTALL,
+        ).strip()
+    return text
+
+
+def normalize_subtitle(s: str) -> str:
     s = (s or "").strip()
-
     s = re.sub(r"\s+", " ", s)
     s = re.sub(r"[\"'·•▷▶️\-\–\—\·\•\●\■\□\◇\◆\+]+", "", s).strip()
-
     s = re.sub(r"[.!?]+$", "", s).strip()
-
     if len(s) > 40:
         s = s[:40].strip()
     return s
 
 
-def _dedupe_keeping_order(items: List[str]) -> List[str]:
+def dedupe_keeping_order(items: List[str]) -> List[str]:
     seen = set()
-    out = []
-    for x in items:
-        if not x:
+    ordered: List[str] = []
+    for item in items:
+        if not item:
             continue
-        key = x.lower()
+        key = item.lower()
         if key in seen:
             continue
         seen.add(key)
-        out.append(x)
-    return out
+        ordered.append(item)
+    return ordered
 
 
-def _rule_based_subtitles(full_text: str) -> List[str]:
-    """
-    백업용: 헤더/번호/전환 신호로 섹션 후보를 잡아 부제 추출.
-    - '1.', '2.', '3.' 등 번호
-    - '섭취 시 주의사항', '추천해요' 같은 전환 키워드
-    - 문단 첫 문장 요약
-    """
+def rule_based_subtitles(full_text: str) -> List[str]:
     lines = [re.sub(r"\s+", " ", ln).strip() for ln in full_text.splitlines()]
     lines = [ln for ln in lines if ln]
 
@@ -70,102 +164,35 @@ def _rule_based_subtitles(full_text: str) -> List[str]:
         "한줄평",
     ]
 
-    for ln in lines:
-        if pat_num.match(ln):
-            heads.append(pat_num.sub("", ln))
+    for line in lines:
+        if pat_num.match(line):
+            heads.append(pat_num.sub("", line))
             continue
-
-        if any(cw in ln for cw in cue_words):
-            heads.append(ln)
+        if any(cue in line for cue in cue_words):
+            heads.append(line)
             continue
 
     paragraphs = [p.strip() for p in re.split(r"\n\s*\n", full_text) if p.strip()]
-    for p in paragraphs:
-        first = re.split(r"(?<=[.!?。…])\s+", p.strip())[0]
-        if len(first) > 10:
-            heads.append(first)
+    for paragraph in paragraphs:
+        first_sentence = re.split(r"(?<=[.!?。…])\s+", paragraph.strip())[0]
+        if len(first_sentence) > 10:
+            heads.append(first_sentence)
 
-    heads = [_normalize_subtitle(h) for h in heads]
-    heads = [h for h in heads if 4 <= len(h) <= 40]
-    heads = _dedupe_keeping_order(heads)
-
+    heads = [normalize_subtitle(head) for head in heads]
+    heads = [head for head in heads if 4 <= len(head) <= 40]
+    heads = dedupe_keeping_order(heads)
     return heads[:12]
 
 
-def extract_subtitles_with_ai(
-    full_text: str,
-    model_name: Optional[str] = None,
-    max_items: int = 5,
-) -> List[str]:
-    """
-    원고 본문에서 '부제목(소제목)'만 뽑아 리스트로 반환.
-    1) OpenAI JSON 지시로 추출
-    2) 실패/비정상 응답 시 룰 기반 백업
-
-    Returns:
-        subtitles: List[str]
-    """
-    if not OPENAI_API_KEY:
-        raise ValueError("OPENAI_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요.")
-
-    model = model_name or _DEFAULT_MODEL
-    client = OpenAI(api_key=OPENAI_API_KEY)
-
-    system = (
-        "You are a precise subtitle extractor for Korean blog manuscripts. "
-        "Return ONLY JSON. No commentary."
+def get_openai(model, user, system):
+    return client.chat.completions.create(
+        model=model,
+        messages=[
+            {"role": "system", "content": system},
+            {"role": "user", "content": user},
+        ],
     )
 
-    user = f"""다음은 하나의 블로그 원고 본문입니다. 이 글의 **부제목(소제목)** 으로 적절한 문구만 추출해.
-- 한국어, 간결(최대 25~35자), 완결된 명사구/짧은 구
-- 번호/이모지/특수문자/해시태그/따옴표/마침표 제거
-- 본문 흐름을 잘 나누는 핵심 소제목 위주
-- 중복/의미 중복 제거
-- {max_items}개 이내
 
-[원고]
-{full_text}
-
-[반환 JSON 스키마]
-{{
-  "subtitles": [
-    {{"index": 1, "text": "부제목1"}},
-    {{"index": 2, "text": "부제목2"}}
-  ]
-}}
-JSON만 반환해.
-"""
-
-    try:
-        resp = client.chat.completions.create(
-            model=model,
-            messages=[
-                {"role": "system", "content": system},
-                {"role": "user", "content": user},
-            ],
-        )
-
-        content = (resp.choices[0].message.content or "").strip()
-
-        if content.startswith("```"):
-            content = re.sub(
-                r"^```(?:json)?\s*|\s*```$",
-                "",
-                content.strip(),
-                flags=re.IGNORECASE | re.DOTALL,
-            )
-
-        data: Dict[str, Any] = json.loads(content)
-        raw_items = data.get("subtitles", []) if isinstance(data, dict) else []
-
-        texts = []
-        for item in raw_items:
-            if isinstance(item, dict) and "text" in item:
-                texts.append(str(item["text"]))
-            elif isinstance(item, str):
-                texts.append(item)
-
-        return texts
-
-    except Exception:
-        return _rule_based_subtitles(full_text)[:max_items]
+def get_openai_text(res):
+    return res.choices[0].message.content or "".strip()
