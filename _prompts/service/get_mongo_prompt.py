@@ -10,7 +10,7 @@ from utils.select_template import select_template
 
 
 def get_mongo_prompt(category: str, keyword: str = "") -> str:
-    print(category)
+
     db_service = MongoDBService()
     db_service.set_db_name(category)
 
@@ -83,7 +83,7 @@ def get_mongo_prompt(category: str, keyword: str = "") -> str:
 
         print("=== SELECT_TEMPLATE RESULT ===")
         print(f"Selection Method: {result['selection_method']}")
-        print(f"Selected Template Info: {result['selected_template']}")
+        print(f"카테고리: {category}")
         print("=" * 30)
 
         selected_template = result["selected_template"]
