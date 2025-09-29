@@ -49,7 +49,7 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     if model_name == Model.GPT4_1:
         target_chars_min, target_chars_max = 2400, 2600
     else:
-        target_chars_min, target_chars_max = 2000, 2100
+        target_chars_min, target_chars_max = 2300, 2400
 
     def sanitize(s: str) -> str:
         s = s or ""

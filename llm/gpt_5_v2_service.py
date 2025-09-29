@@ -14,7 +14,7 @@ from _prompts.get_gpt_prompt import GptPrompt
 from _prompts.get_kkk_prompts import KkkPrompt
 from _prompts.get_system_prompt import get_system_prompt_v2
 from utils.format_paragraphs import format_paragraphs
-from utils.get_category_db_name import get_category_db_name
+from utils.get_category_db_name import get_category_db_name_sync
 from utils.query_parser import parse_query
 
 from analyzer.request_문장해체분석기 import get_문장해체
@@ -47,7 +47,7 @@ def gpt_5_gen(
 
     category = ""
     if user_instructions:
-        category = get_category_db_name(user_instructions)
+        category = get_category_db_name_sync(user_instructions)
 
     if not category:
         category = os.getenv("MONGO_DB_NAME", "wedding")

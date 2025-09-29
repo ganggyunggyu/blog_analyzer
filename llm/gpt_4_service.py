@@ -11,7 +11,7 @@ from config import OPENAI_API_KEY
 from _constants.Model import Model
 from mongodb_service import MongoDBService
 from _prompts.get_gpt_prompt import GptPrompt
-from utils.get_category_db_name import get_category_db_name
+from utils.get_category_db_name import get_category_db_name_sync
 from utils.query_parser import parse_query
 
 from config import MONGO_DB_NAME
@@ -54,7 +54,7 @@ def gpt_4_gen(
 
     category = ""
     if user_instructions:
-        category = get_category_db_name(user_instructions)
+        category = get_category_db_name_sync(user_instructions)
 
     if not category:
         category = os.getenv("MONGO_DB_NAME", "wedding")
