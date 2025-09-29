@@ -5,12 +5,12 @@ router = APIRouter()
 
 
 @router.get("/category/{keyword}")
-def category_test(keyword: str):
+async def category_test(keyword: str):
     try:
         if not keyword.strip():
             raise ValueError("키워드가 비어 있습니다.")
 
-        result = get_category_db_name(keyword)
+        result = await get_category_db_name(keyword)
 
         return result
 

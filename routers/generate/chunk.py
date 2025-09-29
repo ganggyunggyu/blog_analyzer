@@ -22,7 +22,7 @@ async def generator_kkk(request: GenerateRequest):
     keyword = request.keyword.strip()
     ref = request.ref
 
-    category = get_category_db_name(keyword=keyword)
+    category = await get_category_db_name(keyword=keyword)
 
     db_service = MongoDBService()
     db_service.set_db_name(db_name=category)

@@ -51,7 +51,7 @@ async def generate_step_by_step_manuscript(request: GenerateRequest):
         raise HTTPException(status_code=400, detail="키워드가 없습니다.")
 
     # 카테고리 자동 분류
-    category = get_category_db_name(keyword=keyword)
+    category = await get_category_db_name(keyword=keyword)
 
     # MongoDB 서비스 초기화
     db_service = MongoDBService()
@@ -150,7 +150,7 @@ async def generate_step_by_step_detailed(request: GenerateRequest):
         raise HTTPException(status_code=400, detail="키워드가 없습니다.")
 
     # 카테고리 자동 분류
-    category = get_category_db_name(keyword=keyword)
+    category = await get_category_db_name(keyword=keyword)
 
     # MongoDB 서비스 초기화
     db_service = MongoDBService()

@@ -21,7 +21,7 @@ async def generator_song(request: GenerateRequest):
     keyword = request.keyword.strip()
     ref = request.ref
 
-    category = get_category_db_name("song")
+    category = await get_category_db_name("song")
 
     is_ref: bool = False
 

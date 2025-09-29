@@ -34,7 +34,7 @@ async def generate_manuscript_gemini_api(request: GenerateRequest):
         raise HTTPException(status_code=400, detail="keyword는 필수입니다.")
 
     # 1) 카테고리 판별
-    category = get_category_db_name(keyword=keyword)
+    category = await get_category_db_name(keyword=keyword)
 
     db_service = MongoDBService()
     db_service.set_db_name(db_name=category)
