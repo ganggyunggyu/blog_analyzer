@@ -15,7 +15,7 @@ router = APIRouter()
 @router.post("/generate/gpt-5-v2")
 async def generator_gpt(request: GenerateRequest):
     """
-    Generates text using the specified service (gpt, claude, or solar).
+    GPT-5
     """
     service = request.service.lower()
     keyword = request.keyword.strip()
