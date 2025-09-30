@@ -1,173 +1,211 @@
 from __future__ import annotations
-import random
-import re
-
 import json
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
+from dataclasses import dataclass
 from bson import ObjectId
 from mongodb_service import MongoDBService
 from utils.select_template import select_template
 
 
-def get_mongo_prompt(category: str, keyword: str = "") -> str:
+@dataclass
+class PromptComponents:
+    """프롬프트 구성 요소"""
 
-    db_service = MongoDBService()
-    db_service.set_db_name(category)
+    subtitles: List[str]
+    expressions: Dict[str, List[str]]
+    parameters: Dict[str, List[str]]
+    template: Optional[Dict[str, Any]]
+    template_info: str
+    category: str
+    keyword: str
 
-    analysis_data: Dict[str, Any] = db_service.get_latest_analysis_data() or {}
 
-    subtitles_raw = analysis_data.get("subtitles") or []
-    expressions_raw = analysis_data.get("expressions") or {}
-    parameters_raw = analysis_data.get("parameters") or {}
-    templates_raw = analysis_data.get("templates") or []
+class GPT5MongoPromptBuilder:
+    """GPT-5에 최적화된 MongoDB 프롬프트 빌더"""
 
-    subtitles: List[str] = [
-        str(s).strip() for s in list(subtitles_raw) if str(s).strip()
-    ]
-    expressions: Dict[str, List[str]] = {
-        str(k): [str(vv).strip() for vv in (v or []) if str(vv).strip()]
-        for k, v in dict(expressions_raw).items()
-    }
-    parameters: Dict[str, List[str]] = {
-        str(k): [str(vv).strip() for vv in (v or []) if str(vv).strip()]
-        for k, v in dict(parameters_raw).items()
-    }
-    templates: List[Any] = list(templates_raw)
+    def __init__(self, category: str, keyword: str = ""):
+        self.category = category
+        self.keyword = keyword
+        self.db_service = MongoDBService()
+        self.db_service.set_db_name(category)
 
-    chunk_size = 5
-    chunks: List[List[str]] = [
-        subtitles[i : i + chunk_size] for i in range(0, len(subtitles), chunk_size)
-    ]
-    output: List[str] = []
-    for idx, group in enumerate(chunks, start=1):
-        joined = ", ".join(group)
-        output.append(f"{idx}: {{{joined}}}")
+    def get_components(self) -> PromptComponents:
+        """MongoDB에서 데이터 추출 및 정제"""
+        analysis_data = self.db_service.get_latest_analysis_data() or {}
 
-    subtitles_str: str = "\n".join(output) if output else "없음"
+        # 데이터 추출 및 정제
+        subtitles = self._clean_list(analysis_data.get("subtitles", []))
+        expressions = self._clean_dict(analysis_data.get("expressions", {}))
+        parameters = self._clean_dict(analysis_data.get("parameters", {}))
 
-    chunk_size = 5
-    chunks: List[List[str]] = [
-        subtitles[i : i + chunk_size] for i in range(0, len(subtitles), chunk_size)
-    ]
-    output: List[str] = []
-    for idx, group in enumerate(chunks, start=1):
-        joined = ", ".join(group)
-        output.append(f"{idx}: {{{joined}}}")
+        # 템플릿 선택
+        template, template_info = self._select_template(
+            analysis_data.get("templates", [])
+        )
 
-    subtitles_str: str = "\n".join(output) if output else "없음"
+        return PromptComponents(
+            subtitles=subtitles,
+            expressions=expressions,
+            parameters=parameters,
+            template=template,
+            template_info=template_info,
+            category=self.category,
+            keyword=self.keyword,
+        )
 
-    def _default(o):
-        if isinstance(o, ObjectId):
-            return str(o)
-        raise TypeError(f"Type not serializable: {type(o)}")
+    def _clean_list(self, data: List) -> List[str]:
+        """리스트 데이터 정제"""
+        return [str(item).strip() for item in data if str(item).strip()]
 
-    expressions_str: str = (
-        json.dumps(expressions, ensure_ascii=False, indent=2, default=_default)
-        if expressions
-        else "없음"
-    )
-    parameters_str: str = (
-        json.dumps(parameters, ensure_ascii=False, indent=2, default=_default)
-        if parameters
-        else "없음"
-    )
-    templates_str: str = ""
-    template_info = ""
-    if templates:
+    def _clean_dict(self, data: Dict) -> Dict[str, List[str]]:
+        """딕셔너리 데이터 정제"""
+        return {
+            str(k): [str(v).strip() for v in (vals or []) if str(v).strip()]
+            for k, vals in data.items()
+        }
+
+    def _select_template(self, templates: List) -> tuple[Optional[Dict], str]:
+        """템플릿 선택 및 정보 추출"""
+        if not templates:
+            return None, "템플릿 없음"
+
         result = select_template(
-            collection=db_service.db["templates"],
+            collection=self.db_service.db["templates"],
             templates=templates,
-            keyword=keyword,
+            keyword=self.keyword,
             top_n=3,
         )
 
-        print("=== SELECT_TEMPLATE RESULT ===")
-        print(f"Selection Method: {result['selection_method']}")
-        print(f"카테고리: {category}")
-        print("=" * 30)
+        selected = result.get("selected_template")
+        if not selected:
+            return None, "템플릿 선택 실패"
 
-        selected_template = result["selected_template"]
-        selection_method = result["selection_method"]
+        file_name = selected.get("file_name", "파일명 없음")
+        template_id = str(selected.get("_id", "ID 없음"))
+        method = result.get("selection_method", "unknown")
 
-        if selected_template:
-            template_file_name = selected_template.get("file_name", "파일명 없음")
-            template_id = str(selected_template.get("_id", "ID 없음"))
-            template_info = f"{template_file_name}:{template_id} ({selection_method})"
+        return selected, f"{file_name}:{template_id} ({method})"
 
-            templates_str: str = json.dumps(
-                selected_template,
-                ensure_ascii=False,
-                indent=2,
-            )
-        else:
-            templates_str = "없음"
-            template_info = "템플릿 선택 실패"
-    else:
-        templates_str = "없음"
-        template_info = "템플릿 없음"
+    def build_gpt5_prompt(self) -> str:
+        """GPT-5 최적화 프롬프트 생성"""
+        components = self.get_components()
 
-    clean_templates_str = templates_str.replace("\n", "")
-    clean_templates_str = templates_str.replace("\\n", "")
-
-    t_len = len(clean_templates_str)
-    print(f"템플릿 [START] {template_info}")
-    print(f"템플릿 길이: {t_len}자")
-    _mongo_prompt = f"""
-[소제목 작성 가이드]
-- 소제목은 반드시 5개로 고정합니다.
-- 각 소제목은 한 줄로 간결하게, 본문 흐름과 키워드를 자연스럽게 연결하세요.
-- 소제목 앞에는 넘버링을 필수로 넣어주세요.
-
-[구조 예시]
-서론  
-1. 소제목  
-    본문  
-2. 소제목  
-    본문  
-3. 소제목  
-    본문  
-4. 소제목  
-    본문  
-5. 소제목  
-    본문  
-마무리 멘트 (간단히 2~3줄)
-
-<<<SUb_TITLE_DATA
-{subtitles_str}
->>>
-
----
-<<<EXP_DATA
-[표현 라이브러리]
-{expressions_str}
->>>
-
----
-
-<<<PARAM_DATA
-[형태소 라이브러리]
-{parameters_str}
->>>
-* 형태소를 사용할 때는 값이 상황에 맞게 바뀔 수 있도록 조정하세요.
-   예: 33평 → 28평 / 60L → 90L / A씨 → F씨
----
-
-[템플릿 예시]
-- 템플릿 안의 대괄호([ ])는 변수 표시용이니 그대로 쓰지 말고 알맞은 단어로 교체하세요.
-- 제품 브랜드명, 작성자 이름 등은 그대로 쓰지 말고 반찬이라는 이름을 사용해요.
-- 이모지, ㅎㅎ, ㅋㅋ, ㅠㅠ, !! 같은 감정 표현은 템플릿에 있는 경우 자연스럽게 포함하세요.
-- 결과 글의 길이는 공백 제외 2200~2400자 사이여야 하며, 가능 한 템플릿 길이와 비슷하게 맞추세요.
-- 업체명은 그대로 노출하지 말고, 필요하면 “한 업체”, “어느 브랜드”처럼 모호하게 표현하세요.
-- 템플릿의 화자를 분석하고 그 화자와 다른 화자 설정을 하세요.
-- 창의적인 화자 설정과 스토리 텔링을 필수로 이행해주세요
-
----
-
-[템플릿 원문]
-- 참고 파일: {template_info}
-<<<TEM_DATA
-{clean_templates_str}
->>>
+        return f"""
+<writing_context>
+    <metadata>
+        <category>{components.category}</category>
+        <keyword>{components.keyword}</keyword>
+        <output_length min="2200" max="2400" unit="chars_excluding_spaces"/>
+    </metadata>
+    
+    <structure_requirements>
+        <format>
+            <introduction lines="3-5"/>
+            <main_content>
+                <subtitle count="5" numbering="required">
+                    {self._format_subtitles_xml(components.subtitles)}
+                </subtitle>
+            </main_content>
+            <conclusion lines="2-3"/>
+        </format>
+    </structure_requirements>
+    
+    <writing_resources>
+        <expressions purpose="style_variation">
+            {self._format_expressions_xml(components.expressions)}
+        </expressions>
+        
+        <parameters purpose="value_substitution">
+            {self._format_parameters_xml(components.parameters)}
+            <substitution_rules>
+                <rule>수치 변경: 33평→28평, 60L→90L</rule>
+                <rule>이름 변경: A씨→F씨, 원본명→반찬</rule>
+                <rule>애견 업체: 모두 "도그마루" 사용</rule>
+            </substitution_rules>
+        </parameters>
+        
+        <template_reference>
+            <source>{components.template_info}</source>
+            <usage_guidelines>
+                <variable_handling>
+                    - [변수] → 컨텍스트 적합 값으로 대체
+                </variable_handling>
+                <persona_creation>
+                    - 템플릿 화자 분석 후 다른 페르소나 생성
+                    - 생성 된 페르소나를 이용한 창의적 스토리텔링 필수
+                </persona_creation>
+            </usage_guidelines>
+            <content>
+                {self._format_template_xml(components.template)}
+            </content>
+        </template_reference>
+    </writing_resources>
+    
+    <quality_criteria priority="ordered">
+        <must_have>
+            1. 5개 소제목 구조 준수
+            3. 키워드 자연스러운 통합
+        </must_have>
+        <should_have>
+            4. 독창적 페르소나
+            5. 자연스러운 감정 표현
+            6. 템플릿 스타일 참조
+        </should_have>
+    </quality_criteria>
+</writing_context>
 """
 
-    return _mongo_prompt
+    def _format_subtitles_xml(self, subtitles: List[str]) -> str:
+        """소제목을 XML 형식으로 변환"""
+        if not subtitles:
+            return "<pool>소제목 풀 비어있음</pool>"
+
+        items = "\n".join(f"        <option>{s}</option>" for s in subtitles[:20])
+        return f"<pool>\n{items}\n    </pool>"
+
+    def _format_expressions_xml(self, expressions: Dict[str, List[str]]) -> str:
+        """표현을 XML 형식으로 변환"""
+        if not expressions:
+            return "<empty/>"
+
+        xml_parts = []
+        for category, items in expressions.items():
+            if items:
+                values = "".join(f"<value>{v}</value>" for v in items[:10])
+                xml_parts.append(f'<category name="{category}">{values}</category>')
+
+        return "\n            ".join(xml_parts) if xml_parts else "<empty/>"
+
+    def _format_parameters_xml(self, parameters: Dict[str, List[str]]) -> str:
+        """파라미터를 XML 형식으로 변환"""
+        if not parameters:
+            return "<empty/>"
+
+        xml_parts = []
+        for param_type, values in parameters.items():
+            if values:
+                examples = "".join(f"<example>{v}</example>" for v in values[:5])
+                xml_parts.append(f'<type name="{param_type}">{examples}</type>')
+
+        return "\n            ".join(xml_parts) if xml_parts else "<empty/>"
+
+    def _format_template_xml(self, template: Optional[Dict]) -> str:
+        """템플릿을 XML 형식으로 변환"""
+
+        if not template:
+            return "<empty/>"
+
+        # 템플릿 내용 정제
+        content = template.get("templated_text", "")
+        if isinstance(content, str):
+            # 줄바꿈 유지하되 과도한 공백 제거
+            content = "\n".join(line.strip() for line in content.split("\n"))
+
+        return f"<template_text><![CDATA[{content}]]></template_text>"
+
+
+# 사용 예시
+def get_mongo_prompt(category: str, keyword: str = "") -> str:
+    """기존 함수와의 호환성 유지"""
+    builder = GPT5MongoPromptBuilder(category, keyword)
+    return builder.build_gpt5_prompt()
