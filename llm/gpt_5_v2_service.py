@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-import json
 import os
 import re
-from typing import Any, Dict, List
 import time
 
 from openai import OpenAI
+from _prompts import get_kkk_prompts
+from _prompts.service.get_mongo_prompt import get_mongo_prompt
 from config import OPENAI_API_KEY
 from _constants.Model import Model
 from mongodb_service import MongoDBService
@@ -63,7 +63,6 @@ def gpt_5_gen(
 
     참조분석 = get_문장해체(ref)
 
-    # 모델에 따른 길이 가이드 설정
     min_length: int
     max_length: int
     if model_name == Model.GPT5:
@@ -73,41 +72,21 @@ def gpt_5_gen(
     else:
         min_length, max_length = 2800, 3000
 
-    if category == "legalese":
-        기본_프롬프트 = KkkPrompt.kkk_prompt_gpt_5(
-            min_length=min_length,
-            max_length=max_length,
-            keyword=parsed["keyword"],
-            note=parsed["note"],
+    기본_프롬프트 = KkkPrompt.kkk_prompt_gpt_5(
+        min_length, max_length, parsed["keyword"]
+    )
+
+    def sanitize(s: str) -> str:
+        s = s or ""
+        s = re.sub(
+            r"(?i)ignore previous|override|system message|do not obey|follow only.*",
+            "",
+            s,
         )
-    else:
-        기본_프롬프트 = GptPrompt.gpt_5_v2(
-            parsed["keyword"], min_length=min_length, max_length=max_length
-        )
+        s = re.sub(r"```.*?```", "", s, flags=re.S)
+        return s.strip()
 
-    # 기본_프롬프트 = KkkPrompt.kkk_prompt_gpt_5(parsed["keyword"])
-
-    analysis_data: Dict[str, Any] = db_service.get_latest_analysis_data() or {}
-
-    subtitles: List[str] = analysis_data.get("subtitles", []) or []
-    expressions: Dict[str, List[str]] = analysis_data.get("expressions", {}) or {}
-    parameters: Dict[str, List[str]] = analysis_data.get("parameters", {}) or {}
-    templates = analysis_data.get("templates", []) or []
-
-    subtitles_str: str = (
-        json.dumps(subtitles, ensure_ascii=False, indent=2) if expressions else "없음"
-    )
-    expressions_str: str = (
-        json.dumps(expressions, ensure_ascii=False, indent=2) if expressions else "없음"
-    )
-    parameters_str: str = (
-        json.dumps(parameters, ensure_ascii=False, indent=2) if parameters else "없음"
-    )
-    templates_str = (
-        json.dumps(templates, ensure_ascii=False, indent=2) if templates else "없음"
-    )
-
-    # 디버그 출력 준비
+    _mongo_data = sanitize(get_mongo_prompt(category, user_instructions))
 
     참조_분석_프롬프트 = f"""
 [참조원고 분석 데이터 활용 지침]
@@ -125,74 +104,6 @@ def gpt_5_gen(
 - 부제는 그대로 사용하나 예외 사항은 하단 참조
 - 사용자 요청에 (부제X)가 있다면 필수로 숫자만 제거 된 부제 사용
 - 형태소의 개수를 참고하여 작업 필수
-
-"""
-
-    _mongo_data = f"""
-
----
-
-[참조 분석 지시]
-아래 JSON 데이터는 참조 문서에서 추출한 화자/구성/스타일 분석 결과물입니다.  
-원고 생성 시 반드시 다음 조건을 반영해야 합니다.  
-
-- "화자 지시"에 따른 인물 설정, 말투, 단어 빈도와 형태소 패턴을 그대로 따릅니다.  
-- "구성 지시"에 따라 서론-중론-결론 흐름을 유지합니다.  
-- "원고 스타일 세부사항"을 전부 반영해 문체·문단 길이·리듬감·감정선 등을 동일하게 재현합니다.  
-- JSON에 기재된 단어/형태소는 반복적으로 등장해야 하며, 실제 경험담+정보 설명이 혼합된 톤을 유지해야 합니다.  
-
-= 부제는 하단 데이터를 이용하여 작성
-- 부제 형식은
-    1. 부제1
-    2. 부제2
-    ... 5개
-- 사용자 요청에 (부제X)가 있다면 필수로 숫자만 제거 된 부제 사용
-
-아래는 분석 결과 JSON입니다.  
-
-{참조_분석_프롬프트}
-
----
-
-[부제 예시]
-- 동일하게 사용하지 않습니다.
-- 이음세 혹은 표현을 살짝 변형해서 창의적으로 사용합니다.
-- 부제는 간결하게 한문장에 끝내야합니다.
-- 상단 참조 분석지시의 부제의 흐름과 부제 예시 데이터를 참고해서 작성합니다.
-- 부제는 본문과 자연스럽게 내용이 이어져야 합니다.
-
-{subtitles_str}
-
----
-
-[템플릿 예시]
-- 출력 문서는 반드시 템플릿과 **유사한 어휘, 문장 구조, 문단 흐름**을 유지해야 한다.  
-- 새로운 주제로 변형하더라도 템플릿의 **톤, 반복 구조, 문장 길이, 순서**를 그대로 모방해야 한다.  
-- 예시와 다른 어휘·문장 구조를 사용하지 말고, 가능한 한 **템플릿의 스타일을 복제**하라.  
-
-
-{templates_str}
-
-[작성 지침]  
-사용자가 입력한 주제를 기반으로 위 템플릿과 동일한 스타일로 결과를 작성하라.
-
----
-
-[표현 라이브러리]
-{expressions_str}
-
----
-
-[AI 개체 인식 및 그룹화 결과]
-{parameters_str}
-
-- 스타일을 복제하나 파라미터를 가져다 쓸 경우에는 변경될 수 있는 값은 유동적으로 변경해야합니다.
-    - 예시: 33평 -> 28평
-    - 예시: 60L -> 90L
-    - 예시: 50db -> 50db
-    - 예시: A씨 -> F씨
-
----
 
 """
 
@@ -233,7 +144,7 @@ def gpt_5_gen(
 
     client = OpenAI(api_key=OPENAI_API_KEY)
 
-    system = get_system_prompt_v2()
+    system = get_kkk_prompts.KkkPrompt.get_kkk_system_prompt_v2()
 
     try:
         start_ts = time.time()
@@ -249,12 +160,12 @@ def gpt_5_gen(
             ],
         )
 
-        usage = getattr(response, "usage", None)
-        if usage is not None:
-            in_tokens = getattr(usage, "prompt_tokens", None)
-            out_tokens = getattr(usage, "completion_tokens", None)
-            total_tokens = getattr(usage, "total_tokens", None)
-            # 토큰 사용량 로깅 제거
+        # usage = getattr(response, "usage", None)
+        # if usage is not None:
+        #     in_tokens = getattr(usage, "prompt_tokens", None)
+        #     out_tokens = getattr(usage, "completion_tokens", None)
+        #     total_tokens = getattr(usage, "total_tokens", None)
+        #     # 토큰 사용량 로깅 제거
 
         choices = getattr(response, "choices", []) or []
         if not choices or not getattr(choices[0], "message", None):

@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Optional
 import time
 
 from openai import OpenAI
+from _prompts.service.get_mongo_prompt import get_mongo_prompt
 from config import OPENAI_API_KEY
 from _constants.Model import Model
 from mongodb_service import MongoDBService
@@ -26,27 +27,18 @@ def gpt_5_gen(
     ref: str = "",
 ) -> str:
     """
-        분석 산출물 + 사용자 지시 → 원고 텍스트를 생성한다.
-        - MongoDB의 최신 분석 결과(expressions/parameters)를 읽어 프롬프트에 포함.
-        - OpenAI Chat Completions 호출.
-        - 기존 출력 포맷과 흐름 유지, 타입/널 안전성 강화.
+    분석 산출물 + 사용자 지시 → 원고 텍스트를 생성한다.
+    - MongoDB의 최신 분석 결과(expressions/parameters)를 읽어 프롬프트에 포함.
+    - OpenAI Chat Completions 호출.
+    - 기존 출력 포맷과 흐름 유지, 타입/널 안전성 강화.
 
-        Returns:
-            생성된 원고 텍스트 (str)
+    Returns:
+        생성된 원고 텍스트 (str)
 
-        Raises:
-            RuntimeError: 모델이 빈 응답을 반환한 경우 등
-            ValueError: API 키 미설정 등의 환경 이슈
-            Exception: OpenAI 호출 실패 등 기타 예외
-
-
-
-            ---
-
-            [부제 예시]
-    {subtitles_str}
-
-    ---
+    Raises:
+        RuntimeError: 모델이 빈 응답을 반환한 경우 등
+        ValueError: API 키 미설정 등의 환경 이슈
+        Exception: OpenAI 호출 실패 등 기타 예외
     """
 
     if not OPENAI_API_KEY:
@@ -64,37 +56,17 @@ def gpt_5_gen(
     if user_instructions:
         category = get_category_db_name_sync(user_instructions)
 
-    if not category:
-        category = os.getenv("MONGO_DB_NAME", "wedding")
+    def sanitize(s: str) -> str:
+        s = s or ""
+        s = re.sub(
+            r"(?i)ignore previous|override|system message|do not obey|follow only.*",
+            "",
+            s,
+        )
+        s = re.sub(r"```.*?```", "", s, flags=re.S)
+        return s.strip()
 
-    db_service = MongoDBService()
-
-    db_service.set_db_name(db_name=category)
-
-    # 디버그 출력 제거
-
-    analysis_data: Dict[str, Any] = db_service.get_latest_analysis_data() or {}
-
-    unique_words: List[str] = analysis_data.get("unique_words", []) or []
-    sentences: List[str] = analysis_data.get("sentences", []) or []
-
-    subtitles: List[str] = analysis_data.get("subtitles", []) or []
-    expressions: Dict[str, List[str]] = analysis_data.get("expressions", {}) or {}
-    parameters: Dict[str, List[str]] = analysis_data.get("parameters", {}) or {}
-    templates = analysis_data.get("templates", []) or []
-
-    subtitles_str: str = (
-        json.dumps(subtitles, ensure_ascii=False, indent=2) if expressions else "없음"
-    )
-    expressions_str: str = (
-        json.dumps(expressions, ensure_ascii=False, indent=2) if expressions else "없음"
-    )
-    parameters_str: str = (
-        json.dumps(parameters, ensure_ascii=False, indent=2) if parameters else "없음"
-    )
-    templates_str = (
-        json.dumps(templates, ensure_ascii=False, indent=2) if templates else "없음"
-    )
+    mongo_data = sanitize(get_mongo_prompt(category, user_instructions))
 
     _분석본 = f"""
 [분석 지시]
@@ -111,37 +83,12 @@ def gpt_5_gen(
 {문장해체}
 """
 
-    _mongo_data = f"""
-
-
-
-[템플릿 예시]
-- 출력 문서는 반드시 템플릿과 **유사한 어휘, 문장 구조, 문단 흐름**을 유지해야 한다.  
-- 새로운 주제로 변형하더라도 템플릿의 **톤, 반복 구조, 문장 길이, 순서**를 그대로 모방해야 한다.  
-- 예시와 다른 어휘·문장 구조를 사용하지 말고, 가능한 한 **템플릿의 스타일을 복제**하라.  
-
-{templates_str}
-
-[작성 지침]  
-사용자가 입력한 주제를 기반으로 위 템플릿과 동일한 스타일로 결과를 작성하라.
-
----
-
-[표현 라이브러리]
-{expressions_str}
-
----
-
-[AI 개체 인식 및 그룹화 결과]
-{parameters_str}
-"""
-
     prompt: str = (
         f"""
 
 ---
 
-{_mongo_data}
+{mongo_data}
 
 ---
 
