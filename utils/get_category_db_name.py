@@ -2,6 +2,45 @@ from openai import OpenAI
 from _constants import Model
 from config import OPENAI_API_KEY
 
+categories = [
+    "공항_장기주차장:주차대행",
+    "다이어트",
+    "다이어트보조제",
+    "라미네이트",
+    "마운자로가격",
+    "마운자로처방",
+    "멜라논크림",
+    "anime",
+    "서브웨이다이어트",
+    "스위치온다이어트",
+    "에리스리톨",
+    "외국어교육_학원",
+    "위고비",
+    # "위고비부작용",
+    # "위고비후기",
+    # "위고비처방",
+    "족저근막염깔창",
+    "캐리어",
+    "파비플로라",
+    "alpha-cd",
+    "beauty-products",
+    "beauty-treatment",
+    "dentistry",
+    "edu",
+    "e-ciga-liquid",
+    "functional-food",
+    "hospital",
+    "home-appliances",
+    "legalese",
+    "luxury",
+    "melatonin",
+    "ophthalmology",
+    "애견동물_반려동물_분양",
+    "restaurant",
+    "startup",
+    "wedding",
+]
+
 
 def get_category_db_name_sync(keyword: str) -> str:
     """
@@ -12,45 +51,6 @@ def get_category_db_name_sync(keyword: str) -> str:
             "API 키가 설정되지 않았습니다. .env 파일에 OPENAI_API_KEY를 추가해주세요."
         )
     client = OpenAI(api_key=OPENAI_API_KEY)
-
-    categories = [
-        "공항_장기주차장:주차대행",
-        "다이어트",
-        "다이어트보조제",
-        "라미네이트",
-        "마운자로가격",
-        "마운자로처방",
-        "멜라논크림",
-        "서브웨이다이어트",
-        "스위치온다이어트",
-        "에리스리톨",
-        "외국어교육_학원",
-        "위고비",
-        "위고비부작용",
-        "위고비후기",
-        "위고비처방",
-        "족저근막염깔창",
-        "캐리어",
-        "파비플로라",
-        "alpha-cd",
-        "anime",
-        "beauty-products",
-        "beauty-treatment",
-        "dentistry",
-        "edu",
-        "e-ciga-liquid",
-        "functional-food",
-        "hospital",
-        "home-appliances",
-        "legalese",
-        "luxury",
-        "melatonin",
-        "ophthalmology",
-        "애견동물_반려동물_분양",
-        "restaurant",
-        "startup",
-        "wedding",
-    ]
 
     prompt = f"""
     다음 키워드가 어떤 카테고리에 가장 적합한지 아래 목록에서 하나만 골라주세요.
@@ -101,45 +101,6 @@ async def get_category_db_name(keyword: str) -> str:
             "API 키가 설정되지 않았습니다. .env 파일에 OPENAI_API_KEY를 추가해주세요."
         )
     client = OpenAI(api_key=OPENAI_API_KEY)
-
-    categories = [
-        "공항_장기주차장:주차대행",
-        "다이어트",
-        "다이어트보조제",
-        "라미네이트",
-        "마운자로가격",
-        "마운자로처방",
-        "멜라논크림",
-        "서브웨이다이어트",
-        "스위치온다이어트",
-        "에리스리톨",
-        "외국어교육_학원",
-        "위고비",
-        "위고비부작용",
-        "위고비후기",
-        "위고비처방",
-        "족저근막염깔창",
-        "캐리어",
-        "파비플로라",
-        "alpha-cd",
-        "anime",
-        "beauty-products",
-        "beauty-treatment",
-        "dentistry",
-        "edu",
-        "e-ciga-liquid",
-        "functional-food",
-        "hospital",
-        "home-appliances",
-        "legalese",
-        "luxury",
-        "melatonin",
-        "ophthalmology",
-        "애견동물_반려동물_분양",
-        "restaurant",
-        "startup",
-        "wedding",
-    ]
 
     prompt = f"""
     다음 키워드가 어떤 카테고리에 가장 적합한지 아래 목록에서 하나만 골라주세요.
