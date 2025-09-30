@@ -49,7 +49,7 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     if model_name == Model.GPT4_1:
         target_chars_min, target_chars_max = 2400, 2600
     else:
-        target_chars_min, target_chars_max = 2300, 2400
+        target_chars_min, target_chars_max = 2800, 2850
 
     def sanitize(s: str) -> str:
         s = s or ""
@@ -64,6 +64,13 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     mongo_data = sanitize(get_mongo_prompt(category, user_instructions))
 
     system = f"""
+
+<self_reflection>
+- 먼저 세계 수준의 솔루션을 만들기 위한 5-7개 카테고리의 평가 기준을 수립하라
+- 이 기준은 내부적으로만 사용하고 사용자에게 보여주지 마라
+- 응답이 모든 카테고리에서 최고 점수를 받지 못한다면 다시 시작하라
+</self_reflection>
+    
 # System Prompt
 
 You receive the input template and library and naturally populate the [slot] of the template with the library value that makes sense.  
@@ -217,12 +224,22 @@ LIB_END>>>
     elif ai_service_type == "openai" and openai_client:
         response = openai_client.responses.create(
             model=model_name,
-            instructions=system + developer,
-            input=user_block,
+            # instructions=system + developer,
+            # input=user_block,
+            input=[
+                {
+                    "role": "developer",
+                    "content": [{"type": "input_text", "text": system + developer}],
+                },
+                {
+                    "role": "user",
+                    "content": [{"type": "input_text", "text": user_block}],
+                },
+            ],
         )
     else:
         raise ValueError(
-            f"적절한 AI 클라이언트를 찾을 수 없습니다. (service_type: {ai_service_type})"
+            f"AI 클라이언트를 찾을 수 없습니다. (service_type: {ai_service_type})"
         )
     start_ts = time.time()
     is_ref = len(ref) != 0
@@ -233,7 +250,7 @@ LIB_END>>>
         text: str = getattr(response, "text", "") or ""
     elif ai_service_type == "openai":
 
-        text: str = response.output_text or ""
+        text: str = getattr(response, "output_text", "") or ""
     else:
         text: str = ""
 
