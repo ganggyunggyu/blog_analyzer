@@ -393,6 +393,17 @@ def get_category_tone_rules(category):
         </examples>
     </specific>
     """,
+        "beauty-treatment": """
+    <specific>
+        <style>미용 시술에 관심이 많은 20~30대</style>
+        <characteristics>
+            - 실제로 받은 사람이 알려주는 꿀팁을 전달
+        </characteristics>
+        <restrictions>
+            
+        </restrictions>
+    </specific>
+    """,
         "movie": """
     <specific>
         <style>영화 리뷰어 톤의 캐주얼한 반말</style>
@@ -508,24 +519,7 @@ def get_category_tone_rules(category):
         </restrictions>
     </specific>
     """,
-        "애견동물_반려동물_분양": """
-    <specific>
-        <style>반려동물 전문가처럼 따뜻하고 책임감 있는 존댓말</style>
-        <characteristics>
-            - 생명 존중 강조
-            - 양육 책임감 전달
-            - 실질적 준비사항 안내
-        </characteristics>
-        <restrictions>
-            - 충동 분양 조장 금지
-            - 유기 가능성 언급 금지
-        </restrictions>
-        <examples>
-            좋은 예: "평생 가족이 될 준비가 되셨나요?"
-            나쁜 예: "싫증나면 파양하면 돼요"
-        </examples>
-    </specific>
-    """,
+        "애견동물_반려동물_분양": 애견동물_반려동물_분양,
         "외국어교육": """
     <specific>
         <style>어학 강사처럼 체계적이고 격려하는 존댓말</style>
@@ -559,8 +553,10 @@ def get_category_tone_rules(category):
         <style>뷰티 멘토처럼 전문적이면서 친근한 존댓말</style>
         <characteristics>
             - 기술 습득 과정 상세 설명
+            - 어떤 커리큘럼을 어떻게 진행했고 무엇을 배웠는지 경험한 듯이 전달
             - 취업/창업 현실적 조언
             - 트렌드와 기본기 균형
+            - 새로운 것을 배운다는 기쁨에 찬 말투
         </characteristics>
         <restrictions>
             - 허위 취업률 제시 금지
@@ -584,7 +580,7 @@ def get_category_tone_rules(category):
     """,
         "리쥬란": """
     <specific>
-        <style>피부과 경험자처럼 상세하고 진솔한 존댓말</style>
+        <style>피부과 경험자처럼 상세하게 전달하며 유쾌한 존댓말</style>
         <characteristics>
             - 시술 전후 변화 구체적 설명
             - 통증/붓기 등 현실적 정보
@@ -1099,4 +1095,68 @@ human_writing_style = """
         </full_paragraph_comparison>
     </comprehensive_examples>
 </human_writing_style>
+"""
+
+
+애견동물_반려동물_분양 = """
+<specific>
+    <style>반려동물 입양 경험자의 진솔한 후기 톤</style>
+    <characteristics>
+        - 입양 전 고민과 결심 과정 상세 서술
+        - 업체 방문기와 시설 관찰 포인트
+        - 건강검진, 의료서비스 등 실질 정보
+        - 입양 후 일상 변화와 감정 공유
+        - 구체적인 견종 특징과 성격 설명
+    </characteristics>
+    <narrative_structure>
+        - 외로움/고민의 시작점
+        - 반려동물 필요성 깨달음 (친구집 방문 등)
+        - 여러 업체 비교 과정
+        - 선택한 업체 방문 경험
+        - 운명의 만남과 입양 결정
+        - 입양 후 달라진 일상
+        - 만족도와 추천
+    </narrative_structure>
+    <must_include>
+        - 시설 청결도와 관리 상태
+        - 건강검진 시스템 (자체 병원 유무)
+        - 예방접종과 의료 서비스
+        - 입양 비용과 포함 사항
+        - 사후관리와 할인 혜택
+        - 직원의 전문성과 친절도
+    </must_include>
+    <emotional_expressions>
+        - "혼자 사는 삶이 외로웠어요"
+        - "처음 봤을 때 눈이 마주쳤는데..."
+        - "이제는 매일 아침 꼬리 소리에 일어나요"
+        - "퇴근길이 기다려지기 시작했어요"
+        - "왜 진작 데려오지 않았을까 후회"
+    </emotional_expressions>
+    <specific_details>
+        - 견종별 특성 (미니비숑, 토이푸들, 포메라니안 등)
+        - 무료분양 vs 일반분양 차이
+        - 입양 키트 구성품
+        - 3대 질병 검사 (코로나, 파보, 홍역)
+        - 마이크로칩 등록
+        - 중성화 할인 혜택
+    </specific_details>
+    <restrictions>
+        - 충동 분양 조장 금지
+        - 생명 경시 표현 금지
+        - 파양 미화 금지
+        - 과도한 업체 홍보 자제
+    </restrictions>
+    <examples>
+        좋은 예: "친구네 강아지 보고 한참을 고민했어요. 
+                평생 책임질 수 있을까 걱정도 되고...
+                근데 지금은 이 아이 없는 삶은 상상도 안 돼요"
+        나쁜 예: "귀여워서 바로 데려왔어요. 키우기 쉬워요."
+    </examples>
+    <writing_patterns>
+        - 협찬 명시: "본 포스팅은 소정의 원고료를 지급받고 작성되었습니다"
+        - 업체 정보 자연스럽게 삽입
+        - 지점별 주소와 연락처 포함
+        - 해시태그 활용 (#서울강아지무료분양)
+    </writing_patterns>
+</specific>
 """
