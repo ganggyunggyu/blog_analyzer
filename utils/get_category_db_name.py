@@ -22,7 +22,7 @@ categories = [
     "족저근막염깔창",
     "캐리어",
     "파비플로라",
-    "alpha-cd",
+    "알파CD",
     "beauty-products",
     "beauty-treatment",
     "dentistry",
@@ -39,6 +39,7 @@ categories = [
     "restaurant",
     "startup",
     "wedding",
+    "맛집",
 ]
 
 
