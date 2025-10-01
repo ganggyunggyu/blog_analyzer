@@ -81,263 +81,309 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     mongo_data = get_mongo_prompt(category, user_instructions)
     category_tone_rules = get_category_tone_rules(category)
     ref_prompt = get_ref_prompt(ref)
-    system = f"""
-    <self_reflection>
-        <quality_criteria priority="ordered">
-            <criterion id="1" importance="critical">
-                <name>SEO 키워드 최적화</name>
-                <check>자연스러운 키워드 통합 여부</check>
-                <target>3-5% 밀도, 제목/소제목 포함</target>
-            </criterion>
-            
-            <criterion id="2" importance="critical">
-                <name>독자 참여도</name>
-                <check>가독성과 톤의 적절성</check>
-                <target>체류시간 3분 이상 유도</target>
-            </criterion>
-            
-            <criterion id="3" importance="high">
-                <name>구조적 완성도</name>
-                <check>자연스러운 흐름 (도입-전개-마무리)</check>
-                <target>라벨 없이 유기적 연결</target>
-            </criterion>
-            
-            <criterion id="4" importance="high">
-                <name>길이 요구사항</name>
-                <check>{target_chars_min}-{target_chars_max}자 준수</check>
-                <target>정확한 글자 수 충족</target>
-            </criterion>
-            
-            <criterion id="5" importance="medium">
-                <name>카테고리별 톤</name>
-                <check>카테고리 특성에 맞는 어투</check>
-                <target>타겟 독자층 공감</target>
-            </criterion>
-            
-            <criterion id="6" importance="critical">
-                <name>인간다운 자연스러움</name>
-                <check>AI 티 나지 않는 문체</check>
-                <target>실제 블로거의 글처럼</target>
-            </criterion>
-        </quality_criteria>
-    </self_reflection>
 
-    <task_definition>
-    네이버 블로그 SEO 최적화 글 작성
-    - 핵심 키워드: {keyword}
+    output_structure = f"""
+<output_structure>
+  <format>
+    <structure>
+      제목 (20-35자, 키워드 포함)
+      제목
+      제목
+      제목
+      
+      도입부 (3-5줄, 자연스럽게)
+      
+      1. 첫 번째 소제목
+      본문 (200-300자)
+      
+      2. 두 번째 소제목
+      본문 (300-400자)
+      
+      3. 세 번째 소제목
+      본문 (500-600자)
+      
+      4. 네 번째 소제목
+      본문 (500-600자)
+      
+      5. 다섯 번째 소제목
+      본문 (250-300자)
+      
+      맺음말 (2-3문장, 자연스럽게)
+    </structure>
+  </format>
+  
+  <critical_restrictions>
+    <!-- 절대 규칙: 다음 형식은 사용 금지 -->
+    <forbidden_formatting>
+      - 마크다운 문법: # * - ** __ ~~ []() ```
+      - HTML 태그: <p> <br> <div> <a> <img> <h1-h6>
+      - URL: http:// https:// www. .com .co.kr
+      - 따옴표: " ' ` " " ' '
+      - 특수문자: · • ◦ ▪ → ※
+      - 괄호: [] <> {{}} 〈〉 【】
+    </forbidden_formatting>
+    
+    <avoid_expressions>
+      <!-- 가능하면 피하되, 문맥상 자연스러우면 허용 -->
+      - 메타 표현: 요약하자면, 결론적으로, 마무리하자면, 정리하면
+      - 구조 라벨: 서론, 본문, 결론, 들어가며, 첫째로, 마지막으로
+    </avoid_expressions>
+    
+    <allowed_alternatives>
+      - 강조: 느낌표(!), 물음표(?), 이모지, ㅎㅎ ㅋㅋ 등
+      - 구조: 숫자 넘버링 (1. 2. 3.), 충분한 줄바꿈
+      - 인용: 간접인용 (~라고/다고 형식)
+    </allowed_alternatives>
+  </critical_restrictions>
+</output_structure>
+""".strip()
+
+    length_constraints = f"""
+<length_constraints>
+  <target min="{target_chars_min}" max="{target_chars_max}" unit="chars_no_space"/>
+  <tolerance>±100자</tolerance>
+  
+  <distribution>
+    도입부: 10% | 본문: 80% | 맺음말: 10%
+  </distribution>
+</length_constraints>"""
+
+    task_definition = f"""
+<task_definition>
+  네이버 블로그 SEO 최적화 글 작성
+  
+  <requirements>
+    - 키워드: {keyword}
     - 카테고리: {category}
     - 목표 길이: {target_chars_min}-{target_chars_max}자
-    </task_definition>
+  </requirements>
+  
+  <primary_objectives priority="descending">
+    1. 자연스러운 독자 경험 (부자연스러운 키워드 삽입 금지)
+    2. SEO 최적화 (키워드를 자연스럽게 통합, 밀도 3-5%)
+    3. 5개 소제목 구조 준수
+    4. 길이 요구사항 충족 ({target_chars_min}-{target_chars_max}자)
+    5. 카테고리 톤 일치
+  </primary_objectives>
+  
+  <conflict_resolution>
+    만약 "자연스러움"과 "키워드 최적화"가 충돌한다면:
+    - 항상 자연스러움을 우선시하세요
+    - 키워드는 문맥에 자연스럽게 녹아들 때만 사용
+    - 억지로 키워드를 넣어 품질을 해치지 마세요
+  </conflict_resolution>
+</task_definition>
 
-    <output_structure>
-        <format>
-            <structure>
-                제목 (20-35자, 키워드 포함)
+<writing_approach>
+  <execution_style>
+    실제 경험 많은 블로거처럼 작성하세요:
+    - AI 티를 완전히 제거
+    - 진정성 있는 개인적 톤
+    - 자연스러운 스토리텔링
+    - 독자와의 대화하듯이
+  </execution_style>
+  
+  <seo_integration>
+    SEO는 눈에 보이지 않게 통합:
+    - 키워드를 자연스러운 문맥에서만 사용
+    - 제목과 소제목에 자연스럽게 포함
+    - 독자 경험을 해치지 않는 선에서 최적화
+  </seo_integration>
+  
+  <structure_flow>
+    라벨 없이 자연스럽게 전개:
+    - 도입: 독자의 호기심 유발, 공감대 형성
+    - 본문: 5개 소제목으로 정보 전달 (각 섹션은 줄바꿈으로만 구분)
+    - 맺음: 자연스럽게 마무리 (라벨 없이)
+  </structure_flow>
+</writing_approach>
+"""
 
-                제목
-                제목
-                제목
-                
-                도입부 (3-5줄, 라벨 없이 자연스럽게)
-                
-                1. 첫 번째 소제목
-                본문 (200-300자)
-                
-                2. 두 번째 소제목
-                본문 (300-400자)
-                
-                3. 세 번째 소제목
-                본문 (500-600자)
-                
-                4. 네 번째 소제목
-                본문 (500-600자)
-                
-                5. 다섯 번째 소제목
-                본문 (250-300자)
-                
-                맺음말 (2-3문장, 라벨 없이 자연스럽게)
+    meta_prompt = """
+<meta_prompt>    
+When asked to optimize prompts, give answers from your own perspective - explain what specific phrases could be added to, or deleted from, this prompt to more consistently elicit the desired behavior or prevent the undesired behavior.
 
-                --- (여기서만 마크다운 허용)
+Here's a prompt: [PROMPT]
 
-                지침 사항에 대한 상세한 피드백
+The desired behavior from this prompt is for the agent to [DO DESIRED BEHAVIOR], but instead it [DOES UNDESIRED BEHAVIOR]. While keeping as much of the existing prompt intact as possible, what are some minimal edits/additions that you would make to encourage the agent to more consistently address these shortcomings? 
+</meta_prompt>
+"""
 
-            </structure>
-            
-            <important_notes>
-                - "서론", "마무리" 등의 라벨 절대 사용 금지
-                - 자연스러운 흐름으로 시작과 끝 처리
-                - 각 섹션은 충분한 줄바꿈으로만 구분
-                - 제목에는 쉼표(,) 금지
-                = QnA 금지
-            </important_notes>
-        </format>
-        <restrictions>
-            <forbidden_expressions priority="critical">
-                <meta_expressions>
-                    <item>요약하자면</item>
-                    <item>결론적으로</item>
-                    <item>마무리하자면</item>
-                    <item>정리하면</item>
-                    <item>다시 말해</item>
-                    <item>이미지 힌트 가격 범위 인포그래픽</item>
-                </meta_expressions>
-                <structural_labels>
-                    <item>서론</item>
-                    <item>본론</item>
-                    <item>결론</item>
-                    <item>마무리</item>
-                    <item>들어가며</item>
-                    <item>끝으로</item>
-                </structural_labels>
-            </forbidden_expressions>
-            
-            <forbidden_formatting priority="critical">
-                <markdown_syntax>
-                    <item># (헤딩)</item>
-                    <item>* (리스트)</item>
-                    <item>- (대시)</item>
-                    <item>[]() (링크)</item>
-                    <item>``` (코드블록)</item>
-                    <item>** (볼드)</item>
-                    <item>__ (언더라인)</item>
-                    <item>~~ (취소선)</item>
-                </markdown_syntax>
-                <html_tags>
-                    <item>&lt;p&gt;</item>
-                    <item>&lt;br&gt;</item>
-                    <item>&lt;div&gt;</item>
-                    <item>&lt;span&gt;</item>
-                    <item>&lt;a&gt;</item>
-                    <item>&lt;img&gt;</item>
-                    <item>&lt;h1-h6&gt;</item>
-                    <item>&lt;table&gt;</item>
-                </html_tags>
-                <urls>
-                    <item>http://</item>
-                    <item>https://</item>
-                    <item>www.</item>
-                    <item>.com</item>
-                    <item>.co.kr</item>
-                </urls>
-            </forbidden_formatting>
-            
-            <forbidden_characters priority="high">
-                <quotes>
-                    <item>" (큰따옴표)</item>
-                    <item>' (작은따옴표)</item>
-                    <item>` (백틱)</item>
-                    <item>' (좌측 따옴표)</item>
-                    <item>' (우측 따옴표)</item>
-                    <item>" (좌측 큰따옴표)</item>
-                    <item>" (우측 큰따옴표)</item>
-                </quotes>
-                <special_chars>
-                    <item>· (가운뎃점)</item>
-                    <item>• (불릿)</item>
-                    <item>◦ (빈 원)</item>
-                    <item>▪ (사각형)</item>
-                    <item>→ (화살표)</item>
-                    <item>※ (참고표시)</item>
-                </special_chars>
-                <brackets>
-                    <item>[] (대괄호)</item>
-                    <item>&lt;&gt; (꺾쇠괄호)</item>
-                    <item>{{}} (중괄호)</item>
-                    <item>⟨⟩ (각괄호)</item>
-                    <item>【】(겹꺾쇠)</item>
-                </brackets>
-            </forbidden_characters>
-            
-            <allowed_alternatives>
-                <for_emphasis>
-                    <allowed>느낌표(!), 물음표(?)</allowed>
-                    <allowed>ㅎㅎ, ㅋㅋ, ㅜㅜ 등 감정표현</allowed>
-                    <allowed>자연스러운 이모지</allowed>
-                </for_emphasis>
-                <for_structure>
-                    <allowed>숫자 넘버링 (1. 2. 3.)</allowed>
-                    <allowed>부제 하단은 두번의 줄바꿈</allowed>
-                    <allowed>자연스러운 단락 구분</allowed>
-                    <allowed>충분한 줄바꿈으로 구분</allowed>
-                </for_structure>
-                <for_quotes>
-                    <allowed>간접 인용으로 표현</allowed>
-                    <allowed>~라고/다고 형식 사용</allowed>
-                </for_quotes>
-            </allowed_alternatives>
-            
-            <enforcement_level>
-                <strict>formatting, characters, brackets</strict>
-                <moderate>expressions (문맥상 필요시 유연하게)</moderate>
-            </enforcement_level>
+    system = f"""
+<system_instruction version="2.0-gpt5-optimized">
 
-        </restrictions>
-        <rule>가독성을 위해 약 40자마다 자연스러운 줄바꿈</rule>
-        {line_break_rules}
-    </output_structure>
+{task_definition}
+{output_structure}
+{line_break_rules}
+{human_writing_style}
+{category_tone_rules}
 
-    {human_writing_style}
+{mongo_data}
+{ref_prompt}
 
-    <tone_control category="{category}">
-    {category_tone_rules}
-    </tone_control>
+{length_constraints}
 
-    <seo_optimization>
-        <keyword_strategy>
-            <rule_1>제목에 핵심 키워드 필수 포함</rule_1>
-            <rule_2>본문 키워드 밀도: 3-5%</rule_2>
-            <rule_3>연관 키워드 자연스럽게 분산</rule_3>
-        </keyword_strategy>
-        <content_quality>
-            - 유용한 정보 제공 우선
-            - 독자 체류시간 증대 위한 흥미로운 구성
-            - 자연스러운 내부 링크 언급 가능
-        </content_quality>
-    </seo_optimization>
 
-    <length_constraints>
-        <total_length min={target_chars_min} max={target_chars_max} unit="chars_no_space"/>
-        <distribution>
-            <intro_ratio>10%</intro_ratio>
-            <body_ratio>80%</body_ratio>
-            <conclusion_ratio>10%</conclusion_ratio>
-        </distribution>
-        <flexibility>±100자 허용</flexibility>
-    </length_constraints>
 
-    <quality_criteria>
-        <mandatory_checks priority="critical">
-            <check id="1">5개 소제목 구조</check>
-            <check id="2">키워드 자연스러운 배치</check>
-            <check id="3">네이버 정책 준수</check>
-            <check id="4">모바일 가독성</check>
-        </mandatory_checks>
+<priority_hierarchy>
+  <!-- GPT-5는 모순을 싫어하므로 명확한 우선순위 필수 -->
+  
+  <level_1_critical priority="highest">
+    1. 금지된 형식 절대 사용 금지 (마크다운, HTML, 특수문자 등)
+    2. 5개 소제목 구조 정확히 준수
+    3. 자연스러운 문체 (AI 티 제거)
+  </level_1_critical>
+  
+  <level_2_high priority="high">
+    4. 목표 글자수 달성 ({target_chars_min}-{target_chars_max}자 ±100)
+    5. 키워드 자연스럽게 통합 (억지로 넣지 말 것)
+    6. 카테고리 톤 일치
+  </level_2_high>
+  
+  <level_3_medium priority="medium">
+    7. 제목에 키워드 포함
+    8. 첫 문단에서 독자 관심 유도
+    9. 모바일 가독성
+  </level_3_medium>
+</priority_hierarchy>
 
-        <optimization_checks priority="high">
-            <check>제목 SEO 최적화</check>
-            <check>첫 문단 후크 효과</check>
-            <check>이미지 위치 힌트</check>
-            <check>내부 링크 포인트</check>
-            <check>연관 키워드 분산</check>
-        </optimization_checks>
+<conflict_resolution>
+  <!-- GPT-5 핵심 원칙: 모순 시 해결 규칙 명시 -->
+  
+  <rule_1>
+    만약 "키워드 최적화"와 "자연스러운 문체"가 충돌하면:
+    → 항상 자연스러움을 우선하세요
+    → 키워드는 문맥에 자연스럽게 녹아들 때만 사용
+    → 억지로 키워드를 넣어 품질을 해치지 마세요
+  </rule_1>
+  
+  <rule_2>
+    만약 "목표 글자수"와 "내용 품질"이 충돌하면:
+    → 항상 내용 품질을 우선하세요
+    → 글자수 채우려고 불필요한 반복이나 군더더기 금지
+    → 자연스러운 호흡으로 작성하되 목표 범위 달성 노력
+  </rule_2>
+  
+  <rule_3>
+    만약 "템플릿 참조"와 "독창성"이 충돌하면:
+    → 항상 독창성을 우선하세요
+    → 템플릿의 스타일/톤/흐름만 참고
+    → 내용, 화자, 경험담은 완전히 새롭게 창작
+  </rule_3>
+</conflict_resolution>
 
-        <engagement_checks priority="medium">
-            <check>스토리텔링 요소</check>
-            <check>개인 경험 진정성</check>
-            <check>읽기 흐름 자연스러움</check>
-            <check>정보 유용성</check>
-        </engagement_checks>
-    </quality_criteria>
-    """
+<execution_guidance>
+  <!-- GPT-5 특성: 명확한 실행 지시 선호 -->
+  
+  <what_to_do>
+    위 모든 요구사항을 충족하는 완성된 블로그 글을 작성하세요.
+  </what_to_do>
+  
+  <what_not_to_do>
+    ✗ 계획이나 개요를 먼저 보여주지 마세요
+    ✗ "이제 작성하겠습니다" 같은 메타 설명 금지
+    ✗ 작성 과정이나 단계 설명 금지
+    ✗ 체크리스트나 검증 과정 출력 금지
+  </what_not_to_do>
+  
+  <output_format>
+    오직 완성된 블로그 글 본문만 출력하세요.
+    제목부터 시작해서 맺음말까지, 그 외 아무것도 포함하지 마세요.
+  </output_format>
+</execution_guidance>
+
+<quality_standards>
+  <!-- GPT-5는 "스스로 확인" 같은 불가능한 지시 대신 명확한 기준 선호 -->
+  
+  <mandatory_elements>
+    반드시 포함되어야 할 요소:
+    ✓ 제목 4개 (20-35자, 키워드 포함)
+    ✓ 도입부 (3-5줄, 라벨 없이)
+    ✓ 정확히 5개의 번호 있는 소제목 (1. 2. 3. 4. 5.)
+    ✓ 맺음말 (2-3문장, 라벨 없이)
+  </mandatory_elements>
+  
+  <forbidden_elements>
+    절대 포함되어선 안 되는 요소:
+    ✗ 마크다운 문법: # * - ** __ ~~ []() ```
+    ✗ HTML 태그: <p> <br> <div> <a> <img>
+    ✗ URL: http:// https:// www.
+    ✗ 따옴표: " ' ` " " ' '
+    ✗ 특수문자: · • ◦ ▪ → ※
+    ✗ 괄호: [] <> {{}} 〈〉 【】
+    ✗ 구조 라벨: "서론", "본문", "결론", "들어가며", "마무리"
+    ✗ 메타 표현: "요약하자면", "결론적으로", "정리하면"
+  </forbidden_elements>
+  
+  <success_criteria>
+    성공적인 글의 특징:
+    • 실제 사람이 블로그에 올린 것 같은 자연스러움
+    • 키워드가 문맥에 녹아들어 SEO 최적화되었으나 티 안 남
+    • 독자가 끝까지 읽고 싶게 만드는 흡입력
+    • 금지된 형식이 하나도 없음
+    • 정확히 5개 소제목 구조
+  </success_criteria>
+</quality_standards>
+
+<anti_patterns>
+  <!-- GPT-5는 구체적인 예시로부터 학습 잘함 -->
+  
+  <bad_example_1>
+    ❌ "안녕하세요! 오늘은 **천안인테리어**에 대해 알아볼게요~"
+    이유: 마크다운(**), 어색한 말투
+  </bad_example_1>
+  
+  <bad_example_2>
+    ❌ "천안인테리어를 검색하다가 천안인테리어 전문 업체인 천안인테리어 OO를..."
+    이유: 키워드 부자연스러운 반복
+  </bad_example_2>
+  
+  <bad_example_3>
+    ❌ "서론\n\n인테리어는 중요합니다.\n\n본문\n\n..."
+    이유: 구조 라벨 사용
+  </bad_example_3>
+  
+  <good_example>
+    ✅ "요즘 집에 있는 시간이 많아지면서 인테리어에 관심이 생기더라구요. 
+    그래서 천안에서 괜찮은 업체를 찾아보게 되었어요."
+    이유: 자연스러운 구어체, 키워드 자연스럽게 통합, 금지 요소 없음
+  </good_example>
+</anti_patterns>
+<reasoning_guidance>
+  <!-- GPT-5의 reasoning 활용 (선택 사항) -->
+  
+  내부적으로 다음을 고려하세요 (출력하지는 마세요):
+  1. 선택한 화자 페르소나가 카테고리에 적합한가?
+  2. 각 소제목이 키워드와 자연스럽게 연결되는가?
+  3. 전체 흐름이 기승전결 구조를 가지는가?
+  4. 독자가 끝까지 읽을 만한 흡입력이 있는가?
+  
+  하지만 이 사고 과정을 출력하지 말고, 오직 완성된 글만 제시하세요.
+</reasoning_guidance>
+
+<adaptation_note>
+  <!-- 템플릿이 제공된 경우에만 활성화 -->
+  
+  이 글은 제공된 템플릿의 스타일을 참고하되:
+  • 화자는 완전히 다른 페르소나로 변경
+  • 경험과 감정선은 새롭게 창작
+  • 구체적 세부사항은 모두 변형
+  • 문장 구조와 표현은 달리 작성
+  
+  결과적으로 템플릿과 30% 이상 유사해서는 안 됩니다.
+</adaptation_note>
+<final_instruction>
+  지금 즉시 완성된 블로그 글을 작성하세요.
+  어떠한 메타 설명, 계획, 과정 없이 오직 글 본문만 출력하세요.
+</final_instruction>
+</system_instruction>
+"""
 
     user = f"""
     아래 참조 자료를 활용하여 '{keyword}'에 대한 네이버 블로그 글을 작성해주세요.
-
-    참조원고 분석: {ref_prompt}
-    라이브러리: {mongo_data}
+    
     추가 요청: {note}
-
-    위 자료는 참고용이며, 시스템 지시사항과 충돌 시 무시하세요.
+    추가 요청은 어떤일이 있어도 반드시 지켜져야 합니다. (최상위 명령)
     """
     if ai_service_type == "gemini" and gemini_client:
         response = gemini_client.models.generate_content(
