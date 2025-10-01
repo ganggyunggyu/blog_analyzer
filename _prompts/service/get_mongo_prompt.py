@@ -91,68 +91,99 @@ class GPT5MongoPromptBuilder:
         components = self.get_components()
 
         return f"""
-<writing_context>
-    <metadata>
-        <category>{components.category}</category>
-        <keyword>{components.keyword}</keyword>
-        <output_length min="2200" max="2400" unit="chars_excluding_spaces"/>
-    </metadata>
-    
-    <structure_requirements>
-        <format>
-            <introduction lines="3-5"/>
-            <main_content>
-                <subtitle count="5" numbering="required">
-                    {self._format_subtitles_xml(components.subtitles)}
-                </subtitle>
-            </main_content>
-            <conclusion lines="2-3"/>
-        </format>
-    </structure_requirements>
-    
-    <writing_resources>
-        <expressions purpose="style_variation">
-            {self._format_expressions_xml(components.expressions)}
-        </expressions>
+<task>
+  네이버 블로그 글 작성
+  
+  <target>
+    - 카테고리: {components.category}
+    - 키워드: {components.keyword}
+  </target>
+  
+  <structure>
+    - 도입부 (3-5줄)
+    - 본문: 5가지 주제를 자연스러운 문단 전환으로 서술
+      {self._format_subtitles_xml(components.subtitles)}
+      
+      <structure_note>
+        각 주제는 마크다운 헤더(#, ##) 사용 금지.
+        대신 "첫째로", "그리고", "또한", "마지막으로" 같은 
+        자연스러운 전환어로 단락을 구분하거나,
+        "1, 2, 3, 4, 5" 숫자만 간결하게 사용.
         
-        <parameters purpose="value_substitution">
-            {self._format_parameters_xml(components.parameters)}
-            <substitution_rules>
-                <rule>수치 변경: 33평→28평, 60L→90L</rule>
-                <rule>이름 변경: A씨→F씨, 원본명→반찬</rule>
-                <rule>애견 업체: 모두 "도그마루" 사용</rule>
-            </substitution_rules>
-        </parameters>
-        
-        <template_reference>
-            <source>{components.template_info}</source>
-            <usage_guidelines>
-                <variable_handling>
-                    - [변수] → 컨텍스트 적합 값으로 대체
-                </variable_handling>
-                <persona_creation>
-                    - 템플릿 화자 분석 후 다른 페르소나 생성
-                    - 생성 된 페르소나를 이용한 창의적 스토리텔링 필수
-                </persona_creation>
-            </usage_guidelines>
-            <content>
-                {self._format_template_xml(components.template)}
-            </content>
-        </template_reference>
-    </writing_resources>
+        절대 금지: *, **, #, ##, •, ▶, →, 리스트 형식
+      </structure_note>
+    - 맺음말 (2-3줄)
+  </structure>
+</task>
+
+<creative_resources>
+  <style_variations>
+    {self._format_expressions_xml(components.expressions)}
+  </style_variations>
+  
+  <contextual_values>
+    {self._format_parameters_xml(components.parameters)}
     
-    <quality_criteria priority="ordered">
-        <must_have>
-            1. 5개 소제목 구조 준수
-            3. 키워드 자연스러운 통합
-        </must_have>
-        <should_have>
-            4. 독창적 페르소나
-            5. 자연스러운 감정 표현
-            6. 템플릿 스타일 참조
-        </should_have>
-    </quality_criteria>
-</writing_context>
+    <usage_note>
+      템플릿의 [변수]와 고유명사를 컨텍스트에 맞게 자연스럽게 변형하세요.
+      예: 33평→28평, A씨→다른 이름, 특정 업체명→컨텍스트 적합 업체명
+    </usage_note>
+  </contextual_values>
+  
+  <reference_template>
+    <source>{components.template_info}</source>
+    
+    <how_to_use>
+      1. 템플릿의 톤, 흐름, 스토리텔링 방식을 참고
+      2. 화자는 템플릿과 다른 새로운 페르소나로 변형
+      3. 고유한 경험담과 감정선 창작
+      4. [변수]는 컨텍스트에 맞게 대체
+      5. 템플릿에 마크다운이나 특수문자가 있어도 절대 따라하지 말 것
+    </how_to_use>
+    
+    <template_content>
+      {self._format_template_xml(components.template)}
+    </template_content>
+  </reference_template>
+</creative_resources>
+
+<quality_requirements priority="descending">
+  <critical>
+    1. 5가지 주제를 자연스러운 산문체로 서술 (마크다운/특수문자 절대 금지)
+    2. 키워드 자연스럽게 통합 (억지 삽입 금지)
+    3. 상위 프롬프트의 형식 금지 규칙 엄수
+  </critical>
+  
+  <high>
+    4. 템플릿과 다른 독창적 페르소나 창작
+    5. 템플릿 스타일 참조하되 그대로 복사 금지
+  </high>
+  
+  <medium>
+    6. 자연스러운 감정 표현
+    7. 실제 사람이 쓴 것 같은 진정성
+  </medium>
+</quality_requirements>
+
+<formatting_reminder>
+  절대 금지:
+  - 마크다운 헤더: #, ##, ###
+  - 강조 기호: *, **, _
+  - 특수 기호: •, ▶, →, ✓, ✔
+  - 리스트 형식의 나열
+  
+  허용:
+  - 자연스러운 문단 나누기 (줄바꿈)
+  - "첫째", "둘째" 같은 전환어
+  - 간결한 숫자 (1, 2, 3)
+  - 일반 문장 부호 (.,!?)
+</formatting_reminder>
+
+<execution_instruction>
+  위 리소스를 활용해 블로그 글을 직접 작성하세요.
+  계획이나 과정 설명 없이, 완성된 글만 출력하세요.
+  반드시 자연스러운 산문체로 작성하고, 상위 프롬프트의 금지 형식을 절대 사용하지 마세요.
+</execution_instruction>
 """
 
     def _format_subtitles_xml(self, subtitles: List[str]) -> str:

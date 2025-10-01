@@ -18,105 +18,146 @@ def get_ref_prompt(ref: str) -> str:
 
     # GPT-5 최적화 XML 구조 프롬프트
     ref_prompt = f"""
-<reference_document_analysis>
-    <analysis_metadata>
-        <purpose>참조 문서 스타일 추출 및 변형 적용</purpose>
-        <priority>스타일 모방 > 내용 참조 > 직접 인용</priority>
-    </analysis_metadata>
+<reference_document_usage>
+  <!-- 참조 문서가 제공된 경우에만 활성화 -->
+  
+  <purpose>
+    참조 문서의 스타일, 톤, 흐름을 학습하여 유사한 느낌의 새로운 글 작성
+  </purpose>
+  
+  <original_document>
+    {ref}
+  </original_document>
+  
+  <style_analysis_result>
+    {참조분석}
+  </style_analysis_result>
+  
+  <critical_rules priority="absolute">
+    <!-- 상위 프롬프트 규칙보다 우선하지 않음 -->
     
-    <original_document>
-        <content><![CDATA[{ref}]]></content>
-    </original_document>
+    <rule_1>
+      업체명/브랜드명 절대 포함 금지
+      → 참조 문서에 있어도 익명화 또는 일반 명사로 대체
+    </rule_1>
     
-    <style_analysis>
-        <parsed_elements><![CDATA[{참조분석}]]></parsed_elements>
-    </style_analysis>
+    <rule_2>
+      동일 문장 복사 절대 금지
+      → 의미만 참고, 완전히 다른 문장으로 재작성
+    </rule_2>
     
-    <transformation_rules priority="mandatory">
-        <content_transformation>
-            <rule id="1" priority="critical">
-                업체명/브랜드명 절대 포함 금지 → 익명화 필수
-            </rule>
-            <rule id="2" priority="critical">
-                동일 문장 복사 금지 → 의미만 차용, 문장 재구성
-            </rule>
-            <rule id="3" priority="high">
-                구조적 요소 변형 예시:
-                - "▶ 복용 후 변화 과정" → "◆ 사용 후 개선 단계"
-                - "l 1주차:" → "• 첫째 주:"
-                - 숫자/기간 변경: 1-2-3-4주 → 1-2-4-8주
-            </rule>
-        </content_transformation>
-        
-        <style_extraction>
-            <element name="narrator_voice">
-                <extract>화자 특성, 말투, 어휘 선택</extract>
-                <transform>유사하되 독창적인 페르소나 생성</transform>
-            </element>
-            
-            <element name="structure_flow">
-                <extract>서론-중론-결론 구성비</extract>
-                <maintain>전체적 흐름 유지</maintain>
-            </element>
-            
-            <element name="linguistic_patterns">
-                <extract>문장 길이, 리듬, 단락 구조</extract>
-                <apply>패턴 유지하며 내용 변경</apply>
-            </element>
-            
-            <element name="emotional_tone">
-                <extract>감정선, 강조점, 호흡</extract>
-                <preserve>독자 공감 포인트</preserve>
-            </element>
-        </style_extraction>
-    </transformation_rules>
+    <rule_3>
+      상위 프롬프트의 금지 형식 준수
+      → 참조 문서에 특수문자(•, ▶ 등)가 있어도 사용 금지
+      → 대신 숫자 넘버링(1. 2. 3.)이나 자연스러운 단락 구분 사용
+    </rule_3>
+  </critical_rules>
+  
+  <what_to_extract>
+    <!-- 참조 문서에서 배울 것들 -->
     
-    <application_guidelines>
-        <mandatory_requirements>
-            1. 참조분석의 화자 지시 → 변형된 인물 설정
-            2. 구성 지시 → 동일 구조, 다른 내용
-            3. 스타일 세부사항 → 문체만 유지
-            4. 형태소 패턴 → 반복하되 변주
-        </mandatory_requirements>
-        
-        <quality_checks>
-            <uniqueness>표절 검사 통과 수준</uniqueness>
-            <similarity>스타일 유사도 70-80%</similarity>
-            <readability>자연스러운 흐름 유지</readability>
-        </quality_checks>
-        
-        <tone_balance>
-            <information weight="40%">정보 전달</information>
-            <experience weight="40%">경험 공유</experience>
-            <emotion weight="20%">감정 공감</emotion>
-        </tone_balance>
-    </application_guidelines>
+    <style_elements>
+      ✓ 화자의 목소리 (말투, 어휘 선택, 호칭)
+      ✓ 문장 길이와 리듬 (짧은/긴 문장 교차 패턴)
+      ✓ 단락 구조 (몇 문장으로 단락을 구성하는지)
+      ✓ 감정선 (언제 진지, 언제 가볍게)
+      ✓ 전개 방식 (시간순/중요도순/문제-해결)
+    </style_elements>
     
-    <examples_transformation>
-        <example type="structure">
-            <original>
-                ▶ 복용 후 변화 과정
-                l 1주차: 뒤척이는 시간 감소
-                l 2주차: 새벽 각성 횟수 감소
-            </original>
-            <transformed>
-                ◆ 사용 후 개선 단계
-                • 첫째 주: 수면 질 향상 시작
-                • 둘째 주: 깊은 잠 시간 증가
-            </transformed>
-        </example>
-        
-        <example type="expression">
-            <original>효과가 정말 놀라웠어요</original>
-            <transformed>변화가 기대 이상이었습니다</transformed>
-        </example>
-    </examples_transformation>
+    <structure_flow>
+      ✓ 도입-전개-마무리 비율
+      ✓ 소제목 간 내용 균형
+      ✓ 정보와 경험담의 배분
+    </structure_flow>
+  </what_to_extract>
+  
+  <what_to_transform>
+    <!-- 반드시 변경해야 할 것들 -->
     
-    <fallback_behavior>
-        <if_no_reference>기본 스타일 가이드 적용</if_no_reference>
-        <if_analysis_fails>일반적인 블로그 톤 사용</if_analysis_fails>
-    </fallback_behavior>
-</reference_document_analysis>
+    <content_variation>
+      ✗ 화자 페르소나: 완전히 다른 인물로 변경
+      ✗ 구체적 경험: 새로운 에피소드 창작
+      ✗ 숫자/기간: 다른 값으로 변경 (예: 1-2-3주 → 2-4-8주)
+      ✗ 고유명사: 모두 변경 또는 익명화
+      ✗ 문장 표현: 의미는 유사, 문장은 완전히 다르게
+    </content_variation>
+  </what_to_transform>
+  
+  <application_method>
+    <!-- 실제 적용 방법 -->
+    
+    참조 문서를 다음과 같이 활용하세요:
+    
+    1. 톤과 분위기 파악
+       → 격식체인가 구어체인가? 진지한가 가벼운가?
+    
+    2. 구성 방식 이해
+       → 어떤 순서로 정보를 전달하는가?
+    
+    3. 표현 패턴 학습
+       → 어떤 연결어를 자주 쓰는가? 문장 호흡은?
+    
+    4. 새로운 내용 창작
+       → 학습한 스타일로 완전히 다른 내용 작성
+    
+    결과: 같은 필자가 쓴 것 같지만 내용은 전혀 다른 글
+  </application_method>
+  
+  <quality_targets>
+    <!-- 추상적 수치 대신 구체적 기준 -->
+    
+    <style_similarity>
+      참조 문서와 "같은 사람이 쓴 것 같다"는 느낌이 들어야 함
+      하지만 문장이나 표현은 완전히 달라야 함
+    </style_similarity>
+    
+    <content_originality>
+      표절 검사 도구로 확인 시 중복 문장 0%
+      핵심 아이디어만 공유, 표현은 100% 독창적
+    </content_originality>
+    
+    <tone_balance>
+      참조 문서의 정보:경험:감정 비율을 유지
+      예: 참조가 정보 위주면 → 새 글도 정보 위주
+          참조가 감성 위주면 → 새 글도 감성 위주
+    </tone_balance>
+  </quality_targets>
+  
+  <transformation_examples>
+    <!-- 구체적 변환 예시 -->
+    
+    <example_1>
+      참조: "복용 1주차부터 효과를 느꼈어요"
+      변환: "사용 초반에 변화가 시작되더라구요"
+      (의미 유사, 표현 완전 변경)
+    </example_1>
+    
+    <example_2>
+      참조: "A 브랜드 제품을 구매했습니다"
+      변환: "비슷한 제품을 알아보게 되었어요"
+      (브랜드명 제거, 일반화)
+    </example_2>
+    
+    <example_3>
+      참조: "▶ 사용 후기\nl 1주차: 개선\nl 2주차: 효과"
+      변환: "사용하면서 느낀 점\n\n1주 차에는 조금씩 나아지더니, 2주쯤 되니 확실히 달라졌어요."
+      (특수문자 제거, 자연스러운 서술로 변경)
+    </example_3>
+  </transformation_examples>
+  
+  <conflict_resolution>
+    <!-- 충돌 시 해결 규칙 -->
+    
+    만약 "참조 문서 스타일 유지"와 "상위 금지 규칙"이 충돌하면:
+    → 항상 상위 금지 규칙을 우선합니다
+    → 참조 문서에 금지된 형식이 있어도 사용하지 마세요
+    → 대신 허용된 대체 방법을 찾으세요
+    
+    예: 참조에 • 불릿이 있어도 → 1. 2. 3. 숫자로 대체
+        참조에 **볼드**가 있어도 → 자연스러운 강조 표현으로 대체
+  </conflict_resolution>
+  
+</reference_document_usage>
 """
     return ref_prompt
 
