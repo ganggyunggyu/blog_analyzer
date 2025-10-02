@@ -1,4 +1,4 @@
-from xml.etree.ElementInclude import include
+import time
 from fastapi import HTTPException, APIRouter
 from fastapi.concurrency import run_in_threadpool
 
@@ -18,11 +18,24 @@ async def generator_kkk(request: GenerateRequest):
     """
     KKK 테스트용 텍스트 생성기
     """
+    start_ts = time.time()
     service = request.service.lower()
     keyword = request.keyword.strip()
     ref = request.ref
 
     category = await get_category_db_name(keyword=keyword + ref)
+    c_elapsed = time.time() - start_ts
+
+    print("\n" + "=" * 60)
+    print(f"🚀 KKK 원고 생성 시작")
+    print("=" * 60)
+    print(f"📌 서비스    : {service.upper()}")
+    print(f"🎯 키워드    : {keyword}")
+    print(f"📁 카테고리  : {category}")
+    print(f"🤖 모델      : {model_name}")
+    print(f"📝 참조원고  : {'✅ 있음' if len(ref) != 0 else '❌ 없음'}")
+    print(f"⏱️  분류시간  : {c_elapsed:.2f}s")
+    print("=" * 60 + "\n")
 
     db_service = MongoDBService()
     db_service.set_db_name(db_name=category)
@@ -36,7 +49,6 @@ async def generator_kkk(request: GenerateRequest):
             )
 
         if generated_manuscript:
-            import time
 
             parsed = parse_query(keyword)
 
@@ -60,6 +72,16 @@ async def generator_kkk(request: GenerateRequest):
                     db_service.insert_document("ref", ref_document)
 
                 document["_id"] = str(document["_id"])
+                elapsed = time.time() - start_ts
+
+                print("\n" + "=" * 60)
+                print(f"✅ KKK 원고 생성 완료")
+                print("=" * 60)
+                print(f"🎯 키워드       : {keyword}")
+                print(f"📁 카테고리     : {category}")
+                print(f"⏱️  총 소요시간  : {elapsed:.2f}s")
+                print(f"💾 DB 저장      : ✅ 성공")
+                print("=" * 60 + "\n")
 
                 return document
             except Exception as e:
