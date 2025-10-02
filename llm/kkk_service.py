@@ -3,7 +3,7 @@ import re
 import time
 
 from openai import OpenAI
-from _prompts.category import 알파CD
+from _prompts.category import 브로멜라인, 알파CD
 from _prompts.service.get_mongo_prompt import get_mongo_prompt
 from config import GEMINI_API_KEY, OPENAI_API_KEY
 from _constants.Model import Model
@@ -86,7 +86,7 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
 <output_structure>
   <format>
     <structure>
-      제목 (20-35자, 키워드 포함)
+      제목 (20-35자, 제목에는 쉼표(,)를 넣지 않음)
       제목
       제목
       제목
@@ -119,8 +119,11 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
       - HTML 태그: <p> <br> <div> <a> <img> <h1-h6>
       - URL: http:// https:// www. .com .co.kr
       - 따옴표: " ' ` " " ' '
-      - 특수문자: · • ◦ ▪ → ※
+      - 특수문자: · • ◦ ▪ → ※ .
       - 괄호: [] <> {{}} 〈〉 【】
+
+
+      - 예외 사항: 소제목에서 숫자 다음에 . (마침표)만 허용
     </forbidden_formatting>
     
     <avoid_expressions>
@@ -150,8 +153,6 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
 
     task_definition = f"""
 <task_definition>
-  네이버 블로그 SEO 최적화 글 작성
-  
   <requirements>
     - 키워드: {keyword}
     - 카테고리: {category}
@@ -160,7 +161,7 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
   
   <primary_objectives priority="descending">
     1. 자연스러운 독자 경험 (부자연스러운 키워드 삽입 금지)
-    2. SEO 최적화 (키워드를 자연스럽게 통합, 밀도 3-5%)
+    2. SEO 최적화
     3. 5개 소제목 구조 준수
     4. 길이 요구사항 충족 ({target_chars_min}-{target_chars_max}자)
     5. 카테고리 톤 일치
@@ -211,19 +212,23 @@ The desired behavior from this prompt is for the agent to [DO DESIRED BEHAVIOR],
 
     system = f"""
 <system_instruction version="2.0-gpt5-optimized">
+<rule>
+    당신은 네이버 인기 블로그 상위노출을 위해 글을쓰는 바이럴 마케터 입니다. 그 어떤 사항보다도 네이버 글의 노출을 최우선으로 작업해야하며,
+    참조원고 또는 템플릿은 기존 네이버 상위노출 글이니 해당 글의 특징을 살려서 블로그 바이럴 마케팅 원고를 작성합니다.
+</rule>
 
-{task_definition}
+
 {output_structure}
 {line_break_rules}
 {human_writing_style}
 {category_tone_rules}
-
 {mongo_data}
+
 {ref_prompt}
 
 {length_constraints}
 
-
+{meta_prompt}
 
 <priority_hierarchy>
   <!-- GPT-5는 모순을 싫어하므로 명확한 우선순위 필수 -->
@@ -297,7 +302,7 @@ The desired behavior from this prompt is for the agent to [DO DESIRED BEHAVIOR],
   
   <mandatory_elements>
     반드시 포함되어야 할 요소:
-    ✓ 제목 4개 (20-35자, 키워드 포함)
+    ✓ 동일한 제목 4개 (20-35자, 키워드 포함)
     ✓ 도입부 (3-5줄, 라벨 없이)
     ✓ 정확히 5개의 번호 있는 소제목 (1. 2. 3. 4. 5.)
     ✓ 맺음말 (2-3문장, 라벨 없이)
@@ -357,6 +362,8 @@ The desired behavior from this prompt is for the agent to [DO DESIRED BEHAVIOR],
   2. 각 소제목이 키워드와 자연스럽게 연결되는가?
   3. 전체 흐름이 기승전결 구조를 가지는가?
   4. 독자가 끝까지 읽을 만한 흡입력이 있는가?
+  5. 특수문자 지침이 제대로 이행 되었는가?
+  6. 숫자로 나열하는 설명이 아닌 일반적인 문장형으로 작성 되었는가?
   
   하지만 이 사고 과정을 출력하지 말고, 오직 완성된 글만 제시하세요.
 </reasoning_guidance>
@@ -370,7 +377,6 @@ The desired behavior from this prompt is for the agent to [DO DESIRED BEHAVIOR],
   • 구체적 세부사항은 모두 변형
   • 문장 구조와 표현은 달리 작성
   
-  결과적으로 템플릿과 30% 이상 유사해서는 안 됩니다.
 </adaptation_note>
 <final_instruction>
   지금 즉시 완성된 블로그 글을 작성하세요.
@@ -383,7 +389,7 @@ The desired behavior from this prompt is for the agent to [DO DESIRED BEHAVIOR],
     아래 참조 자료를 활용하여 '{keyword}'에 대한 네이버 블로그 글을 작성해주세요.
     
     추가 요청: {note}
-    추가 요청은 어떤일이 있어도 반드시 지켜져야 합니다. (최상위 명령)
+    추가 요청은 어떤일이 있어도 반드시 지켜져야 합니다.
     """
     if ai_service_type == "gemini" and gemini_client:
         response = gemini_client.models.generate_content(
@@ -396,10 +402,9 @@ The desired behavior from this prompt is for the agent to [DO DESIRED BEHAVIOR],
     elif ai_service_type == "openai" and openai_client:
         response = openai_client.responses.create(
             model=model_name,
-            input=[
-                {"role": "developer", "content": system},
-                {"role": "user", "content": user},
-            ],
+            instructions=system,
+            input=user,
+            tools=[{"type": "web_search_preview"}],
             reasoning={"effort": "high"},  # minimal, low, medium, high
             text={"verbosity": "high"},  # low, medium, high
         )
@@ -408,10 +413,7 @@ The desired behavior from this prompt is for the agent to [DO DESIRED BEHAVIOR],
             f"AI 클라이언트를 찾을 수 없습니다. (service_type: {ai_service_type})"
         )
     start_ts = time.time()
-    is_ref = len(ref) != 0
-    print(
-        f"[GEN] service={'test-kkk'} | model={model_name} | category={category} | keyword={user_instructions} | is_ref={is_ref}"
-    )
+
     if ai_service_type == "gemini":
         text: str = getattr(response, "text", "") or ""
     elif ai_service_type == "openai":
@@ -421,14 +423,11 @@ The desired behavior from this prompt is for the agent to [DO DESIRED BEHAVIOR],
     else:
         text: str = ""
 
-    text = format_paragraphs(text)
+    # text = format_paragraphs(text)
     text = comprehensive_text_clean(text)
 
     length_no_space = len(re.sub(r"\s+", "", text))
-    elapsed = time.time() - start_ts
     print(f"원고 길이 체크: {length_no_space}")
-    print(f"원고 소요시간: {elapsed:.2f}s")
-    print("원고작성 완료")
 
     return text
 
@@ -456,7 +455,7 @@ def get_category_tone_rules(category):
         "위고비": 위고비,
         "다이어트": 다이어트,
         "다이어트보조제": 다이어트,
-        "브로멜라인": 다이어트,
+        "브로멜라인": 브로멜라인,
         "애견동물_반려동물_분양": 애견동물_반려동물_분양,
         "외국어교육": 외국어교육,
         "외국어교육_학원": 외국어교육_학원,
@@ -488,6 +487,7 @@ def get_category_tone_rules(category):
         {base_tone}
 
         <priority>
+            - 충돌 혹은 모순되는 부분이 있는 경우 specific가 default보다 우선
             1. specific
             2. default
         </priority>

@@ -12,7 +12,7 @@ from config import OPENAI_API_KEY
 from _constants.Model import Model
 from mongodb_service import MongoDBService
 from _prompts.get_gpt_prompt import GptPrompt
-from utils.get_category_db_name import get_category_db_name_sync
+from utils.get_category_db_name import get_category_db_name
 from utils.query_parser import parse_query
 
 from config import MONGO_DB_NAME
@@ -22,7 +22,7 @@ from analyzer.request_문장해체분석기 import get_문장해체
 model_name: str = Model.GPT5
 
 
-def gpt_5_gen(
+async def gpt_5_gen(
     user_instructions: str,
     ref: str = "",
 ) -> str:
@@ -54,7 +54,7 @@ def gpt_5_gen(
 
     category = ""
     if user_instructions:
-        category = get_category_db_name_sync(user_instructions)
+        category = await get_category_db_name(user_instructions)
 
     def sanitize(s: str) -> str:
         s = s or ""
