@@ -36,10 +36,8 @@ def select_template(
 
             index_spec = [("file_name", TEXT)]
             coll.create_index(index_spec, name="filename_text_index")
-            print("✅ 제목 텍스트 인덱스 생성 완료!")
             return True
-        except Exception as e:
-            print(f"❌ 텍스트 인덱스 생성 실패: {e}")
+        except Exception:
             return False
 
     def _normalize_text(text: str) -> str:
@@ -107,7 +105,6 @@ def select_template(
     selected_template = None
     selection_method = ""
     if not templates:
-        print("❌ 로컬 templates 리스트가 비어있습니다!")
         return {"selected_template": None, "selection_method": "no-templates"}
 
     if keyword.strip():
@@ -118,20 +115,11 @@ def select_template(
 
             has_index = _has_text_index(collection)
 
-            print(
-                f"🔍 텍스트 인덱스 상태 확인: {'✅ 존재함' if has_index else '❌ 없음'}"
-            )
-
             if not has_index:
-                print("🔧 텍스트 인덱스가 없습니다. 생성을 시도합니다...")
                 if _create_text_index(collection):
                     has_index = True
-                    print("🎉 텍스트 인덱스 생성 후 상태: ✅ 생성 완료")
-                else:
-                    print("⚠️  텍스트 인덱스 생성 실패, regex 검색으로 계속 진행합니다.")
 
             if has_index:
-                print("⚡ MongoDB 텍스트 인덱스 검색 사용 (제목 기반)")
 
                 normalized_keyword = _normalize_text(search_keyword)
 
@@ -160,28 +148,16 @@ def select_template(
                 else:
 
                     if not top_docs:
-                        print("🔄 스마트 검색 실패, 전체 검색으로 재시도")
                         top_docs = _get_simple_regex_search(
                             collection, search_keyword, top_n
                         )
-                        print(
-                            f"📝 전체 검색 결과 개수 (제목+본문): {len(top_docs) if top_docs else 0}"
-                        )
             else:
 
-                print("📝 텍스트 인덱스 없음 - 스마트 제목 검색 사용")
                 top_docs = _get_filename_smart_search(collection, search_keyword, top_n)
-                print(
-                    f"📝 스마트 제목 검색 결과 개수: {len(top_docs) if top_docs else 0}"
-                )
 
                 if not top_docs:
-                    print("🔄 스마트 검색 실패, 전체 검색으로 재시도")
                     top_docs = _get_simple_regex_search(
                         collection, search_keyword, top_n
-                    )
-                    print(
-                        f"📝 전체 검색 결과 개수 (제목+본문): {len(top_docs) if top_docs else 0}"
                     )
 
             if top_docs:
@@ -199,7 +175,6 @@ def select_template(
                     selection_method = "no-results"
             else:
 
-                print("🎲 모든 검색 실패, 랜덤 선택으로 진행")
                 picked = random.choice(templates)
                 selected_template = {
                     "_id": str(picked.get("_id", "")),
