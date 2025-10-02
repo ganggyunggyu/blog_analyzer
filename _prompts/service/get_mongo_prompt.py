@@ -165,20 +165,6 @@ class GPT5MongoPromptBuilder:
   </medium>
 </quality_requirements>
 
-<formatting_reminder>
-  절대 금지:
-  - 마크다운 헤더: #, ##, ###
-  - 강조 기호: *, **, _
-  - 특수 기호: •, ▶, →, ✓, ✔
-  - 리스트 형식의 나열
-  
-  허용:
-  - 자연스러운 문단 나누기 (줄바꿈)
-  - "첫째", "둘째" 같은 전환어
-  - 간결한 숫자 (1, 2, 3)
-  - 일반 문장 부호 (.,!?)
-</formatting_reminder>
-
 <execution_instruction>
   위 리소스를 활용해 블로그 글을 직접 작성하세요.
   계획이나 과정 설명 없이, 완성된 글만 출력하세요.
