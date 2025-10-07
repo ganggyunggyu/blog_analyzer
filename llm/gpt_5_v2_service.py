@@ -153,8 +153,8 @@ async def gpt_5_gen(
             model=model_name,
             instructions=system,
             input=user,
-            reasoning={"effort": "medium"},  # minimal, low, medium, high
-            text={"verbosity": "high"},  # low, medium, high
+            reasoning={"effort": "low"},  # minimal, low, medium, high
+            text={"verbosity": "low"},  # low, medium, high
         )
 
         text: str = getattr(response, "output_text", "") or ""
