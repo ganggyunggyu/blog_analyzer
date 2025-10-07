@@ -149,29 +149,15 @@ async def gpt_5_gen(
     try:
         start_ts = time.time()
         print("원고작성 시작")
-        response = client.chat.completions.create(
+        response = client.responses.create(
             model=model_name,
-            messages=[
-                {
-                    "role": "system",
-                    "content": system,
-                },
-                {"role": "user", "content": user},
-            ],
+            instructions=system,
+            input=user,
+            reasoning={"effort": "medium"},  # minimal, low, medium, high
+            text={"verbosity": "high"},  # low, medium, high
         )
 
-        # usage = getattr(response, "usage", None)
-        # if usage is not None:
-        #     in_tokens = getattr(usage, "prompt_tokens", None)
-        #     out_tokens = getattr(usage, "completion_tokens", None)
-        #     total_tokens = getattr(usage, "total_tokens", None)
-        #     # 토큰 사용량 로깅 제거
-
-        choices = getattr(response, "choices", []) or []
-        if not choices or not getattr(choices[0], "message", None):
-            raise RuntimeError("모델이 유효한 choices/message를 반환하지 않았습니다.")
-
-        text: str = (choices[0].message.content or "").strip()
+        text: str = getattr(response, "output_text", "") or ""
         if not text:
             raise RuntimeError("모델이 빈 응답을 반환했습니다.")
 
