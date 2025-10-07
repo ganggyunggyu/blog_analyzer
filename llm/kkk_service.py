@@ -331,6 +331,7 @@ The desired behavior from this prompt is for the agent to [DO DESIRED BEHAVIOR],
     ✗ 괄호: [] <> {{}} 〈〉 【】
     ✗ 구조 라벨: "서론", "본문", "결론", "들어가며", "마무리"
     ✗ 메타 표현: "요약하자면", "결론적으로", "정리하면"
+    ✗ 어색한 단어: "루틴"
   </forbidden_elements>
   
   <success_criteria>
@@ -423,8 +424,8 @@ The desired behavior from this prompt is for the agent to [DO DESIRED BEHAVIOR],
             model=model_name,
             instructions=system,
             input=user,
-            reasoning={"effort": "medium"},  # minimal, low, medium, high
-            text={"verbosity": "high"},  # low, medium, high
+            reasoning={"effort": "minimal"},  # minimal, low, medium, high
+            text={"verbosity": "low"},  # low, medium, high
         )
     else:
         raise ValueError(
