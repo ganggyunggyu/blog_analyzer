@@ -34,9 +34,7 @@ async def generator_gpt(request: GenerateRequest):
 
     try:
         with progress(label=f"{service}:{model_name}:{keyword}"):
-            generated_manuscript = await run_in_threadpool(
-                gpt_5_gen, user_instructions=keyword, ref=ref
-            )
+            generated_manuscript = await gpt_5_gen(user_instructions=keyword, ref=ref)
 
         if generated_manuscript:
             import time

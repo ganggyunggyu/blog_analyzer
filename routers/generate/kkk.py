@@ -61,6 +61,8 @@ async def generator_kkk(request: GenerateRequest):
                 "service": f"{service}_kkk_test",
                 "category": category,
                 "keyword": keyword,
+                "ref": ref if ref else "",
+                "work_start_date": "2025-01-15",
                 "test_mode": True,
             }
 
