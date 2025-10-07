@@ -36,3 +36,5 @@ class Model:
     VERTEX_PERFORMANCE_AUTO = "gemini-2.5-flash-lite"
     VERTEX_2_0_FLASH = "gemini-2.0-flash"
     VERTEX_2_0_FLASH_LITE = "gemini-2.0-flash-lite"
+
+    CLAUDE_SONNET_4_5 = "claude-sonnet-4-5-20250929"
