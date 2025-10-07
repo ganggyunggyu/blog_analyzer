@@ -63,7 +63,7 @@ async def gpt_4_v2_gen(
         category = os.getenv("MONGO_DB_NAME", "wedding")
 
     if category == "legalese":
-        기본_프롬프트 = KkkPrompt.kkk_prompt_gpt_5(parsed["keyword"])
+        기본_프롬프트 = KkkPrompt.kkk_prompt_gpt_5(2800, 3000, parsed["keyword"])
     else:
         기본_프롬프트 = GptPrompt.gpt_4_v2(parsed["keyword"])
 
@@ -225,7 +225,7 @@ async def gpt_4_v2_gen(
         elapsed = time.time() - start_ts
         print(f"원고 소요시간: {elapsed:.2f}s")
         print("원고작성 완료")
-        text = format_paragraphs(text)
+        # text = format_paragraphs(text)
         return text
 
     except Exception as e:
