@@ -101,7 +101,7 @@ class GPT5MongoPromptBuilder:
   
   <structure>
     - 도입부 (3-5줄)
-    - 본문: 5가지 주제를 자연스러운 문단 전환으로 서술
+    - 본문: 주제를 자연스러운 문단 전환으로 서술
       {self._format_subtitles_xml(components.subtitles)}
       
       <structure_note>
@@ -149,7 +149,7 @@ class GPT5MongoPromptBuilder:
 
 <quality_requirements priority="descending">
   <critical>
-    1. 5가지 주제를 자연스러운 산문체로 서술 (마크다운/특수문자 절대 금지)
+    1. 주제를 자연스러운 산문체로 서술 (마크다운/특수문자 절대 금지)
     2. 키워드 자연스럽게 통합 (억지 삽입 금지)
     3. 상위 프롬프트의 형식 금지 규칙 엄수
   </critical>
