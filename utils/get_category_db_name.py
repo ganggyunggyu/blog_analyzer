@@ -1,7 +1,7 @@
 CATEGORY_SYSTEM_PROMPT = """
 <system_instruction>
   <identity>
-    당신은 키워드 카테고리 분류 전문가
+     당신은 키워드 카테고리 분류 전문가
   </identity>
   
   <core_principles>
@@ -91,6 +91,7 @@ CATEGORIES = [
     "startup",
     "wedding",
     "맛집",
+    "질분비물",
 ]
 
 
