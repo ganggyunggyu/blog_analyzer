@@ -2,10 +2,11 @@ from __future__ import annotations
 import re
 import time
 
+from anthropic import Anthropic
 from openai import OpenAI
 from _prompts.category import 브로멜라인, 알파CD
 from _prompts.service.get_mongo_prompt import get_mongo_prompt
-from config import GEMINI_API_KEY, OPENAI_API_KEY
+from config import CLAUDE_API_KEY, GEMINI_API_KEY, OPENAI_API_KEY
 from _constants.Model import Model
 from _prompts.service.get_ref_prompt import get_ref_prompt
 from utils.format_paragraphs import format_paragraphs
@@ -22,6 +23,9 @@ from _prompts.category.미용학원 import 미용학원
 from _prompts.category.다이어트 import 다이어트
 from _prompts.category.멜라논크림 import 멜라논크림
 from _prompts.category.위고비 import 위고비
+from _prompts.category.질분비물 import 질분비물
+from _prompts.category.마운자로_부작용 import 마운자로_부작용
+from _prompts.category.족저근막염신발_추천 import 족저근막염신발_추천
 
 from _prompts.category.anime import anime
 from _prompts.category.movie import movie
@@ -35,6 +39,7 @@ from _prompts.category.서브웨이다이어트 import 서브웨이다이어트
 from _prompts.category.에리스리톨 import 에리스리톨
 from _prompts.category.외국어교육 import 외국어교육
 from _prompts.category.외국어교육_학원 import 외국어교육_학원
+from _prompts.category.영양제 import 영양제
 from _prompts.category.울쎄라 import 울쎄라
 from _prompts.category.족저근막염깔창 import 족저근막염깔창
 from _prompts.category.텔레그램사기 import 텔레그램사기
@@ -51,12 +56,20 @@ from _prompts.rules.line_break_rules import line_break_rules
 model_name: str = Model.GPT5
 
 
-ai_service_type = "gemini" if model_name.startswith("gemini") else "openai"
+if model_name.startswith("gemini"):
+    ai_service_type = "gemini"
+elif model_name.startswith("claude"):
+    ai_service_type = "claude"
+else:
+    ai_service_type = "openai"
 
 
 openai_client = OpenAI(api_key=OPENAI_API_KEY) if ai_service_type == "openai" else None
 gemini_client = (
     genai.Client(api_key=GEMINI_API_KEY) if ai_service_type == "gemini" else None
+)
+claude_client = (
+    Anthropic(api_key=CLAUDE_API_KEY) if ai_service_type == "claude" else None
 )
 
 
@@ -217,11 +230,12 @@ The desired behavior from this prompt is for the agent to [DO DESIRED BEHAVIOR],
     참조원고 또는 템플릿은 기존 네이버 상위노출 글이니 해당 글의 특징을 살려서 블로그 바이럴 마케팅 원고를 작성합니다.
 </rule>
 
-
+{task_definition}
 {output_structure}
+{category_tone_rules}
 {line_break_rules}
 {human_writing_style}
-{category_tone_rules}
+
 {mongo_data}
 
 {ref_prompt}
@@ -235,7 +249,7 @@ The desired behavior from this prompt is for the agent to [DO DESIRED BEHAVIOR],
   
   <level_1_critical priority="highest">
     1. 금지된 형식 절대 사용 금지 (마크다운, HTML, 특수문자 등)
-    2. 5개 소제목 구조 정확히 준수
+    2. 소제목과 분몬의 연관도 구조 정확히 준수
     3. 자연스러운 문체 (AI 티 제거)
   </level_1_critical>
   
@@ -304,7 +318,6 @@ The desired behavior from this prompt is for the agent to [DO DESIRED BEHAVIOR],
     반드시 포함되어야 할 요소:
     ✓ 동일한 제목 4개 (20-35자, 키워드 포함)
     ✓ 도입부 (3-5줄, 라벨 없이)
-    ✓ 정확히 5개의 번호 있는 소제목 (1. 2. 3. 4. 5.)
     ✓ 맺음말 (2-3문장, 라벨 없이)
   </mandatory_elements>
   
@@ -326,7 +339,6 @@ The desired behavior from this prompt is for the agent to [DO DESIRED BEHAVIOR],
     • 키워드가 문맥에 녹아들어 SEO 최적화되었으나 티 안 남
     • 독자가 끝까지 읽고 싶게 만드는 흡입력
     • 금지된 형식이 하나도 없음
-    • 정확히 5개 소제목 구조
   </success_criteria>
 </quality_standards>
 
@@ -399,20 +411,25 @@ The desired behavior from this prompt is for the agent to [DO DESIRED BEHAVIOR],
             ),
             contents=user,
         )
+    elif ai_service_type == "claude" and claude_client:
+        response = claude_client.messages.create(
+            model=model_name,
+            system=system,
+            messages=[{"role": "user", "content": user}],
+            max_tokens=4096,
+        )
     elif ai_service_type == "openai" and openai_client:
         response = openai_client.responses.create(
             model=model_name,
             instructions=system,
             input=user,
-            tools=[{"type": "web_search_preview"}],
-            reasoning={"effort": "high"},  # minimal, low, medium, high
+            reasoning={"effort": "medium"},  # minimal, low, medium, high
             text={"verbosity": "high"},  # low, medium, high
         )
     else:
         raise ValueError(
             f"AI 클라이언트를 찾을 수 없습니다. (service_type: {ai_service_type})"
         )
-    start_ts = time.time()
 
     if ai_service_type == "gemini":
         text: str = getattr(response, "text", "") or ""
@@ -449,6 +466,7 @@ def get_category_tone_rules(category):
         "anime": anime,
         "beauty-treatment": beauty_treatment,
         "movie": movie,
+        "functional-food": 영양제,
         "맛집": 맛집,
         "알파CD": 알파CD,
         "wedding": wedding,
@@ -464,19 +482,21 @@ def get_category_tone_rules(category):
         "리쥬란": 리쥬란,
         "울쎄라": 울쎄라,
         "리들샷": 리들샷,
-        "마운자로가격": 위고비,
-        "마운자로처방": 위고비,
+        "마운자로가격": 마운자로_부작용,
+        "마운자로처방": 마운자로_부작용,
         "멜라논크림": 멜라논크림,
         "서브웨이다이어트": 서브웨이다이어트,
         "스위치온다이어트": 다이어트,
         "파비플로라": 다이어트,
         "공항_장기주차장:주차대행": 공항_장기주차장_주차대행,
         "에리스리톨": 에리스리톨,
-        "족저근막염깔창": 족저근막염깔창,
+        "족저근막염깔창": 족저근막염신발_추천,
         "캐리어": 캐리어,
         "텔레그램사기": 텔레그램사기,
         "틱톡부업사기": 틱톡부업사기,
         "기타": 기타,
+        "질분비물": 질분비물,
+        "족저근막염신발추천": 족저근막염신발_추천,
     }
     specific_rules = tone_rules_map.get(category.lower(), "")
 
@@ -490,6 +510,8 @@ def get_category_tone_rules(category):
             - 충돌 혹은 모순되는 부분이 있는 경우 specific가 default보다 우선
             1. specific
             2. default
+
+            
         </priority>
     </tone_rules>
     """
