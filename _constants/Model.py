@@ -38,3 +38,9 @@ class Model:
     VERTEX_2_0_FLASH_LITE = "gemini-2.0-flash-lite"
 
     CLAUDE_SONNET_4_5 = "claude-sonnet-4-5-20250929"
+
+    SOLAR_PRO = "solar-pro"
+    SOLAR_PRO2 = "solar-pro2-250909"
+
+    GROK_4_RES = "grok-4-fast-reasoning"
+    GROK_4_NON_RES = "grok-4-fast-non-reasoning"
