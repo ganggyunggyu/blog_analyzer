@@ -4,9 +4,19 @@ import time
 
 from anthropic import Anthropic
 from openai import OpenAI
+from xai_sdk.chat import system as grok_system_message
+from xai_sdk.chat import user as grok_user_message
 from _prompts.category import 브로멜라인, 알파CD
 from _prompts.service.get_mongo_prompt import get_mongo_prompt
-from config import CLAUDE_API_KEY, GEMINI_API_KEY, OPENAI_API_KEY
+from config import (
+    CLAUDE_API_KEY,
+    GEMINI_API_KEY,
+    GROK_API_KEY,
+    OPENAI_API_KEY,
+    UPSTAGE_API_KEY,
+    grok_client,
+    solar_client,
+)
 from _constants.Model import Model
 from _prompts.service.get_ref_prompt import get_ref_prompt
 from utils.format_paragraphs import format_paragraphs
@@ -53,13 +63,17 @@ from _prompts.rules.line_example_rule import line_example_rule
 from _prompts.rules.line_break_rules import line_break_rules
 
 
-model_name: str = Model.GPT5
+model_name: str = Model.GROK_4_RES
 
 
 if model_name.startswith("gemini"):
     ai_service_type = "gemini"
 elif model_name.startswith("claude"):
     ai_service_type = "claude"
+elif model_name.startswith("solar"):
+    ai_service_type = "solar"
+elif model_name.startswith("grok"):
+    ai_service_type = "grok"
 else:
     ai_service_type = "openai"
 
@@ -74,10 +88,18 @@ claude_client = (
 
 
 def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
-    if ai_service_type == "gemini" and not GEMINI_API_KEY:
-        raise ValueError("GEMINI_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요.")
-    elif ai_service_type == "openai" and not OPENAI_API_KEY:
-        raise ValueError("OPENAI_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요.")
+    if ai_service_type == "solar":
+        if not UPSTAGE_API_KEY:
+            raise ValueError("UPSTAGE_API_KEY가 설정되어 있지 않습니다.")
+    elif ai_service_type == "gemini":
+        if not GEMINI_API_KEY:
+            raise ValueError("GEMINI_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요.")
+    elif ai_service_type == "openai":
+        if not OPENAI_API_KEY:
+            raise ValueError("OPENAI_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요.")
+    elif ai_service_type == "grok":
+        if not GROK_API_KEY:
+            raise ValueError("GROK_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요.")
 
     parsed = parse_query(user_instructions)
     keyword, note = parsed.get("keyword", ""), parsed.get("note", "")
@@ -327,7 +349,7 @@ The desired behavior from this prompt is for the agent to [DO DESIRED BEHAVIOR],
     ✗ HTML 태그: <p> <br> <div> <a> <img>
     ✗ URL: http:// https:// www.
     ✗ 따옴표: " ' ` " " ' '
-    ✗ 특수문자: · • ◦ ▪ → ※
+    ✗ 특수문자: · • ◦ ▪ → ※ '\'
     ✗ 괄호: [] <> {{}} 〈〉 【】
     ✗ 구조 라벨: "서론", "본문", "결론", "들어가며", "마무리"
     ✗ 메타 표현: "요약하자면", "결론적으로", "정리하면"
@@ -424,9 +446,23 @@ The desired behavior from this prompt is for the agent to [DO DESIRED BEHAVIOR],
             model=model_name,
             instructions=system,
             input=user,
-            reasoning={"effort": "minimal"},  # minimal, low, medium, high
-            text={"verbosity": "low"},  # low, medium, high
+            reasoning={"effort": "medium"},  # minimal, low, medium, high
+            text={"verbosity": "high"},  # low, medium, high
         )
+    elif ai_service_type == "solar" and solar_client:
+        response = solar_client.chat.completions.create(
+            model=model_name,
+            messages=[
+                {"role": "system", "content": system},
+                {"role": "user", "content": user + system},
+            ],
+            reasoning_effort="high",
+        )
+    elif ai_service_type == "grok" and grok_client:
+        chat_session = grok_client.chat.create(model=model_name)
+        chat_session.append(grok_system_message(system))
+        chat_session.append(grok_user_message(user))
+        response = chat_session.sample()
     else:
         raise ValueError(
             f"AI 클라이언트를 찾을 수 없습니다. (service_type: {ai_service_type})"
@@ -435,9 +471,17 @@ The desired behavior from this prompt is for the agent to [DO DESIRED BEHAVIOR],
     if ai_service_type == "gemini":
         text: str = getattr(response, "text", "") or ""
     elif ai_service_type == "openai":
-
         text: str = getattr(response, "output_text", "") or ""
-
+    elif ai_service_type == "solar":
+        choices = getattr(response, "choices", []) or []
+        if not choices or not getattr(choices[0], "message", None):
+            raise RuntimeError("SOLAR가 유효한 choices/message를 반환하지 않았습니다.")
+        text: str = (choices[0].message.content or "").strip()
+    elif ai_service_type == "claude":
+        content_blocks = getattr(response, "content", [])
+        text: str = getattr(content_blocks[0], "text", "") if content_blocks else ""
+    elif ai_service_type == "grok":
+        text = getattr(response, "content", "") or ""
     else:
         text: str = ""
 
