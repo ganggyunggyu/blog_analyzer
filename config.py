@@ -2,6 +2,8 @@ import os
 import anthropic
 from dotenv import load_dotenv
 from openai import OpenAI
+from xai_sdk import Client
+from xai_sdk.chat import user, system
 
 load_dotenv()
 
@@ -19,3 +21,9 @@ solar_client = OpenAI(
 )
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 CLAUDE_API_KEY = os.getenv("ANTHROPIC_API_KEY")
+GROK_API_KEY = os.getenv("GROK_API_KEY")
+
+grok_client = Client(
+    api_key=GROK_API_KEY,
+    timeout=3600,
+)
