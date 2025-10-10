@@ -21,7 +21,7 @@ class PromptComponents:
 
 
 class GPT5MongoPromptBuilder:
-    """GPT-5에 최적화된 MongoDB 프롬프트 빌더"""
+    """GPT-5에 최적화된 MongoDB 프롬프트 빌더 (Grok 최적화: JSON 중심, 데이터 사용 지침 중심)"""
 
     def __init__(self, category: str, keyword: str = ""):
         self.category = category
@@ -30,13 +30,23 @@ class GPT5MongoPromptBuilder:
         self.db_service.set_db_name(category)
 
     def get_components(self) -> PromptComponents:
-        """MongoDB에서 데이터 추출 및 정제"""
+        """MongoDB에서 데이터 추출 및 정제 (inline 처리로 간소화)"""
         analysis_data = self.db_service.get_latest_analysis_data() or {}
 
-        # 데이터 추출 및 정제
-        subtitles = self._clean_list(analysis_data.get("subtitles", []))
-        expressions = self._clean_dict(analysis_data.get("expressions", {}))
-        parameters = self._clean_dict(analysis_data.get("parameters", {}))
+        # Inline 데이터 정제
+        subtitles = [
+            str(item).strip()
+            for item in analysis_data.get("subtitles", [])
+            if str(item).strip()
+        ]
+        expressions = {
+            str(k): [str(v).strip() for v in (vals or []) if str(v).strip()]
+            for k, vals in analysis_data.get("expressions", {}).items()
+        }
+        parameters = {
+            str(k): [str(v).strip() for v in (vals or []) if str(v).strip()]
+            for k, vals in analysis_data.get("parameters", {}).items()
+        }
 
         # 템플릿 선택
         template, template_info = self._select_template(
@@ -53,172 +63,85 @@ class GPT5MongoPromptBuilder:
             keyword=self.keyword,
         )
 
-    def _clean_list(self, data: List) -> List[str]:
-        """리스트 데이터 정제"""
-        return [str(item).strip() for item in data if str(item).strip()]
-
-    def _clean_dict(self, data: Dict) -> Dict[str, List[str]]:
-        """딕셔너리 데이터 정제"""
-        return {
-            str(k): [str(v).strip() for v in (vals or []) if str(v).strip()]
-            for k, vals in data.items()
-        }
-
     def _select_template(self, templates: List) -> tuple[Optional[Dict], str]:
-        """템플릿 선택 및 정보 추출"""
+        """템플릿 선택 및 정보 추출 (에러 핸들링 강화)"""
         if not templates:
             return None, "템플릿 없음"
 
-        result = select_template(
-            collection=self.db_service.db["templates"],
-            templates=templates,
-            keyword=self.keyword,
-            top_n=3,
-        )
+        try:
+            result = select_template(
+                collection=self.db_service.db["templates"],
+                templates=templates,
+                keyword=self.keyword,
+                top_n=3,
+            )
 
-        selected = result.get("selected_template")
-        if not selected:
-            return None, "템플릿 선택 실패"
+            selected = result.get("selected_template")
+            if not selected:
+                return None, "템플릿 선택 실패"
 
-        file_name = selected.get("file_name", "파일명 없음")
-        template_id = str(selected.get("_id", "ID 없음"))
-        method = result.get("selection_method", "unknown")
+            file_name = selected.get("file_name", "파일명 없음")
+            template_id = str(selected.get("_id", "ID 없음"))
+            method = result.get("selection_method", "unknown")
 
-        return selected, f"{file_name}:{template_id} ({method})"
+            return selected, f"{file_name}:{template_id} ({method})"
+        except Exception as e:
+            return None, f"선택 오류: {str(e)}"
+
+    def _build_json_resources(self, components: PromptComponents) -> Dict[str, Any]:
+        """리소스를 JSON 형식으로 빌드 (Grok JSON 파싱 최적화)"""
+        return {
+            "subtitles_pool": components.subtitles[:20],
+            "style_variations": {
+                k: v[:10] for k, v in components.expressions.items() if v
+            },
+            "contextual_values": {
+                k: v[:5] for k, v in components.parameters.items() if v
+            },
+            "reference_template": {
+                "source": components.template_info,
+                "content": (
+                    components.template.get("templated_text", "").strip()
+                    if components.template
+                    else ""
+                ),
+            },
+        }
 
     def build_gpt5_prompt(self) -> str:
-        """GPT-5 최적화 프롬프트 생성"""
+        """GPT-5 최적화 프롬프트 생성 (데이터 사용 지침 중심, 규칙 최소화)"""
         components = self.get_components()
+        resources = self._build_json_resources(components)
+        resources_json = json.dumps(resources, ensure_ascii=False, indent=2)
 
         return f"""
 <task>
-  네이버 블로그 글 작성
+  네이버 블로그 글 작성 (Grok 최적화: 자연스러운 생성 우선)
   
   <target>
     - 카테고리: {components.category}
     - 키워드: {components.keyword}
   </target>
   
-  <structure>
-    - 도입부 (3-5줄)
-    - 본문: 주제를 자연스러운 문단 전환으로 서술
-      {self._format_subtitles_xml(components.subtitles)}
-      
-      <structure_note>
-        각 주제는 마크다운 헤더(#, ##) 사용 금지.
-        대신 "첫째로", "그리고", "또한", "마지막으로" 같은 
-        자연스러운 전환어로 단락을 구분하거나,
-        "1, 2, 3, 4, 5" 숫자만 간결하게 사용.
-        
-        절대 금지: *, **, #, ##, •, ▶, →, 리스트 형식
-      </structure_note>
-    - 맺음말 (2-3줄)
-  </structure>
 </task>
 
 <creative_resources>
-  <style_variations>
-    {self._format_expressions_xml(components.expressions)}
-  </style_variations>
+  <resources_json>{resources_json}</resources_json>
   
-  <contextual_values>
-    {self._format_parameters_xml(components.parameters)}
-    
-    <usage_note>
-      템플릿의 [변수]와 고유명사를 컨텍스트에 맞게 자연스럽게 변형하세요.
-      예: 33평→28평, A씨→다른 이름, 특정 업체명→컨텍스트 적합 업체명
-    </usage_note>
-  </contextual_values>
-  
-  <reference_template>
-    <source>{components.template_info}</source>
-    
-    <how_to_use>
-      1. 템플릿의 톤, 흐름, 스토리텔링 방식을 참고
-      2. 화자는 템플릿과 다른 새로운 페르소나로 변형
-      3. 고유한 경험담과 감정선 창작
-      4. [변수]는 컨텍스트에 맞게 대체
-      5. 템플릿에 마크다운이나 특수문자가 있어도 절대 따라하지 말 것
-    </how_to_use>
-    
-    <template_content>
-      {self._format_template_xml(components.template)}
-    </template_content>
-  </reference_template>
+  <data_usage>
+    JSON 리소스 활용:
+    - subtitles_pool: 소제목 선택해 본문 구조화
+    - style_variations: 표현 변형으로 자연스러운 톤 적용
+    - contextual_values: [변수] 대체해 컨텍스트 맞춤
+    - reference_template: content 톤/흐름 참고, 페르소나/경험 새 창작
+  </data_usage>
 </creative_resources>
 
-<quality_requirements priority="descending">
-  <critical>
-    1. 주제를 자연스러운 산문체로 서술 (마크다운/특수문자 절대 금지)
-    2. 키워드 자연스럽게 통합 (억지 삽입 금지)
-    3. 상위 프롬프트의 형식 금지 규칙 엄수
-  </critical>
-  
-  <high>
-    4. 템플릿과 다른 독창적 페르소나 창작
-    5. 템플릿 스타일 참조하되 그대로 복사 금지
-  </high>
-  
-  <medium>
-    6. 자연스러운 감정 표현
-    7. 실제 사람이 쓴 것 같은 진정성
-  </medium>
-</quality_requirements>
-
 <execution_instruction>
-  위 리소스를 활용해 블로그 글을 직접 작성하세요.
-  계획이나 과정 설명 없이, 완성된 글만 출력하세요.
-  반드시 자연스러운 산문체로 작성하고, 상위 프롬프트의 금지 형식을 절대 사용하지 마세요.
+  리소스 활용해 블로그 글 직접 생성. 메타 설명 없이 완성된 글만 출력.
+  Grok답게: 간결하고 진정성 있게.
 </execution_instruction>
 """
-
-    def _format_subtitles_xml(self, subtitles: List[str]) -> str:
-        """소제목을 XML 형식으로 변환"""
-        if not subtitles:
-            return "<pool>소제목 풀 비어있음</pool>"
-
-        items = "\n".join(f"        <option>{s}</option>" for s in subtitles[:20])
-        return f"<pool>\n{items}\n    </pool>"
-
-    def _format_expressions_xml(self, expressions: Dict[str, List[str]]) -> str:
-        """표현을 XML 형식으로 변환"""
-        if not expressions:
-            return "<empty/>"
-
-        xml_parts = []
-        for category, items in expressions.items():
-            if items:
-                values = "".join(f"<value>{v}</value>" for v in items[:10])
-                xml_parts.append(f'<category name="{category}">{values}</category>')
-
-        return "\n            ".join(xml_parts) if xml_parts else "<empty/>"
-
-    def _format_parameters_xml(self, parameters: Dict[str, List[str]]) -> str:
-        """파라미터를 XML 형식으로 변환"""
-        if not parameters:
-            return "<empty/>"
-
-        xml_parts = []
-        for param_type, values in parameters.items():
-            if values:
-                examples = "".join(f"<example>{v}</example>" for v in values[:5])
-                xml_parts.append(f'<type name="{param_type}">{examples}</type>')
-
-        return "\n            ".join(xml_parts) if xml_parts else "<empty/>"
-
-    def _format_template_xml(self, template: Optional[Dict]) -> str:
-        """템플릿을 XML 형식으로 변환"""
-
-        if not template:
-            return "<empty/>"
-
-        # 템플릿 내용 정제
-        content = template.get("templated_text", "")
-        if isinstance(content, str):
-            # 줄바꿈 유지하되 과도한 공백 제거
-            content = "\n".join(line.strip() for line in content.split("\n"))
-
-        return f"<template_text><![CDATA[{content}]]></template_text>"
 
 
 # 사용 예시
