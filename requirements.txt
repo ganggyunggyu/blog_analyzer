@@ -31,3 +31,4 @@ anthropic
 openai
 google-genai
 python-multipart
+xai-sdk
