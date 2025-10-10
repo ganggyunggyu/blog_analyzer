@@ -20,7 +20,8 @@ def get_문장해체(ref: str, model: str = model_name) -> str:
 You are an expert in text analysis and narrative style extraction. Your task is to analyze the given manuscript and output structured metadata. Return ONLY in JSON format, no explanations, no extra text.
 """.strip()
 
-    schema_block = dedent("""
+    schema_block = dedent(
+        """
     {
     "화자 지시": {
         "키워드": "원고 주제 혹은 핵심 인물명",
@@ -60,7 +61,8 @@ You are an expert in text analysis and narrative style extraction. Your task is 
         "문단 길이, 문체 특징, 반복 패턴, 리듬감 등 원고의 스타일적 특징을 Value List 형식으로 나열"
     ]
     }
-    """).strip()
+    """
+    ).strip()
 
     prompt = f"""
 다음은 블로그 원고입니다.
