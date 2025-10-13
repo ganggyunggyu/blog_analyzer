@@ -91,21 +91,21 @@ class GPT5MongoPromptBuilder:
     def _build_json_resources(self, components: PromptComponents) -> Dict[str, Any]:
         """리소스를 JSON 형식으로 빌드 (Grok JSON 파싱 최적화)"""
         return {
-            "subtitles_pool": components.subtitles[:20],
+            # "subtitles_pool": components.subtitles[:20],
             "style_variations": {
                 k: v[:10] for k, v in components.expressions.items() if v
             },
             "contextual_values": {
                 k: v[:5] for k, v in components.parameters.items() if v
             },
-            "reference_template": {
-                "source": components.template_info,
-                "content": (
-                    components.template.get("templated_text", "").strip()
-                    if components.template
-                    else ""
-                ),
-            },
+            # "reference_template": {
+            #     "source": components.template_info,
+            #     "content": (
+            #         components.template.get("templated_text", "").strip()
+            #         if components.template
+            #         else ""
+            #     ),
+            # },
         }
 
     def build_gpt5_prompt(self) -> str:
