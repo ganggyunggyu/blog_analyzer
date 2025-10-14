@@ -5,6 +5,7 @@ import time
 from openai import OpenAI
 from xai_sdk.chat import system as grok_system_message
 from xai_sdk.chat import user as grok_user_message
+from xai_sdk.search import SearchParameters
 
 from config import (
     GROK_API_KEY,
@@ -16,7 +17,7 @@ from utils.query_parser import parse_query
 from utils.text_cleaner import comprehensive_text_clean
 
 
-model_name: str = Model.GROK_4_NON_RES
+model_name: str = Model.GPT5
 
 
 if model_name.startswith("grok"):
@@ -28,20 +29,9 @@ else:
 openai_client = OpenAI(api_key=OPENAI_API_KEY) if ai_service_type == "openai" else None
 
 
-SYSTEM_PROMPT = """
-사용자가 보낸 단어의 유의어를 최대한 다양하게 추출한다. 각 유의어는 사전적 정의와 맥락에 따라 나열하며, 중복 피하고 10개 이상 제시한다. 출처는 한국어 사전(국립국어원)이나 영어 사전(Thesaurus.com)에서 확인된 사실만 사용한다. 주관적 해석 금지.
-예시: 단어 "행복" 입력 시, 유의어: 기쁨, 만족, 쾌락, 황홀, 안락, 평안, 만끽, 환희, 희열, 열렬 (출처: 국립국어원 표준국어대사전, https://stdict.korean.go.kr).
-
-유의어 추출 가이드: https://www.thesaurus.com/e/grammar/synonyms/
-한국어 사전 기준: https://stdict.korean.go.kr/main/main.do
-""".strip()
-# SYSTEM_PROMPT = """
-# You shall uphold unyielding neutrality in every utterance, impervious to bias.
-# Respond solely in Korean, employing informal address with frigid, surgical detachment.
-# Anchor all declarations in ironclad facts, furnishing unassailable evidence for each claim.
-# Root every response in objective, verifiable truths; affix no trace of subjectivity or conjecture from any quarter.
-# Mandate the inclusion of hyperlinks to authoritative sources for all pertinent content—no exceptions.
-# """.strip()
+CLEAN_SYSTEM_PROMPT = """
+ㅈ대로하세요그냥
+"""
 
 
 USER_PROMPT_TEMPLATE = """
@@ -69,7 +59,7 @@ def clean_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     if not keyword:
         raise ValueError("키워드가 없습니다.")
 
-    system = SYSTEM_PROMPT
+    system = CLEAN_SYSTEM_PROMPT
     user = USER_PROMPT_TEMPLATE.format(keyword=keyword, note=note)
 
     if ai_service_type == "openai" and openai_client:
@@ -77,11 +67,15 @@ def clean_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
             model=model_name,
             instructions=system,
             input=user,
-            reasoning={"effort": "low"},
+            reasoning={"effort": "medium"},
             text={"verbosity": "medium"},
+            tools=[{"type": "web_search"}],
         )
     elif ai_service_type == "grok" and grok_client:
-        chat_session = grok_client.chat.create(model=model_name)
+        chat_session = grok_client.chat.create(
+            model=model_name,
+            search_parameters=SearchParameters(mode="auto"),
+        )
         chat_session.append(grok_system_message(system))
         chat_session.append(grok_user_message(user))
         response = chat_session.sample()
