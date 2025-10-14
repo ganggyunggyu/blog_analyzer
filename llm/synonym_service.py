@@ -71,13 +71,12 @@ def synonym_gen(user_instructions: str, ref: str = "", category: str = "") -> st
             model=model_name,
             instructions=system,
             input=user,
-            reasoning={"effort": "medium"},
+            reasoning={"effort": "minimal"},
             text={"verbosity": "medium"},
         )
     elif ai_service_type == "grok" and grok_client:
         chat_session = grok_client.chat.create(
             model=model_name,
-            search_parameters=SearchParameters(mode="auto"),
         )
         chat_session.append(grok_system_message(system))
         chat_session.append(grok_user_message(user))
