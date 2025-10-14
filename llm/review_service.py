@@ -83,8 +83,8 @@ def review_gen(user_instructions: str, ref: str = "", category: str = "") -> str
             model=model_name,
             instructions=system,
             input=user,
-            reasoning={"effort": "medium"},
-            text={"verbosity": "medium"},
+            reasoning={"effort": "low"},
+            text={"verbosity": "low"},
         )
     elif ai_service_type == "grok" and grok_client:
         chat_session = grok_client.chat.create(model=model_name)
