@@ -1,0 +1,102 @@
+from __future__ import annotations
+import re
+import time
+
+from openai import OpenAI
+from xai_sdk.chat import system as grok_system_message
+from xai_sdk.chat import user as grok_user_message
+from xai_sdk.search import SearchParameters
+
+from config import (
+    GROK_API_KEY,
+    OPENAI_API_KEY,
+    grok_client,
+)
+from _constants.Model import Model
+from utils.query_parser import parse_query
+from utils.text_cleaner import comprehensive_text_clean
+
+
+model_name: str = Model.GPT5
+
+
+if model_name.startswith("grok"):
+    ai_service_type = "grok"
+else:
+    ai_service_type = "openai"
+
+
+openai_client = OpenAI(api_key=OPENAI_API_KEY) if ai_service_type == "openai" else None
+
+
+SYNONYM_SYSTEM_PROMPT = """
+사용자가 보낸 단어의 유의어를 최대한 다양하게 추출한다. 각 유의어는 사전적 정의와 맥락에 따라 나열하며, 중복 피하고 10개 이상 제시한다. 출처는 한국어 사전(국립국어원)이나 영어 사전(Thesaurus.com)에서 확인된 사실만 사용한다. 주관적 해석 금지.
+예시: 단어 "행복" 입력 시, 유의어: 기쁨, 만족, 쾌락, 황홀, 안락, 평안, 만끽, 환희, 희열, 열렬 (출처: 국립국어원 표준국어대사전, https://stdict.korean.go.kr).
+
+유의어 추출 가이드: https://www.thesaurus.com/e/grammar/synonyms/
+한국어 사전 기준: https://stdict.korean.go.kr/main/main.do
+""".strip()
+
+
+USER_PROMPT_TEMPLATE = """
+{keyword}
+{note}
+""".strip()
+
+
+def synonym_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
+    if ai_service_type == "openai":
+        if not OPENAI_API_KEY:
+            raise ValueError(
+                "OPENAI_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요."
+            )
+    elif ai_service_type == "grok":
+        if not GROK_API_KEY:
+            raise ValueError(
+                "GROK_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요."
+            )
+
+    parsed = parse_query(user_instructions)
+    keyword = parsed.get("keyword", "")
+    note = parsed.get("note", "")
+
+    if not keyword:
+        raise ValueError("키워드가 없습니다.")
+
+    system = SYNONYM_SYSTEM_PROMPT
+    user = USER_PROMPT_TEMPLATE.format(keyword=keyword, note=note)
+
+    if ai_service_type == "openai" and openai_client:
+        response = openai_client.responses.create(
+            model=model_name,
+            instructions=system,
+            input=user,
+            reasoning={"effort": "medium"},
+            text={"verbosity": "medium"},
+        )
+    elif ai_service_type == "grok" and grok_client:
+        chat_session = grok_client.chat.create(
+            model=model_name,
+            search_parameters=SearchParameters(mode="auto"),
+        )
+        chat_session.append(grok_system_message(system))
+        chat_session.append(grok_user_message(user))
+        response = chat_session.sample()
+    else:
+        raise ValueError(
+            f"AI 클라이언트를 찾을 수 없습니다. (service_type: {ai_service_type})"
+        )
+
+    if ai_service_type == "openai":
+        text: str = getattr(response, "output_text", "") or ""
+    elif ai_service_type == "grok":
+        text = getattr(response, "content", "") or ""
+    else:
+        text: str = ""
+
+    text = comprehensive_text_clean(text)
+
+    length_no_space = len(re.sub(r"\s+", "", text))
+    print(f"원고 길이 체크: {length_no_space}")
+
+    return text
