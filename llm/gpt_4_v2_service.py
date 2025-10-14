@@ -59,9 +59,6 @@ async def gpt_4_v2_gen(
     if user_instructions:
         category = await get_category_db_name(user_instructions)
 
-    if not category:
-        category = os.getenv("MONGO_DB_NAME", "wedding")
-
     if category == "legalese":
         기본_프롬프트 = KkkPrompt.kkk_prompt_gpt_5(2800, 3000, parsed["keyword"])
     else:
