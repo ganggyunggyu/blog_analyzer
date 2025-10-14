@@ -25,6 +25,7 @@ from routers.generate import (
     song,
     gang,
     step_by_step,
+    clean,
 )
 from routers.category import keyword
 from routers.analysis import get_sub_title, upload_text, analyzer_router
@@ -64,4 +65,5 @@ app.include_router(my.router)
 app.include_router(song.router)
 app.include_router(gang.router)
 app.include_router(step_by_step.router)
+app.include_router(clean.router)
 app.include_router(analyzer_router.router)
