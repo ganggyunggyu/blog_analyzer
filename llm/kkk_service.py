@@ -6,7 +6,13 @@ from anthropic import Anthropic
 from openai import OpenAI
 from xai_sdk.chat import system as grok_system_message
 from xai_sdk.chat import user as grok_user_message
-from _prompts.category import 다이어트보조제, 브로멜라인, 스위치온다이어트, 알파CD
+from _prompts.category import (
+    다이어트보조제,
+    무지외반증,
+    브로멜라인,
+    스위치온다이어트,
+    알파CD,
+)
 from _prompts.service.get_mongo_prompt import get_mongo_prompt
 from config import (
     CLAUDE_API_KEY,
@@ -414,7 +420,7 @@ def get_category_tone_rules(category):
         "틱톡부업사기": 틱톡부업사기,
         "기타": 기타,
         "질분비물": 질분비물,
-        # "족저근막염신발추천": 족저근막염신발_추천,
+        "무지외반증": 무지외반증,
         "블록체인_가상화폐": 블록체인_가상화폐,
         "노래리뷰": 노래리뷰,
     }
