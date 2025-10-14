@@ -26,6 +26,10 @@ from routers.generate import (
     gang,
     step_by_step,
     clean,
+    synonym,
+    review,
+    news,
+    deep_search,
 )
 from routers.category import keyword
 from routers.analysis import get_sub_title, upload_text, analyzer_router
@@ -66,4 +70,8 @@ app.include_router(song.router)
 app.include_router(gang.router)
 app.include_router(step_by_step.router)
 app.include_router(clean.router)
+app.include_router(synonym.router)
+app.include_router(review.router)
+app.include_router(news.router)
+app.include_router(deep_search.router)
 app.include_router(analyzer_router.router)
