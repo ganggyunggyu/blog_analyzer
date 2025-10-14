@@ -58,6 +58,7 @@ from config import OPENAI_API_KEY
 
 CATEGORIES = [
     "공항_장기주차장:주차대행",
+    "무지외반증",
     "다이어트",
     "다이어트보조제",
     "라미네이트",
