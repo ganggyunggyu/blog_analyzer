@@ -6,7 +6,7 @@ from anthropic import Anthropic
 from openai import OpenAI
 from xai_sdk.chat import system as grok_system_message
 from xai_sdk.chat import user as grok_user_message
-from _prompts.category import 다이어트보조제, 브로멜라인, 알파CD
+from _prompts.category import 다이어트보조제, 브로멜라인, 스위치온다이어트, 알파CD
 from _prompts.service.get_mongo_prompt import get_mongo_prompt
 from config import (
     CLAUDE_API_KEY,
@@ -130,7 +130,6 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     <structure>
       제목 (20-35자, 제목에는 쉼표(,)를 넣지 않음, 동일 제목 4개 반복 출력)
       
-      도입부 (3-5줄, 자연스럽게 키워드를 시작하게 된 계기를 전달)
       
       1. 첫 번째 소제목
 
@@ -323,7 +322,7 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
             instructions=system,
             input=user,
             reasoning={"effort": "low"},  # minimal, low, medium, high
-            text={"verbosity": "high"},  # low, medium, high
+            text={"verbosity": "medium"},  # low, medium, high
         )
     elif ai_service_type == "solar" and solar_client:
         response = solar_client.chat.completions.create(
@@ -405,7 +404,7 @@ def get_category_tone_rules(category):
         "마운자로처방": 마운자로_부작용,
         "멜라논크림": 멜라논크림,
         "서브웨이다이어트": 서브웨이다이어트,
-        "스위치온다이어트": 다이어트,
+        "스위치온다이어트": 스위치온다이어트,
         "파비플로라": 다이어트,
         "공항_장기주차장:주차대행": 공항_장기주차장_주차대행,
         "에리스리톨": 에리스리톨,
