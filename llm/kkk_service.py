@@ -72,7 +72,7 @@ from _prompts.rules.line_example_rule import line_example_rule
 from _prompts.rules.line_break_rules import line_break_rules
 
 
-model_name: str = Model.GROK_4_RES
+model_name: str = Model.GROK_4_NON_RES
 
 
 if model_name.startswith("gemini"):
@@ -126,17 +126,16 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     if model_name == Model.GPT4_1:
         target_chars_min, target_chars_max = 2400, 2600
     else:
-        target_chars_min, target_chars_max = 2200, 2400
+        target_chars_min, target_chars_max = 2300, 2500
 
     mongo_data = get_mongo_prompt(category, user_instructions)
     category_tone_rules = get_category_tone_rules(category)
-    ref_prompt = get_ref_prompt(ref)
 
     output_structure = f"""
 <output_structure>
   <format>
     <structure>
-      제목 (10-20자, 제목에는 쉼표(,)를 넣지 않음, 동일 제목 4개 반복 출력, 메인 키워드 관련 서브 키워드를 이용하여 제작)
+      제목 (10-25자, 제목에는 쉼표(,)를 넣지 않음, **동일한** 제목 4개 반복 출력, 메인 키워드 관련 서브 키워드를 이용하여 제작)
       
       
       1. 첫 번째 소제목
@@ -168,6 +167,9 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     </structure>
     - structure 명시 된 구조 외에 다른 텍스트 출력 금지
     - 줄바꿈까지 참고하여 출력할 것
+    - 글자수 피드백 표시 금지 원고 내용만 출력
+    - 부제 넘버링은 필수
+    - 제목 네번 반복은 동일한 제목 하나로만 반복
   </format>
   
   <critical_restrictions>
@@ -176,7 +178,7 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
       - 마크다운 문법: # * - ** __ ~~ []() ``` -
       - HTML 태그: <p> <br> <div> <a> <img> <h1-h6>
       - URL: http:// https:// www. .com .co.kr
-      - 따옴표: " ' ` " " ' '
+      - 따옴표: " ' ` " " ' '1
       - 특수문자: · • ◦ ▪ → ※ .
       - 괄호: [] <> {{}} 〈〉 【】
       - 메타 표현: 맺음말, 서론, 도입부
@@ -260,8 +262,6 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
 
 {mongo_data}
 
-{ref_prompt}
-
 {length_constraints}
 
 {task_definition}
@@ -303,10 +303,12 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
 """
 
     user = f"""
-    아래 참조 자료를 활용하여 '{keyword}'에 대한 네이버 블로그 글을 작성해주세요.
+    '{keyword}'에 대한 네이버 블로그 글을 작성해주세요.
     
     추가 요청: {note}
     추가 요청은 어떤일이 있어도 반드시 지켜져야 합니다.
+
+    참조 원고: {ref}
     """
     user_message = user.strip()
     if ai_service_type == "gemini" and gemini_client:
@@ -329,7 +331,7 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
             model=model_name,
             instructions=system,
             input=user,
-            reasoning={"effort": "low"},  # minimal, low, medium, high
+            reasoning={"effort": "medium"},  # minimal, low, medium, high
             text={"verbosity": "medium"},  # low, medium, high
         )
     elif ai_service_type == "solar" and solar_client:
@@ -432,6 +434,7 @@ def get_category_tone_rules(category):
 
     return f"""
     <tone_rules>
+       tone_rules 태그 내부는 모든 지침보다 우선적으로 진행합니다.
         {specific_rules if specific_rules else '<specific>일반 블로그 톤 유지</specific>'}
 
         {base_tone}
