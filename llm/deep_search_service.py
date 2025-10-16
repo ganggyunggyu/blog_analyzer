@@ -17,7 +17,7 @@ from utils.query_parser import parse_query
 from utils.text_cleaner import comprehensive_text_clean
 
 
-model_name: str = Model.GPT5
+model_name: str = Model.GROK_4_RES
 
 
 if model_name.startswith("grok"):
@@ -30,7 +30,7 @@ openai_client = OpenAI(api_key=OPENAI_API_KEY) if ai_service_type == "openai" el
 
 
 DEEP_SEARCH_SYSTEM_PROMPT = """
-애니메이션 이름과 회차의 정보를 받아 그걸 기반으로 줄거리를 상세하고 정확하게 묘사한다.
+키워드 관련 내용을 웹에서 검색해서 사용자에게 상세한 내용과 링크에 대해 제공한다
 """.strip()
 
 
