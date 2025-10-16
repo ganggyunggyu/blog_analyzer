@@ -33,6 +33,8 @@ from google import genai
 from google.genai import types
 
 from _prompts.category.맛집 import 맛집
+from _prompts.category.영화리뷰 import 영화리뷰
+from _prompts.category.호텔 import 호텔
 from _prompts.category.노래리뷰 import 노래리뷰
 from _prompts.category.블록체인_가상화폐 import 블록체인_가상화폐
 from _prompts.category.애견동물_반려동물_분양 import 애견동물_반려동물_분양
@@ -70,7 +72,7 @@ from _prompts.rules.line_example_rule import line_example_rule
 from _prompts.rules.line_break_rules import line_break_rules
 
 
-model_name: str = Model.GPT5
+model_name: str = Model.GROK_4_RES
 
 
 if model_name.startswith("gemini"):
@@ -423,6 +425,8 @@ def get_category_tone_rules(category):
         "무지외반증": 무지외반증,
         "블록체인_가상화폐": 블록체인_가상화폐,
         "노래리뷰": 노래리뷰,
+        "호텔": 호텔,
+        "영화리뷰": 영화리뷰,
     }
     specific_rules = tone_rules_map.get(category.lower(), "")
 
