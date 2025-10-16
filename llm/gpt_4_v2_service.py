@@ -19,6 +19,7 @@ from utils.query_parser import parse_query
 
 from config import MONGO_DB_NAME
 from analyzer.request_문장해체분석기 import get_문장해체
+from utils.text_cleaner import comprehensive_text_clean
 
 
 model_name: str = Model.GPT4_1
@@ -222,7 +223,9 @@ async def gpt_4_v2_gen(
         elapsed = time.time() - start_ts
         print(f"원고 소요시간: {elapsed:.2f}s")
         print("원고작성 완료")
-        # text = format_paragraphs(text)
+
+        text = comprehensive_text_clean(text)
+
         return text
 
     except Exception as e:
