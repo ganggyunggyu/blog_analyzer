@@ -2,16 +2,23 @@ from __future__ import annotations
 import re
 
 from openai import OpenAI
-from config import OPENAI_API_KEY
+from xai_sdk.chat import system as grok_system_message
+from xai_sdk.chat import user as grok_user_message
+from config import OPENAI_API_KEY, GROK_API_KEY, grok_client
 from _constants.Model import Model
 from utils.format_paragraphs import format_paragraphs
 from utils.query_parser import parse_query
 from utils.text_cleaner import clean_text_format
 
 
-model_name: str = Model.GPT5
+model_name: str = Model.GROK_4_RES
 
-client = OpenAI(api_key=OPENAI_API_KEY)
+if model_name.startswith("grok"):
+    ai_service_type = "grok"
+else:
+    ai_service_type = "openai"
+
+openai_client = OpenAI(api_key=OPENAI_API_KEY) if ai_service_type == "openai" else None
 
 
 def chunk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
@@ -25,8 +32,16 @@ def chunk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
         Exception: OpenAI 호출 실패 등 기타 예외
     """
 
-    if not OPENAI_API_KEY:
-        raise ValueError("OPENAI_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요.")
+    if ai_service_type == "grok":
+        if not GROK_API_KEY:
+            raise ValueError(
+                "GROK_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요."
+            )
+    elif ai_service_type == "openai":
+        if not OPENAI_API_KEY:
+            raise ValueError(
+                "OPENAI_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요."
+            )
 
     print(f"Chunk Service {user_instructions}")
     parsed = parse_query(user_instructions)
@@ -36,75 +51,37 @@ def chunk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
 
     keyword = parsed["keyword"]
 
-    user: str = (
-        f"""
+    system = """
+너는 원고를 청크로 쪼개 재구성하는 전문가야. 참조 원고를 한 줄씩 꼼꼼히 분석한 후, 어투·연결어만 살짝 바꿔 유사한 구조의 새 원고로 만들어줘. 이렇게 하면 길이·표현이 원본과 비슷해질 거야!
 
 [개요]
-하단에 있는 참조원고 한줄한줄 전부 꼼꼼히 쪼갠 후에 어투나 이음세만 살짝 바꿔서 완전히 유사한 모양새의 원고로 다시 줘
-이렇게 하면 글씨 길이도 당연히 참조 원고랑 비슷해야하고 그 안에 있는 표현같은것도 전부 비슷하겠지?
+참조 원고를 쪼개서 재배치: 글자 수(공백 제외) 95% 일치, 키워드 빈도(예: "주차대행" 5회 → 비슷하게) 유지. 이모지·표현(~~, ㅎㅎ, !! 등) 그대로 쓰되, 비슷한 톤의 다른 이모지로 살짝 변형 필수(예: ✅ → ✔️). 스토리만 유연 변형(4인 여행 → 3인, 20대 여성 → 30대 남성, 고등학생 과정 → 성인 워크숍). 교육 관련은 실무 카테고리(예: 마케팅 세미나)로 변경. 부제는 의미 유지+약간 수정(예: "주차 팁" → "주차 꿀팁"). 업체명 언급 금지: "제가 이용한 업체"나 "이 서비스 업체"로 치환. 작성자가 있는 경우 윤우 로 치환.
 
-핵심 키워드를 파악해서 그런 것들의 개수도 유사해야해
+변수: {{}}는 맥락 따라 새로 채워(예: {{A}} → "김"씨). 자연스럽게 녹여내. 출력 끝에 --- 후 "원본 vs 변환: 키워드 95% 일치, 구조 90%, 전체 유사도 70% (변형으로 낮춤)" 분석 추가. 유사도 과다 피하기 위해 흐름·단어 유지하면서 재배치—code_execution으로 검증 추천.
+[문단정리 지침]
+- 한 줄당 30~40자로 제한 모바일 가독성을 위한 자연스러운 줄바꿈
 
-그리고 스토리텔링 같은 것만 살짝 변화하는거야
-예를 들어 4명이 간다 그러면 3명
-20대 여성이다 그러면 30대 여성 이런 식으로
-고등학생 위탁 교육 과정이라면 성인반 성인 교육과정 이런 식으로
-
-교육에 관련된 거라면 해당 교육기관에서 배울만한 카테고리로 변경해서 해줘
-
-그리고 표현도 에시를 몇개 줄게 참고해 
-예시는 참고만 하고 모든걸 그대로 사용하지말고 창의적으로 글을 만들어줘야해
-
-[이행 사안]
-
-{{}} << 이런 부분은 변수니까 항상 동일하지 않게 채워넣어줘
-- 변수는 내가 준 것 말고도 상황에 따라 직접 만들어서 사용해야해
-- 하단에 원본과 변환본은 단지 예시일 뿐이라 내가 준 것들 안에서만 활용해서는 안돼 언제나 유동적으로 직접 찾아서 변환해줘
-- 변수는 원고에서는 티가 나서는 안돼 그냥 단어로 사용해줘 그냥 글인거야
-- 원본/변환본의 유사도를 분석해서 마지막에 --- 하고 아래에 적어줘
-- 핵심은 유사도가 너무 높으면 신고 당하거나 그럴 수 있으니 최대한 핵심 내용과 흐름 단어 등장 빈도는 가져오면서 유사도는 낮아야해
-- 부제도 의미는 같지만 좀 수정해주면 조을듯
-- 핵심 키워드의 빈도는 노출율과 연관 되어있어 사이에 , 같은걸 넣어서는 안돼
-    - 위고비, 알약 X 위고비 알약 O
-- 참조원고의 표현을 예를 들어 ~, :), ㅎㅎ, ㅋㅋㅋ, !! 이런 표현도 가져와 뒤지기싫으면
-
-원본: 오메가3 하루섭취량과 복용시간은? ( 알티지, 초임계, 고순도 )
-변환: 오메가3 하루섭취량 그리고 복용시간 ( 알티지, 초임계, 고순도 )
-
-원본: 안심하고 먹을 수 있겠더라고요.
-변환: 안심하고 먹을 수 있겠다는 생각이 들더라구요.
-
-원본: 오메가3 하루섭취량 기준과 복용시간 
-변환: 오메가3 하루섭취량의 기준 그리고 복용시간
-
-원본: ㄱ씨
-변환: {{A}}씨
-
-원본: 저는 집이 남양주라 인천공항 콜택시 가격이
-변환: 저는 {{출발지}}가 {{동탄이}}라 인천공항 콜택시 가격이
-
-원본: 새벽 출국이나 늦은 입국에도
-원본: 새벽에 출국을 하는 경우나 늦은 시간에 입국하는 경우라도
+[이행 예시] (참고만, 창의적으로 변형)
+- 원본: 오메가3 하루섭취량과 복용시간은? (알티지, 초임계, 고순도)
+  - 변환: 오메가3 매일 섭취량 팁과 타이밍? (알티지, 초임계, 고순도) ㅎㅎ
+- 원본: 안심하고 먹을 수 있겠더라고요.
+  - 변환: 마음 놓고 챙겨볼 수 있겠다는 기분이 들더라!!
+- 원본: 오메가3 하루섭취량 기준과 복용시간
+  - 변환: 오메가3 섭취량 기준점 그리고 복용 시기
+- 원본: ㄱ씨
+  - 변환: 박씨
+- 원본: 저는 집이 남양주라 인천공항 콜택시 가격이
+  - 변환: 우리 집이 수원이라 인천공항 콜택시 요금이
+- 원본: 새벽 출국이나 늦은 입국에도
+  - 변환: 이른 새벽 비행이나 늦은 밤 귀국 때도
 
 [금지 사안]
+길이 그대로: 확장·축소 NO. 블로그 UI(좋아요 수, 배너 등) 무시. 키워드: 쉼표 없이(위고비 알약 O, 위고비, 알약 X). 유사도 <80%로 유지—검색 기반 창의성 더해.
+"""
 
-기존의 글보다 살짝 긴건 괜찮지만 (100자 정도까지만 허용) 짧은건 안돼
-
-이런 블로그 요소들은 따라하지않아도돼 -> {{재생
-2
-
-좋아요
-0
-
-00:28
-
-접기/펴기}}, {{📍인천공항 택시 예약 바로가기📍
-
-인천공항택시콜센터
-인천공항 매일 운행 일반/대형/콜밴 배차 1666-8856 24시간 예약 상담
-
-pf.kakao.com}}
-
+    user: str = (
+        f"""
+    [참조원고]
 
     {ref}
 
@@ -118,49 +95,64 @@ pf.kakao.com}}
     print(f"Chunk Service 파싱 결과: {parsed}")
 
     try:
-        print(
-            f"Chunk GPT 생성 시작 | keyword={user_instructions!r} | model={model_name}"
-        )
-        response = client.chat.completions.create(
-            model=model_name,
-            messages=[
-                {
-                    "role": "system",
-                    "content": "너는 원고를 청크로 쪼개서 다시 만들어주는 전문가야",
-                },
-                {
-                    "role": "user",
-                    "content": user,
-                },
-            ],
-        )
+        print(f"Chunk 생성 시작 | keyword={user_instructions!r} | model={model_name}")
 
-        usage = getattr(response, "usage", None)
-        if usage is not None:
-            in_tokens = getattr(usage, "prompt_tokens", None)
-            out_tokens = getattr(usage, "completion_tokens", None)
-            total_tokens = getattr(usage, "total_tokens", None)
-            print(
-                f"KKK Service tokens in={in_tokens}, out={out_tokens}, total={total_tokens}"
+        if ai_service_type == "grok" and grok_client:
+            chat_session = grok_client.chat.create(model=model_name)
+            chat_session.append(grok_system_message(system))
+            chat_session.append(grok_user_message(user.strip()))
+            response = chat_session.sample()
+        elif ai_service_type == "openai" and openai_client:
+            response = openai_client.chat.completions.create(
+                model=model_name,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": system,
+                    },
+                    {
+                        "role": "user",
+                        "content": user,
+                    },
+                ],
+            )
+        else:
+            raise ValueError(
+                f"AI 클라이언트를 찾을 수 없습니다. (service_type: {ai_service_type})"
             )
 
-        choices = getattr(response, "choices", []) or []
-        if not choices or not getattr(choices[0], "message", None):
-            raise RuntimeError("모델이 유효한 choices/message를 반환하지 않았습니다.")
+        if ai_service_type == "grok":
+            text: str = getattr(response, "content", "") or ""
+        elif ai_service_type == "openai":
+            usage = getattr(response, "usage", None)
+            if usage is not None:
+                in_tokens = getattr(usage, "prompt_tokens", None)
+                out_tokens = getattr(usage, "completion_tokens", None)
+                total_tokens = getattr(usage, "total_tokens", None)
+                print(
+                    f"Chunk Service tokens in={in_tokens}, out={out_tokens}, total={total_tokens}"
+                )
 
-        text: str = (choices[0].message.content or "").strip()
+            choices = getattr(response, "choices", []) or []
+            if not choices or not getattr(choices[0], "message", None):
+                raise RuntimeError(
+                    "모델이 유효한 choices/message를 반환하지 않았습니다."
+                )
+
+            text: str = (choices[0].message.content or "").strip()
+        else:
+            text: str = ""
+
         if not text:
             raise RuntimeError("모델이 빈 응답을 반환했습니다.")
 
         length_no_space = len(re.sub(r"\s+", "", text))
-        print(f"KKK {model_name} 문서 생성 완료 (공백 제외 길이: {length_no_space})")
-
-        text = format_paragraphs(text)
+        print(f"Chunk {model_name} 문서 생성 완료 (공백 제외 길이: {length_no_space})")
 
         text = clean_text_format(text)
 
         return text
 
     except Exception as e:
-        print("KKK OpenAI 호출 실패:", repr(e))
+        print(f"Chunk {ai_service_type} 호출 실패:", repr(e))
         raise
