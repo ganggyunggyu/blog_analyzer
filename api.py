@@ -30,6 +30,7 @@ from routers.generate import (
     review,
     news,
     deep_search,
+    translation_compare,
     xai_prompt_engineer,
     openai_prompt_engineer,
     story_analysis,
@@ -78,6 +79,7 @@ app.include_router(synonym.router)
 app.include_router(review.router)
 app.include_router(news.router)
 app.include_router(deep_search.router)
+app.include_router(translation_compare.router)
 app.include_router(analyzer_router.router)
 app.include_router(xai_prompt_engineer.router)
 app.include_router(openai_prompt_engineer.router)
