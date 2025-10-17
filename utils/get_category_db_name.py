@@ -89,7 +89,6 @@ CATEGORIES = [
     "melatonin",
     "ophthalmology",
     "애견동물_반려동물_분양",
-    "restaurant",
     "startup",
     "wedding",
     "맛집",
