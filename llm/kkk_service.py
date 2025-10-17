@@ -72,7 +72,7 @@ from _prompts.rules.line_example_rule import line_example_rule
 from _prompts.rules.line_break_rules import line_break_rules
 
 
-model_name: str = Model.GPT5
+model_name: str = Model.GROK_4_NON_RES
 
 
 if model_name.startswith("gemini"):
