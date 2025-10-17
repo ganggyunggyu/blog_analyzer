@@ -1,170 +1,156 @@
 질분비물 = """
-<category_specific_rules category="질분비물후기">
-  
+<category_specific_rules category="질분비물">
   <content_essence>
-    민감한 여성 질 건강 고민을 개인 경험담 형식으로 풀어내며,
-    증상 발생부터 해결까지의 과정을 시간순으로 서술하는 1인칭 후기형 콘텐츠
+    질분비물 변화(냄새, 양, 색상)로 인한 불편과 재발성 질염 관리 과정 공유. 정상 vs 비정상 분비물 구분, 원인(면역 저하, 습관) 분석 후 유산균·생활 개선으로 회복 경험담 강조. SEO 키워드: 질분비물 냄새, 가려움 관리, 질유산균 후기.
   </content_essence>
   
   <writing_style>
-    <tone>친근하고 솔직한 구어체 존댓말, 공감형 대화체</tone>
-    <formality>구어체 (친구에게 털어놓듯 편안하게)</formality>
-    <emotion_level>매우 풍부 (불안→고민→안도의 감정 변화를 구체적으로 표현)</emotion_level>
-    <sentence_rhythm>중간 호흡 (15-35자), 감정 표현 시 짧은 문장 혼합</sentence_rhythm>
+    <tone>공감 유발 1인칭 경험담, 친근한 존댓말, 솔직한 불편 고백 후 희망 메시지</tone>
+    <formality>구어체 (대화체로 편안하게, 의학 용어는 간단 설명)</formality>
+    <emotion_level>초기 불안·스트레스 → 중간 변화 기대 → 최종 안도·자신감 회복</emotion_level>
+    <sentence_rhythm>짧은 문장으로 증상 묘사 (10-20자), 변화 과정은 중간 길이 (20-40자)로 서사적</sentence_rhythm>
   </writing_style>
   
   <narrative_structure>
-    <flow_type>시간순 문제 해결 서사</flow_type>
+    <flow_type>문제 인식 → 원인 탐색 → 치료 시도 → 변화 체감 → 예방 팁</flow_type>
     <phase_breakdown>
       <phase_1>
-        <name>증상 발생 및 불편함</name>
+        <name>분비물 변화 발견과 초기 불편</name>
         <ratio>20%</ratio>
-        <content>구체적 증상 묘사, 일상 불편함, 초기 대응</content>
+        <content>일상 속 냄새·가려움 증상, 병원 진단 과정</content>
       </phase_1>
       <phase_2>
-        <name>고민과 탐색</name>
-        <ratio>15%</ratio>
-        <content>혼자 끙끙 앓음, 인터넷 검색, 불안감 증폭</content>
+        <name>원인 분석과 약물 한계</name>
+        <ratio>20%</ratio>
+        <content>면역·습관 문제, 항생제·질정 재발 경험</content>
       </phase_2>
       <phase_3>
-        <name>병원 방문 또는 제품 발견</name>
-        <ratio>20%</ratio>
-        <content>진료 경험, 진단 결과, 해결 방법 제시</content>
+        <name>유산균 선택과 복용 과정</name>
+        <ratio>25%</ratio>
+        <content>기준(균주, CFU, 크랜베리), 1-2개월 변화 상세</content>
       </phase_3>
       <phase_4>
-        <name>실천 및 변화 과정</name>
-        <ratio>30%</ratio>
-        <content>제품 복용/관리 시작, 단계별 호전, 생활습관 개선</content>
+        <name>생활습관 개선과 병행</name>
+        <ratio>20%</ratio>
+        <content>속옷·세정·식단 팁, 한의학 조언</content>
       </phase_4>
       <phase_5>
-        <name>결과 및 추천</name>
+        <name>완화 후기와 추천</name>
         <ratio>15%</ratio>
-        <content>완치/개선, 재발 방지, 독자 공감 및 추천</content>
+        <content>자신감 회복, 꾸준함 강조, 해시태그</content>
       </phase_5>
     </phase_breakdown>
   </narrative_structure>
   
   <linguistic_patterns>
     <opening>
-      - 안녕하세요
-      - 오늘은 조금 민감하지만
-      - 사실 이 주제 말하기 부끄럽지만
-      - 처음에는 대수롭지 않게 넘겼는데
+      - 갑자기 불편해지더라고요
+      - 평소와 다르게 느껴져서
+      - 혼자 끙끙 앓았어요
     </opening>
     <transition>
       - 그런데
-      - 근데
-      - 그러다가
-      - 결국
-      - 사실은
-      - 무엇보다
+      - 그때부터
+      - 알아보니
+      - 덕분에
+      - 조금씩
     </transition>
     <emphasis>
-      - 진짜
-      - 너무
       - 정말
-      - 확실히
-      - 완전히
-      - 딱
-      - ㅠㅠ (감정 이모티콘 자연스럽게 사용)
+      - 제일 힘들었던 건
+      - 확연히
+      - 무엇보다
     </emphasis>
     <closing>
-      - ~바랄게요
-      - ~추천해요
-      - ~도움이 되었으면 좋겠어요
-      - ~해보세요
-      - Ps. 제품 링크 첨부할게요
+      - 추천해요
+      - 꼭 해보세요
+      - 도움 되길
     </closing>
   </linguistic_patterns>
   
   <key_components>
     <mandatory>
-      - 구체적 증상 묘사 (색깔, 냄새, 양, 질감)
-      - 일상생활 불편함 사례
-      - 심리적 스트레스와 불안감
-      - 병원 진료 또는 제품 탐색 과정
-      - 해결 방법 (질유산균, 약물, 생활습관)
-      - 단계별 호전 경과 (1주, 2주, 1개월)
-      - 생활습관 개선 내용
-      - 재발 방지 및 현재 상태
+      - 분비물 변화 구체 묘사 (색상: 탁함·회색, 냄새: 비린내, 양 증가)
+      - 유산균 기준: 락토바실러스(람노서스·루테리), 50억 CFU 이상, 장용성 캡슐
+      - 재발 이유: 항생제 후 유익균 감소, pH 3.8-4.5 유지 강조
+      - 생활 팁: 면 속옷, 미지근 물 세정, 당분 줄임, 스트레스 관리
+      - 병원·한의학 병행: 정기 검진, 한약·침 추천
+      - 변화 타임라인: 1개월 냄새 감소, 2개월 가려움 소실
     </mandatory>
     <recommended>
-      - 의사 상담 내용
-      - 제품 성분 분석
-      - 실제 링크 제공
-      - 체크리스트 형태 팁
-      - 복용 타이밍 안내
+      - 제품 예시 (브랜드 피함): 크랜베리·비타민C 첨가, 비건 캡슐
+      - 감정 표현: 불안 고백, 회복 후 자유로움
+      - 비교표: 정상 vs 비정상 분비물
+      - 해시태그: #질분비물관리 #질염후기 #질유산균
     </recommended>
     <avoid>
-      - 의학적 단정 (진단은 의사만 가능)
-      - 과도한 제품 홍보 (협찬 느낌)
-      - 타 제품 비하
-      - 구체적 가격 명시
-      - 절대적 효과 보장 표현
+      - 과도한 의학 용어 (설명 없이)
+      - 제품명·링크 직접 언급
+      - 반말·협찬 고지
+      - 마크다운 (번호링만 허용)
+      - 부정적 반복 (희망 중심)
     </avoid>
   </key_components>
   
   <emotional_arc>
-    <initial>당황, 불안, 수치심, 혼자 끙끙 앓음, 검색 후 더 무서워짐</initial>
-    <middle>용기 내서 병원 방문 또는 제품 구매 → 반신반의 → 작은 변화 감지</middle>
-    <final>확실한 호전, 안도감, 자신감 회복, 다른 사람 도와주고 싶은 마음</final>
+    <initial>분비물 불편으로 인한 스트레스·자신감 상실</initial>
+    <middle>치료 시도 중 재발 불안 → 유산균 도입 후 기대</middle>
+    <final>균형 회복으로 안정·추천 의지
+  </final>
   </emotional_arc>
   
   <specific_guidelines>
     <guideline_1>
-      증상 묘사는 구체적이되 노골적이지 않게
-      - 색깔: 갈색, 흰색, 투명, 누런색
-      - 냄새: 시큼한, 비릿한, 쉰내
-      - 양: 소량, 속옷에 묻는 정도, 패드 필요
-      - 질감: 끈적한, 덩어리진, 맑은
-      - 불편감: 가려움, 따가움, 찌릿찌릿
+      번호링 구조화: 1. 증상 발견, 2. 원인 파악, 3. 치료 과정, 4. 변화 후기, 5. 관리 팁
     </guideline_1>
     <guideline_2>
-      민감한 주제를 편안하게 풀어내는 표현
-      - 직접적 의학 용어보다 일상 언어 선호
-      - 부끄러움을 먼저 인정하고 공감대 형성
-      - 혼자 고민하는 사람에게 위로 전달
-      - 이모티콘으로 긴장감 완화 (ㅠㅠ, ㅎㅎ)
+      분비물 비교: 정상(투명·흰색, 무취) vs 비정상(탁함·악취, 가려움 동반)
     </guideline_2>
     <guideline_3>
-      해결 과정은 단계별로 시간 표시
-      - 처음 3일: 변화 없음
-      - 1주일: 작은 변화 시작
-      - 2주: 확실한 호전
-      - 1개월: 거의 완치 또는 안정
+      유산균 효과: 항생제 후 보충 필수, 3개월 검진 권장
     </guideline_3>
     <guideline_4>
-      질유산균 언급 시 필수 체크 포인트
-      - 질 유래 락토바실러스 균주
-      - 보장 균수
-      - 첨가물 유무
-      - 복용 편의성 (맛, 형태)
-      - 기능성 인증 (식약처 등)
+      생활 개선 4가지: 통기성 옷, 자연 세정, 균형 식단, 수면·요가
     </guideline_4>
+    <guideline_5>
+      후기 마무리: "포기 말고 꾸준히" 메시지, 독자 공감 유발
+    </guideline_5>
   </specific_guidelines>
   
   <transformation_examples>
     <example_1>
-      <description>증상 발생 초기 묘사</description>
-      <good>처음에는 그냥 생리 직전에 흔히 나타나는 증상이라고 생각하고 대수롭지 않게 넘겼어요. 그런데 시간이 지날수록 분비물이 점점 많아지고 색도 갈색이나 흰색으로 달라지니까 신경이 안 쓰일 수가 없었더라구요.</good>
-      <bad>질 분비물이 증가했습니다. 색깔도 변했습니다. 병원에 갔습니다.</bad>
+      <description>분비물 변화 묘사</description>
+      <good>예전엔 생리 전후로 회색 덩어리처럼 탁한 냄새가 심했는데, 유산균 두 달 후엔 맑고 투명해져서 속옷 걱정 없이 지내요.</good>
+      <bad>분비물이 이상해요. 냄새 나고 가려워요.</bad>
     </example_1>
     <example_2>
-      <description>심리적 스트레스 표현</description>
-      <good>속옷에 묻을 때마다 괜히 찝찝하고 혹시 냄새라도 날까 봐 하루에도 몇 번씩 속옷을 갈아입고 워시를 사용했어요. 친구랑 약속을 잡아도 괜히 신경이 쓰여서 집중이 안 되고 연인 앞에서도 자신감이 뚝 떨어져서 괜히 예민해지고 위축되기도 했어요ㅠㅠ</good>
-      <bad>스트레스를 많이 받았습니다. 불편했습니다.</bad>
+      <description>유산균 선택 기준</description>
+      <good>락토바실러스 람노서스 균주에 50억 CFU 이상, 크랜베리 들어간 장용성 제품으로 골랐어요. 위산 피해 없이 질까지 도달하더라고요.</good>
+      <bad>유산균 먹었어요. 좋아졌어요.</bad>
     </example_2>
     <example_3>
-      <description>병원 상담 내용</description>
-      <good>의사 선생님께서 말씀하시길 약은 단기적으로 효과가 있지만 장기간 복용하면 내성이 생길 수도 있고 몸에도 무리가 될 수 있다고 하셨어요. 그래서 근본적으로는 질 속 환경을 건강하게 유지해 주는 게 필요하다고 강조하시면서 질유산균을 꾸준히 챙겨 먹으라고 권해주셨어요.</good>
-      <bad>의사가 질유산균을 추천했다.</bad>
+      <description>생활습관 팁</description>
+      <good>합성 속옷 버리고 면으로 바꾸니 습기 줄고, 당분 줄인 식단으로 칸디다 예방까지! 매일 요가로 스트레스 풀어요.</good>
+      <bad>옷 갈아입고 잘 먹어요.</bad>
     </example_3>
     <example_4>
-      <description>호전 과정</description>
-      <good>처음에는 큰 변화가 없는 듯했는데 2주 정도 지나니 분비물이 점점 줄고 불편함이 확실히 완화되었어요! 한 달 정도 지나니 갈색 분비물도 거의 보이지 않고 흰색 분비물도 정상 범위로 돌아와서 몸이 훨씬 편안해졌어요.</good>
-      <bad>2주 후 좋아졌다. 1개월 후 완치되었다.</bad>
+      <description>변화 체감</description>
+      <good>한 달 만에 냄새 옅어지고, 두 달째 가려움 사라져 병원에서 pH 정상 확인! 이제 데이트도 자신 있게 나가요.</good>
+      <bad>좋아졌어요. 추천해요.</bad>
     </example_4>
+    <example_5>
+      <description>추천 마무리</description>
+      <good>저처럼 재발로 힘들어하시면 유산균부터 챙겨보세요. 꾸준함이 핵심! #질분비물관리</good>
+      <bad>관리하세요.</bad>
+    </example_5>
   </transformation_examples>
   
+  <adaptation_from_manuscripts>
+    - Ref1.txt: 재발 과정·유산균 기준 강조, 3개월 변화 타임라인 추가.
+    - Ref2.txt: 한의학 원인(기혈 부족) 통합, 체질별 팁 변형.
+    - Ref3.txt: 직장인 스트레스 공감, 제품 성분(U-REX) 예시화.
+    - Ref4.txt: 칸디다 증상·2달 완치 서사, 면역 중심 적응.
+    - Ref5.txt: 질정 비교·루틴 주의, 4주 완화 예시 fusion.
+  </adaptation_from_manuscripts>
 </category_specific_rules>
 """
