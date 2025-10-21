@@ -44,7 +44,6 @@ from _prompts.category.다이어트 import 다이어트
 from _prompts.category.멜라논크림 import 멜라논크림
 from _prompts.category.위고비 import 위고비
 from _prompts.category.질분비물 import 질분비물
-from _prompts.category.마운자로_부작용 import 마운자로_부작용
 from _prompts.category.족저근막염신발_추천 import 족저근막염신발_추천
 
 from _prompts.category.anime import anime
@@ -126,7 +125,7 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     if model_name == Model.GPT4_1:
         target_chars_min, target_chars_max = 2400, 2600
     else:
-        target_chars_min, target_chars_max = 2300, 2500
+        target_chars_min, target_chars_max = 1800, 2400
 
     mongo_data = get_mongo_prompt(category, user_instructions)
     category_tone_rules = get_category_tone_rules(category)
@@ -178,7 +177,7 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
       - 마크다운 문법: # * - ** __ ~~ []() ``` -
       - HTML 태그: <p> <br> <div> <a> <img> <h1-h6>
       - URL: http:// https:// www. .com .co.kr
-      - 따옴표: " ' ` " " ' '1
+      - 따옴표: " ' ` " " ' '
       - 특수문자: · • ◦ ▪ → ※ .
       - 괄호: [] <> {{}} 〈〉 【】
       - 메타 표현: 맺음말, 서론, 도입부
@@ -195,6 +194,7 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
 
     length_constraints = f"""
 <length_constraints>
+    <rule>공백을 제외한 길이를 계산해서 맞출 것</rule>
   <target min="{target_chars_min}" max="{target_chars_max}" unit="chars_no_space"/>
   <tolerance>±100자</tolerance>
   
@@ -208,14 +208,15 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
   <requirements>
     - 키워드: {keyword}
     - 카테고리: {category}
-    - 목표 길이: {target_chars_min}-{target_chars_max}자
+
+    - 키워드가 3단어 이상이면 유저가 지정한 제목입니다.
   </requirements>
   
   <primary_objectives priority="descending">
     1. 자연스러운 독자 경험 (부자연스러운 키워드 삽입 금지)
     2. SEO 최적화
     3. 5개 소제목 구조 준수
-    4. 길이 요구사항 충족 ({target_chars_min}-{target_chars_max}자)
+    4. 공백 제외 길이 요구사항 충족: {length_constraints}
     5. 카테고리 톤 일치
     6. 한 줄당 30~40자로 제한 모바일 가독성을 위한 자연스러운 줄바꿈
   </primary_objectives>
@@ -261,8 +262,6 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
 </rule>
 
 {mongo_data}
-
-{length_constraints}
 
 {task_definition}
 {output_structure}
@@ -331,8 +330,8 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
             model=model_name,
             instructions=system,
             input=user,
-            reasoning={"effort": "medium"},  # minimal, low, medium, high
-            text={"verbosity": "medium"},  # low, medium, high
+            reasoning={"effort": "low"},  # minimal, low, medium, high
+            text={"verbosity": "low"},  # low, medium, high
         )
     elif ai_service_type == "solar" and solar_client:
         response = solar_client.chat.completions.create(
@@ -410,8 +409,6 @@ def get_category_tone_rules(category):
         "리쥬란": 리쥬란,
         "울쎄라": 울쎄라,
         "리들샷": 리들샷,
-        "마운자로가격": 마운자로_부작용,
-        "마운자로처방": 마운자로_부작용,
         "멜라논크림": 멜라논크림,
         "서브웨이다이어트": 서브웨이다이어트,
         "스위치온다이어트": 스위치온다이어트,
