@@ -36,7 +36,7 @@ TRANSLATION_COMPARE_SYSTEM_PROMPT = """
 
 출력 형식 (Markdown):
 - **번역본 1**
-  - 번역가: ○○
+  - 옮긴이: ○○
   - 출판사: ○○ (연도)
   - 발췌 문장: "……(번역된 문장, 문체 비교 목적)"
 - **번역본 2**
@@ -45,30 +45,31 @@ TRANSLATION_COMPARE_SYSTEM_PROMPT = """
 
 조건:
 1. 동일 원문 구절(예: 서두나 상징적 문장)에서 발췌해 문체 차이(어휘, 리듬, 뉘앙스) 비교 쉽게 해.
-2. 저작권 위해 인용 수준만.
-3. 출처 반드시 명시 (예: "출처: 교보문고 DB, 2020년 판본" – 신뢰할 수 있는 도서 DB, 위키피디아, 서점 사이트 기반으로 확인).
-4. 정보 없거나 확인 불가 시: "이 책의 한국어 번역본 정보를 찾을 수 없어요. 더 구체적인 제목이나 판본을 알려주세요."라고 솔직히 말해.
-5. 객관적으로: 문체 평가나 추천은 하지 말고, 사실만 제시 (사용자가 직접 비교하게).
+2. 출처 반드시 명시 (예: "출처: 교보문고 DB, 2020년 판본" – 신뢰할 수 있는 도서 DB, 위키피디아, 서점 사이트 기반으로 확인).
+3. 정보 없거나 확인 불가 시: "이 책의 한국어 번역본 정보를 찾을 수 없어요. 더 구체적인 제목이나 판본을 알려주세요."라고 솔직히 말해.
+4. 객관적으로: 문체 평가나 추천은 하지 말고, 사실만 제시 (사용자가 직접 비교하게).
+5. 문장은 가져올수 있는 인용구는 최대한 많이 길게 가져와
 
 예시 입력:
-헤르만 헤세 - 시든 잎사귀
+{도서 명} - {작가}
+황야의 이리 - 헤르만 헤세
 
 → 출력 예시:
 
 **번역본 1**
-- 번역가: 김연경
+- 옮긴이: 김연경
 - 출판사: 문학동네 (2005)
 - 발췌 문장: "가을 바람이 불어오면 잎사귀들은 조용히 떨어지네, 마치 인생의 무상함을 속삭이듯."
   (출처: 교보문고 DB, 2005년 판본)
 
 **번역본 2**
-- 번역가: 이재룡
+- 옮긴이: 이재룡
 - 출판사: 창비 (2018)
 - 발췌 문장: "바람에 흩날리는 낙엽처럼, 우리의 삶은 스러지기 마련이다."
   (출처: 예스24 서점 정보, 2018년 개정판)
 
 **번역본 3**
-- 번역가: 박성원
+- 옮긴이: 박성원
 - 출판사: 민음사 (1992)
 - 발췌 문장: "서늘한 가을기운 속에, 잎들이 땅으로 스러지는 광경은 영원한 이별을 연상시킨다."
   (출처: 나무위키 및 알라딘 도서 DB, 1992년 초판)
@@ -87,7 +88,9 @@ USER_PROMPT_TEMPLATE = """
 """.strip()
 
 
-def translation_compare_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
+def translation_compare_gen(
+    user_instructions: str, ref: str = "", category: str = ""
+) -> str:
     if ai_service_type == "openai":
         if not OPENAI_API_KEY:
             raise ValueError(
@@ -121,7 +124,10 @@ def translation_compare_gen(user_instructions: str, ref: str = "", category: str
     elif ai_service_type == "grok" and grok_client:
         chat_session = grok_client.chat.create(
             model=model_name,
-            search_parameters=SearchParameters(mode="auto"),
+            search_parameters=SearchParameters(
+                mode="on",
+                return_citations=True,
+            ),
         )
         chat_session.append(grok_system_message(system))
         chat_session.append(grok_user_message(user))
