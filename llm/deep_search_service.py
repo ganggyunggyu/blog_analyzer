@@ -17,7 +17,7 @@ from utils.query_parser import parse_query
 from utils.text_cleaner import comprehensive_text_clean
 
 
-model_name: str = Model.GPT5
+model_name: str = Model.GROK_4_RES
 
 
 if model_name.startswith("grok"):
