@@ -1,3 +1,0 @@
-TASK: Fill template slots using semantically appropriate values from [라이브러리] & [참조원고].
-If a slot cannot be filled, omit smoothly; do not show placeholders or brackets.
-Avoid repetition by paraphrasing recurring slots.
