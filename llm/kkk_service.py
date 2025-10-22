@@ -125,7 +125,7 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     if model_name == Model.GPT4_1:
         target_chars_min, target_chars_max = 2400, 2600
     else:
-        target_chars_min, target_chars_max = 1800, 2400
+        target_chars_min, target_chars_max = 2200, 2600
 
     mongo_data = get_mongo_prompt(category, user_instructions)
     category_tone_rules = get_category_tone_rules(category)
@@ -140,35 +140,36 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
       1. 첫 번째 소제목
 
 
-      본문 (200-300자)
+      본문 (400-500자)
       
       2. 두 번째 소제목
 
 
-      본문 (300-400자)
+      본문 (400-500자)
       
       3. 세 번째 소제목
 
 
-      본문 (600-700자)
+      본문 (800-900자)
       
       4. 네 번째 소제목
 
 
-      본문 (600-700자)
+      본문 (800-900자)
       
       5. 다섯 번째 소제목
 
 
       본문 (250-300자)
       
-      맺음말 (2-3문장, 자연스러운 마무리 멘트)
+      (2-3문장, 자연스러운 마무리 멘트)
     </structure>
     - structure 명시 된 구조 외에 다른 텍스트 출력 금지
     - 줄바꿈까지 참고하여 출력할 것
     - 글자수 피드백 표시 금지 원고 내용만 출력
     - 부제 넘버링은 필수
     - 제목 네번 반복은 동일한 제목 하나로만 반복
+    - 본문의 글이 너무 따닥 따닥 붙지 않고 중간중간 자연스러운 줄바꿈 필수
   </format>
   
   <critical_restrictions>
@@ -194,13 +195,8 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
 
     length_constraints = f"""
 <length_constraints>
-    <rule>공백을 제외한 길이를 계산해서 맞출 것</rule>
   <target min="{target_chars_min}" max="{target_chars_max}" unit="chars_no_space"/>
   <tolerance>±100자</tolerance>
-  
-  <distribution>
-    도입부: 10% | 본문: 80% | 맺음말: 10%
-  </distribution>
 </length_constraints>"""
 
     task_definition = f"""
