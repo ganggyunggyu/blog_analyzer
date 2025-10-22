@@ -140,7 +140,7 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
       1. 첫 번째 소제목
 
 
-      본문 (400-500자)
+      본문 (300-400자)
       
       2. 두 번째 소제목
 
@@ -155,7 +155,7 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
       4. 네 번째 소제목
 
 
-      본문 (800-900자)
+      본문 (700-800자)
       
       5. 다섯 번째 소제목
 
