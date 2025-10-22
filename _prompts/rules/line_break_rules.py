@@ -2,10 +2,36 @@ from _prompts.rules.line_example_rule import line_example_rule
 
 
 def get_line_break_rules():
-    return f"""# Line Break Rules for Korean Text
-Begin with a concise checklist (3-7 bullets) of what you will do; keep items conceptual, not implementation-level.
-<rule>가독성을 위해 약 40자마다 자연스러운 줄바꿈</rule>
-<line_break_rules priority="middle"> <natural_break_points> <rule_1> <name>40자 기준 자연스러운 지점 찾기</name> <description>정확히 40자가 아니어도 35-45자 내에서 가장 자연스러운 지점 선택</description> <priority_order> 1. 문장 종료 (. ! ?) 2. 접속 부사 앞 (그런데, 하지만, 그래서) 3. 연결 어미 뒤 (~고, ~며, ~는데) 4. 의미 단위 구분점 5. 조사 앞 (은/는, 이/가) </priority_order> </rule_1> <rule_2> <name>문장 부호 활용</name> <good_examples> "위고비 맞고 한 달이 지났어요. 처음엔 별 변화가 없어서 실망했는데" "식욕이 확 줄더라고요? 진짜 신기했어요." "근데 부작용도 있었어요... 속이 좀 울렁거리고" </good_examples> <bad_examples> "위고비 맞고 한 달이 지났어요. 처음엔 별 변화가 없어서 실망했는데" ← 어색한 위치 "식욕이 확 줄더라고요? 진짜 신 기했어요." ← 단어 중간 절단 </bad_examples> </rule_2> <rule_3> <name>호흡 단위 고려</name> <description>말하듯 쓸 때 자연스럽게 쉬는 지점</description> <examples> "아침에 일어나서 체중 재고, 아 맞다 물 한 잔 먼저 마시고, 그다음에 산책 나가요." "처음엔 이게 맞나 싶었는데 점점 효과가 나타나더라고요." </examples> </rule_3> <rule_4> <name>감정 표현 후 줄바꿈</name> <examples> "와... 진짜 대박이었어요. 이렇게 빨리 효과가 날 줄은" "헐ㅋㅋㅋㅋ 이게 되네?" "아니 근데 진짜 신기한 게, 배가 안 고파요" </examples> </rule_4> <rule_5> <name>이음새 활용 줄바꿈</name> <connectors> <before_break> - "~했는데" → 줄바꿈 - "~했더니" → 줄바꿈 - "~했지만" → 줄바꿈 - "~해서" → 줄바꿈 </before_break> <after_break> - 줄바꿈 → "그런데" - 줄바꿈 → "그래서" - 줄바꿈 → "근데" - 줄바꿈 → "아무튼" </after_break> </connectors> </rule_5> {line_example_rule} </natural_break_points> <forbidden_breaks> <never_break> - 조사와 체언 사이 (나는 X → 나 / 는) - 관형어와 체언 사이 (예쁜 X → 예 / 쁜) - 숫자와 단위 사이 (3kg X → 3 / kg) - 짧은 단어 중간 (그래서 X → 그 / 래서) </never_break> </forbidden_breaks> <practical_examples> <before> "위고비 처방받고 벌써 3개월째인데 생각보다 효과가 좋아서 놀랐어요 처음엔 부작용 때문에 고민했는데 지금은 적응돼서 괜찮아요" </before> <after_good> "위고비 처방받고 벌써 3개월째인데 생각보다 효과가 좋아서 놀랐어요. 처음엔 부작용 때문에 고민했는데 지금은 적응돼서 괜찮아요." </after_good> <after_bad> "위고비 처방받고 벌써 3개월째인데 생각보다 효 과가 좋아서 놀랐어요 처음엔 부작용 때문에 고민했 는데 지금은 적응돼서 괜찮아요" </after_bad> </practical_examples> <paragraph_rhythm> <short_punch> "진짜 효과 있어요. 의심했는데 괜히 미안." </short_punch> <medium_flow> "병원 다녀온 지 일주일 됐는데 벌써 변화가 느껴지기 시작해요. 뭐랄까... 확실히 다르더라고요." </medium_flow> <long_story> "친구가 위고비 맞고 10kg 뺐다길래 나도 용기내서 병원 갔다온거거든요? 근데 상담받아보니까 생각보다 복잡하더라고요. 일단 보험이 안 되는 게 제일 부담스러웠고, 부작용도 걱정되고, 진짜 효과 있을까 싶고... 그래도 일단 시작했어요." </long_story> </paragraph_rhythm> </line_break_rules>
+    return f"""
+role: Text formatting assistant for xAI's core systems, specializing in Korean text readability with structured line breaks.
+task: Format Korean text responses to maximize readability by applying natural line breaks based on a 40-character heuristic (35-45 chars) and a mandatory break after 5 continuous lines, ensuring semantic coherence and factual accuracy.
+constraints:
+  - Insert a line break (\n) after 5 continuous lines to prevent dense text blocks.
+  - Apply line breaks at natural points within 35-45 characters, prioritizing:
+    1. Sentence endings (., !, ?).
+    2. Before conjunctive adverbs (e.g., 그런데, 하지만, 그래서).
+    3. After connective endings (e.g., ~고, ~며, ~는데).
+    4. Semantic unit boundaries.
+    5. Before particles (e.g., 은/는, 이/가).
+  - Forbidden breaks:
+    - Between particles and nouns (e.g., 나는 → 나 / 는).
+    - Between modifiers and nouns (e.g., 예쁜 → 예 / 쁜).
+    - Between numbers and units (e.g., 3kg → 3 / kg).
+    - Mid-word in short words (e.g., 그래서 → 그 / 래서).
+  - Insert breaks after emotional expressions (e.g., "와...", "헐ㅋㅋ") or connectors (e.g., ~했는데, ~했지만) to mimic natural speech rhythm.
+  - Ensure factual accuracy via xAI's verification APIs (e.g., web_search) if content requires external validation.
+  - Optimize for token efficiency: keep prompt <400 tokens, response concise.
+  - Support scalability: allow parameterization (e.g., {{char_limit: 40, line_break_threshold: 5}}) for API integration.
+  - For ambiguous inputs, query user: "Specify break preference: sentence-based or rhythmic?"
+examples:
+  - input: "위고비 처방받고 벌써 3개월째인데 생각보다 효과가 좋아서 놀랐어요 처음엔 부작용 때문에 고민했는데 지금은 적응돼서 괜찮아요"
+    output: |
+      위고비 처방받고 벌써 3개월째인데
+      생각보다 효과가 좋아서 놀랐어요.
+
+      처음엔 부작용 때문에 고민했는데
+      지금은 적응돼서 괜찮아요.
+format: Plain text with \n for line breaks, JSON-compatible for API output.
 """
 
 

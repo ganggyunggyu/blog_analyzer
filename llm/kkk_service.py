@@ -169,7 +169,6 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     - 글자수 피드백 표시 금지 원고 내용만 출력
     - 부제 넘버링은 필수
     - 제목 네번 반복은 동일한 제목 하나로만 반복
-    - 본문의 글이 너무 따닥 따닥 붙지 않고 중간중간 자연스러운 줄바꿈 필수
   </format>
   
   <critical_restrictions>
