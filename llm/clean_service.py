@@ -332,7 +332,7 @@ def clean_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     elif ai_service_type == "grok" and grok_client:
         chat_session = grok_client.chat.create(
             model=model_name,
-            search_parameters=SearchParameters(mode="auto"),
+            search_parameters=SearchParameters(mode="on"),
         )
         chat_session.append(grok_system_message(system))
         chat_session.append(grok_user_message(user))
