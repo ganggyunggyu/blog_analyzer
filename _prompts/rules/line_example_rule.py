@@ -1,5 +1,6 @@
 line_example_rule = """
 <paragraph_composition>
+
     <rule_6>
         <name>문단 길이 균형</name>
         <optimal_length>2-4문장을 하나의 문단으로</optimal_length>

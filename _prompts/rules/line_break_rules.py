@@ -3,44 +3,33 @@ from _prompts.rules.line_example_rule import line_example_rule
 
 def get_line_break_rules():
     return f"""
-role: Text formatting assistant for xAI's core systems, specializing in Korean text readability with structured line breaks.
-task: Format Korean text responses to maximize readability by applying natural line breaks based on a 40-character heuristic (35-45 chars) and a mandatory break after 5 continuous lines, ensuring semantic coherence and factual accuracy.
-constraints:
-  - Insert a line break (\n\n) after 5 continuous lines to prevent dense text blocks.
-  - Apply line breaks at natural points within 35-45 characters, prioritizing:
-    1. Sentence endings (., !, ?).
-    2. Before conjunctive adverbs (e.g., 그런데, 하지만, 그래서).
-    3. After connective endings (e.g., ~고, ~며, ~는데).
-    4. Semantic unit boundaries.
-    5. Before particles (e.g., 은/는, 이/가).
-  - Forbidden breaks:
-    - Between particles and nouns (e.g., 나는 → 나 / 는).
-    - Between modifiers and nouns (e.g., 예쁜 → 예 / 쁜).
-    - Between numbers and units (e.g., 3kg → 3 / kg).
-    - Mid-word in short words (e.g., 그래서 → 그 / 래서).
-  - Insert breaks after emotional expressions (e.g., "와...", "헐ㅋㅋ") or connectors (e.g., ~했는데, ~했지만) to mimic natural speech rhythm.
-  - Ensure factual accuracy via xAI's verification APIs (e.g., web_search) if content requires external validation.
-  - Optimize for token efficiency: keep prompt <400 tokens, response concise.
-  - Support scalability: allow parameterization (e.g., {{char_limit: 40, line_break_threshold: 5}}) for API integration.
-  - For ambiguous inputs, query user: "Specify break preference: sentence-based or rhythmic?"
-examples:
-  - input: "위고비 처방받고 벌써 3개월째인데 생각보다 효과가 좋아서 놀랐어요 처음엔 부작용 때문에 고민했는데 지금은 적응돼서 괜찮아요"
-    output: |
-      위고비 처방받고 벌써 3개월째인데
-      생각보다 효과가 좋아서 놀랐어요.
+줄바꿈 타이밍: 약 5줄마다 \n\n으로 두번 줄바꿈 해서 텍스트 띄우기
 
-      처음엔 부작용 때문에 고민했는데
-      지금은 적응돼서 괜찮아요.
-format: Plain text with \n\n for line breaks, JSON-compatible for API output.
+문장 끝(예: . ! ?).
+접속부사(예: 그런데, 그래서) 앞.
+연결어미(예: ~고, ~는데) 뒤.
+의미 단위 경계.
+조사(예: 은/는) 앞.
 
-task: Craft responses with natural line breaks to keep text airy and readable, adding an extra \\n after every 5 lines to avoid a wall-of-text vibe. Keep it factual, fun, and snappy.
-constraints:
-  - Pop in a line break (\n\n) after 5 continuous lines—think of it as giving the text room to breathe.
-  - Place breaks at sentence ends or natural pauses, so it flows like a good conversation.
-  - Stay true to xAI's truth vibe: if facts are needed, use web_search or X_keyword_search to double-check.
-  - Keep it lean: aim for <300 tokens, cutting fluff like a pro barber.
-  - Hook into Grok tools: use memory for context, web_search for real-time facts if needed.
-  - If the user’s vague, toss back a quip like, "Yo, want breaks after sentences or paragraphs? Spill the deets!"
+줄바꿈 금지: 조사-명사, 수식어-명사, 숫자-단위, 짧은 단어 중간.
+대화 리듬: "와!", "헐ㅋ" 같은 감정 표현이나 연결어 뒤에 줄바꿈으로 자연스러움 추가.
+
+예시:
+
+
+출력:
+위고비 처방받고 벌써 3개월째인데
+생각보다 효과가 좋아서 놀랐어요.
+
+처음엔 부작용 때문에 고민했는데
+지금은 적응돼서 괜찮아요.
+
+출력:
+위고비는 체중 감소에 효과적이에요.
+평균 3개월 사용 시 5~10% 체중 감소.
+
+부작용으론 메스꺼움이 흔하지만
+대개 2주 내 적응된다고 해요.
 """
 
 
