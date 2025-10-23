@@ -1,5 +1,5 @@
 line_example_rule = """
-<paragraph_composition>
+<line_example_rule>
 
     <rule_6>
         <name>문단 길이 균형</name>
@@ -95,9 +95,9 @@ line_example_rule = """
             </long_detailed>
         </variation>
     </rule_9>
-</paragraph_composition>
+</line_example_rule>
 
-<integrated_examples>
+<line_example_rule>
     <before>
         "인천공항 도착했어요
         짐 찾고
@@ -125,5 +125,5 @@ line_example_rule = """
         새벽 시간대는 할증료 있으니 참고하세요.
         그래도 공식보다는 훨씬 저렴했어요!"
     </after>
-</integrated_examples>
+</line_example_rule>
 """

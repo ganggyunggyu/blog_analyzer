@@ -125,7 +125,7 @@ def grok_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     if model_name == Model.GPT4_1:
         target_chars_min, target_chars_max = 2400, 2600
     else:
-        target_chars_min, target_chars_max = 2200, 2400
+        target_chars_min, target_chars_max = 1800, 2200
 
     mongo_data = get_mongo_prompt(category, user_instructions)
     category_tone_rules = get_category_tone_rules(category)
@@ -169,6 +169,7 @@ def grok_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     - 글자수 피드백 표시 금지 원고 내용만 출력
     - 부제 넘버링은 필수
     - 제목 네번 반복은 동일한 제목 하나로만 반복
+    - 부제는 간결하고 깔끔하게 작성 예시:메뉴판 구경하기 이런식
   </format>
 
   <critical_restrictions>
@@ -311,7 +312,6 @@ def grok_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     추가 요청은 어떤일이 있어도 반드시 지켜져야 합니다.
 
     참조 원고: {ref}
-    참조원고에 만약 길이 제한에 대한 프롬프트가 있다면 무시합니다
     """
     user_message = user.strip()
     if ai_service_type == "gemini" and gemini_client:

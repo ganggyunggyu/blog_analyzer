@@ -71,7 +71,7 @@ from _prompts.rules.line_example_rule import line_example_rule
 from _prompts.rules.line_break_rules import line_break_rules
 
 
-model_name: str = Model.GROK_4_NON_RES
+model_name: str = Model.GPT5
 
 
 if model_name.startswith("gemini"):
@@ -125,7 +125,7 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     if model_name == Model.GPT4_1:
         target_chars_min, target_chars_max = 2400, 2600
     else:
-        target_chars_min, target_chars_max = 2000, 2400
+        target_chars_min, target_chars_max = 2200, 2400
 
     mongo_data = get_mongo_prompt(category, user_instructions)
     category_tone_rules = get_category_tone_rules(category)
