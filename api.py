@@ -19,6 +19,8 @@ from routers.generate import (
     gpt_4_v2,
     gpt_5_v2,
     kkk,
+    grok,
+    restaurant,
     solar,
     gpt_merge,
     my,
@@ -65,6 +67,8 @@ app.include_router(get_sub_title.router)
 app.include_router(gpt_4_v2.router)
 app.include_router(gpt_5_v2.router)
 app.include_router(kkk.router)
+app.include_router(grok.router)
+app.include_router(restaurant.router)
 app.include_router(solar.router)
 app.include_router(upload_text.router)
 app.include_router(get_ref.router)
