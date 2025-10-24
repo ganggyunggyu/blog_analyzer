@@ -125,7 +125,7 @@ def grok_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     if model_name == Model.GPT4_1:
         target_chars_min, target_chars_max = 2400, 2600
     else:
-        target_chars_min, target_chars_max = 1800, 2200
+        target_chars_min, target_chars_max = 2500, 2600
 
     mongo_data = get_mongo_prompt(category, user_instructions)
     category_tone_rules = get_category_tone_rules(category)
@@ -170,6 +170,7 @@ def grok_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     - 부제 넘버링은 필수
     - 제목 네번 반복은 동일한 제목 하나로만 반복
     - 부제는 간결하고 깔끔하게 작성 예시:메뉴판 구경하기 이런식
+    - 응답 시 문자 수 추정, (약 XX자) 같은 메타 주석이나 불필요한 설명을 절대 추가하지 마. 본문 텍스트만 순수하게 출력해.
   </format>
 
   <critical_restrictions>
@@ -257,16 +258,7 @@ def grok_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     참조원고 또는 템플릿은 기존 네이버 상위노출 글이니 해당 글의 특징을 살려서 블로그 바이럴 마케팅 원고를 작성합니다.
 </rule>
 
-{mongo_data}
-
-{task_definition}
-{output_structure}
-{category_tone_rules}
-{line_break_rules}
-{human_writing_style}
-
 <conflict_resolution>
-  <!-- GPT-5 핵심 원칙: 모순 시 해결 규칙 명시 -->
 
   <rule_1>
     만약 "키워드 최적화"와 "자연스러운 문체"가 충돌하면:
@@ -293,6 +285,7 @@ def grok_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
 
 <final_instruction>
   어떠한 메타 설명, 계획, 과정, 체크리스트 없이 오직 원고에 어울리는 동일한 제목 4개와 글 본문만 출력하세요.
+  추가 설명이나 추정치 없이 순수한 콘텐츠만으로 완성된 이야기를 전달해.
 </final_instruction>
 </system_instruction>
 """
@@ -309,7 +302,7 @@ def grok_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     '{keyword}'에 대한 네이버 블로그 글을 작성해주세요.
 
     추가 요청: {note}
-    추가 요청은 어떤일이 있어도 반드시 지켜져야 합니다.
+    추가 요청은 어떤일이 있어도 최우선으로 지켜져야 합니다.
 
     참조 원고: {ref}
     """
@@ -403,7 +396,7 @@ def get_category_tone_rules(category):
         "wedding": wedding,
         "위고비": 위고비,
         "다이어트": 다이어트,
-        "다이어트보조제": 다이어트보조제,
+        "다이어트보조제": 다이어트,
         "브로멜라인": 브로멜라인,
         "애견동물_반려동물_분양": 애견동물_반려동물_분양,
         "외국어교육": 외국어교육,

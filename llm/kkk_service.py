@@ -324,7 +324,7 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
         response = openai_client.responses.create(
             model=model_name,
             instructions=system,
-            input=user,
+            input=[{"role": "user", "content": user}],
             reasoning={"effort": "low"},  # minimal, low, medium, high
             text={"verbosity": "low"},  # low, medium, high
         )

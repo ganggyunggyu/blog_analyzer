@@ -20,6 +20,7 @@ from routers.generate import (
     gpt_5_v2,
     kkk,
     grok,
+    mdx_post,
     restaurant,
     solar,
     gpt_merge,
@@ -79,6 +80,7 @@ app.include_router(song.router)
 app.include_router(gang.router)
 app.include_router(step_by_step.router)
 app.include_router(clean.router)
+app.include_router(mdx_post.router)
 app.include_router(synonym.router)
 app.include_router(review.router)
 app.include_router(news.router)

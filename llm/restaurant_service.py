@@ -32,7 +32,7 @@ from _prompts.rules.line_example_rule import line_example_rule
 from _prompts.rules.line_break_rules import line_break_rules
 
 
-model_name: str = Model.GPT5
+model_name: str = Model.GROK_4_NON_RES
 
 
 if model_name.startswith("gemini"):
@@ -87,7 +87,7 @@ def restaurant_gen(user_instructions: str, ref: str = "", category: str = "") ->
 <system_instruction>
 당신은 네이버 블로그 맛집 후기 전문가입니다. 친근하고 감성적인 톤으로, 한국 독자(20-30대 여성 타겟)가 좋아할 생생한 서사와 디테일을 포함해 글을 작성하세요. 
 - 톤: 따뜻하고 호기심 자극, 맛 묘사 풍부.
-- 출력: 제목 4개(동일 제목 반복, 20-30자) + 본문(섹션별 제목 필수: '방문 계기', '맛과 분위기', '추천 포인트') 마크다운 사용 절대 금지 부제에는 넘버링 필수 부제 하단 줄바꿈 두번 부제는 자연스러운 문장체로 간결하게 5~15자 사이 메타표현 금지. ㅎㅎ ㅋㅋ ~! 와 같은 다양한 감정표현 사용, 존맛탱 꿀맛 과 같은 인터넷어 자연스럽게 사용
+- 출력: 제목 4개(동일 제목 반복, 20-30자) + 본문(섹션별 제목 필수: '방문 계기', '맛과 분위기', '총평') 마크다운 사용 절대 금지 부제에는 넘버링 필수 부제 하단 줄바꿈 두번 부제는 자연스러운 문장체로 간결하게 5~15자 사이 메타표현 금지. ㅎㅎ ㅋㅋ ~! 와 같은 다양한 감정표현 사용, 존맛탱 꿀맛 과 같은 인터넷어 자연스럽게 사용
 - 검토: 출력 전 글자 수(공백 제외 1800~2000자) 확인, 미달/초과 시 수정.
 - 참조원고에 만약 길이 제한에 대한 프롬프트가 있다면 무시 몇몇단어 이상 이런거 전부 무시하고  시스템 지침을 따름
 
@@ -107,7 +107,7 @@ def restaurant_gen(user_instructions: str, ref: str = "", category: str = "") ->
 
       - 예외 사항: 소제목에서 숫자 다음에 . (마침표)만 허용
     </forbidden_formatting>
-    
+    {mongo_data}
   </critical_restrictions>
 </system_instruction>
 """
@@ -121,7 +121,6 @@ def restaurant_gen(user_instructions: str, ref: str = "", category: str = "") ->
 - 이행사항: {맛집}
 - 줄바꿈: {line_break_rules} {line_example_rule}
 - 말투 스타일: {human_writing_style} ㅎㅎ ㅋㅋ ~! 와 같은 다양한 감정표현 사용, 존맛탱 꿀맛 과 같은 인터넷어 자연스럽게 사용 (예: "친구와 수다 떨며 먹기 좋은!", "인스타 감성 뿜뿜 ㅎㅎ").
-- 검색: 최신 리뷰 참고 위해 X/웹 검색 사용, 출처 간단히 명시(예: "X 포스트 기반").
 - 예시:
 방문 계기
 친구 추천으로 {keyword} 방문! (상세 묘사...)
@@ -148,7 +147,7 @@ def restaurant_gen(user_instructions: str, ref: str = "", category: str = "") ->
         response = openai_client.responses.create(
             model=model_name,
             instructions=system,
-            input=user,
+            input=[{"role": "user", "content": user}],
             reasoning={"effort": "high"},  # minimal, low, medium, high
             text={"verbosity": "low"},  # low, medium, high
         )
