@@ -25,6 +25,7 @@ from config import (
 )
 from _constants.Model import Model
 from _prompts.service.get_ref_prompt import get_ref_prompt
+from utils import natural_break_text
 from utils.format_paragraphs import format_paragraphs
 from utils.query_parser import parse_query
 from utils.text_cleaner import comprehensive_text_clean
@@ -292,11 +293,10 @@ def grok_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
 
     user = f"""
     {mongo_data}
-
+    {line_break_rules}
     {task_definition}
     {output_structure}
     {category_tone_rules}
-    {line_break_rules}
     {human_writing_style}
     위 내용을 참고하여
     '{keyword}'에 대한 네이버 블로그 글을 작성해주세요.
@@ -366,6 +366,8 @@ def grok_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     else:
         text: str = ""
     text = comprehensive_text_clean(text)
+    if category == "맛집":
+        text = natural_break_text.natural_break_text(text)
 
     length_no_space = len(re.sub(r"\s+", "", text))
     print(f"원고 길이 체크: {length_no_space}")
