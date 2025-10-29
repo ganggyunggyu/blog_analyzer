@@ -1,10 +1,10 @@
 import re
 
 
-MAX_CHUNK_LENGTH = 20
-MAX_LINE_LENGTH = 15
+MAX_CHUNK_LENGTH = 35
+MAX_LINE_LENGTH = 30
 
-ENDING_PATTERNS = r"(어요|아요|니다|습니다|했어요|했죠|하죠|네요|게요|랍니다|랐어요|했습니다|합니다|거예요|면서|고요|구요|져요|인데|는데)"
+ENDING_PATTERNS = r"(어요|아요|니다|습니다|했어요|했죠|하죠|네요|게요|랍니다|랐어요|했습니다|합니다|거예요|면서|고요|구요|져요|인데|는데|요.|다.|죠.)"
 
 EMOJI_PATTERNS = r"^[ㅎㅋㅠ\s]{1,3}$"
 
@@ -86,9 +86,7 @@ def natural_break_text(text):
                 else:
 
                     if len(chunk) > MAX_CHUNK_LENGTH:
-                        sub_chunks = re.findall(
-                            r"[^.?!,;\s]{1,28}(?=[.?!,;\s]|$)", chunk
-                        )
+                        sub_chunks = re.findall(r"[^?!;\s]{1,28}(?=[?!;\s]|$)", chunk)
                         for sub in sub_chunks:
                             sub = sub.strip()
                             if len(current_chunk + sub) > MAX_LINE_LENGTH:
