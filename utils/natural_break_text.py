@@ -7,6 +7,7 @@ MAX_LINE_LENGTH = 30
 ENDING_PATTERNS = r"(어요|아요|니다|습니다|했어요|했죠|하죠|네요|게요|랍니다|랐어요|했습니다|합니다|거예요|고요|구요|져요|인데|요.|다.|죠.)"
 
 EMOJI_PATTERNS = r"^[ㅎㅋㅠ\s]{1,3}$"
+SUBTITLE_PATTERN = r"^\d+\.\s+"
 
 
 def natural_break_text(text):
@@ -35,7 +36,8 @@ def natural_break_text(text):
 
     raw_lines = text.splitlines()
     result = []
-
+    # NEW: 현재 단락 라인 수를 추적
+    current_para_lines = 0
     for raw_line in raw_lines:
         line = raw_line.strip()
         if not line:
@@ -43,9 +45,11 @@ def natural_break_text(text):
                 result.append("")
             continue
 
-        if re.match(r"^\d+\.\s+", line):
+        if re.match(SUBTITLE_PATTERN, line):
             result.append(line)
             result.append("")
+            result.append("")
+            current_para_lines = 0  # NEW: 섹션 시작이므로 단락 카운터 초기화
             continue
 
         split_pattern = r"(?<=[!;])\s*|(?<=어요)\s*(?=\s)|(?<=아요)\s*(?=\s)|(?<=니다)\s*(?=\s)|(?<=습니다)\s*(?=\s)|(?<=했어요)\s*(?=\s)|(?<=했죠)\s*(?=\s)|(?<=하죠)\s*(?=\s)|(?<=네요)\s*(?=\s)|(?<=게요)\s*(?=\s)|(?<=라고)\s*(?=\s)|(?<=라서)\s*(?=\s)|(?<=랍니다)\s*(?=\s)|(?<=랐어요)\s*(?=\s)|(?<=했습니다)\s*(?=\s)|(?<=합니다)\s*(?=\s)|(?<=거예요)\s*(?=\s)|(?<=고요)\s*(?=\s)|(?<=구요)\s*(?=\s)|(?<=져요)\s*(?=\s)"
@@ -75,8 +79,16 @@ def natural_break_text(text):
                 if current_chunk:
                     result.append(current_chunk.strip())
                 result.append(chunk)
-                result.append("")
-                current_chunk = ""
+                current_para_lines += 1  # NEW
+
+                # ★ NEW: 단락 종료 조건 — 부제 제외, 최소 2줄 보장
+                # 직전이 부제가 아니고, 현재 단락이 1줄뿐이면 종료를 보류
+                # (= 빈 줄을 넣지 않고 다음 문장을 같은 단락으로 이어감)
+                if current_para_lines >= 2:
+                    result.append("")  # 단락 종료
+                    current_para_lines = 0
+                # else: 종료 보류 → 다음 문장과 같은 단락으로 이어짐
+
             else:
                 if has_emoji:
                     if current_chunk:
