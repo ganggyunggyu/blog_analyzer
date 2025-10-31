@@ -126,7 +126,7 @@ def grok_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     if model_name == Model.GPT4_1:
         target_chars_min, target_chars_max = 2400, 2600
     else:
-        target_chars_min, target_chars_max = 2500, 2600
+        target_chars_min, target_chars_max = 1700, 2300
 
     mongo_data = get_mongo_prompt(category, user_instructions)
     category_tone_rules = get_category_tone_rules(category)
@@ -137,7 +137,8 @@ def grok_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     <structure>
       제목 (10-25자, 제목에는 쉼표(,)를 넣지 않음, **동일한** 제목 4개 반복 출력, 메인 키워드 관련 서브 키워드를 이용하여 제작)
 
-
+    서론 (200-300자, 독자의 호기심을 자극하고 공감대를 형성하는 자연스러운 도입부)
+      
       1. 첫 번째 소제목
 
 
@@ -288,23 +289,30 @@ def grok_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
   어떠한 메타 설명, 계획, 과정, 체크리스트 없이 오직 원고에 어울리는 동일한 제목 4개와 글 본문만 출력하세요.
   추가 설명이나 추정치 없이 순수한 콘텐츠만으로 완성된 이야기를 전달해.
 </final_instruction>
+
 </system_instruction>
 """
 
     user = f"""
+# 참고 데이터
     {mongo_data}
+# 줄바꿈 지침
     {line_break_rules}
+# 작성 지침
     {task_definition}
+# 츨력 지침
     {output_structure}
+# 카테고리 별 톤 지침
     {category_tone_rules}
+# 말투 지침
     {human_writing_style}
-    위 내용을 참고하여
-    '{keyword}'에 대한 네이버 블로그 글을 작성해주세요.
+    
+위 내용을 참고하여 '{keyword}'에 대한 네이버 블로그 글을 작성해주세요.
 
-    추가 요청: {note}
-    추가 요청은 어떤일이 있어도 최우선으로 지켜져야 합니다.
+추가 요청: {note}
+추가 요청은 어떤일이 있어도 최우선으로 지켜져야 합니다.
 
-    참조 원고: {ref}
+참조 원고: {ref}
     """
     user_message = user.strip()
     if ai_service_type == "gemini" and gemini_client:

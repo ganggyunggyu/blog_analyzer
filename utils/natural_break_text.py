@@ -2,7 +2,7 @@ import re
 
 
 MAX_CHUNK_LENGTH = 33
-MAX_LINE_LENGTH = 28
+MAX_LINE_LENGTH = 27
 
 ENDING_PATTERNS = r"(어요|아요|니다|습니다|했어요|했죠|하죠|네요|게요|랍니다|랐어요|했습니다|합니다|거예요|고요|구요|져요|인데|요.|다.|죠.)"
 
