@@ -82,4 +82,4 @@ def get_human_writing_style():
     return json.dumps(style_dict, ensure_ascii=False, indent=2)
 
 
-human_writing_style = get_human_writing_style()
+human_writing_rule = get_human_writing_style()

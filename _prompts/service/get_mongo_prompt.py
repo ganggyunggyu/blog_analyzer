@@ -30,28 +30,13 @@ class GPT5MongoPromptBuilder:
         self.db_service.set_db_name(category)
 
     def get_components(self) -> PromptComponents:
-        """MongoDB에서 데이터 추출 및 정제 (inline 처리로 간소화)"""
+        """MongoDB에서 데이터 추출 및 정제"""
         analysis_data = self.db_service.get_latest_analysis_data() or {}
 
-        # Inline 데이터 정제
-        subtitles = [
-            str(item).strip()
-            for item in analysis_data.get("subtitles", [])
-            if str(item).strip()
-        ]
-        expressions = {
-            str(k): [str(v).strip() for v in (vals or []) if str(v).strip()]
-            for k, vals in analysis_data.get("expressions", {}).items()
-        }
-        parameters = {
-            str(k): [str(v).strip() for v in (vals or []) if str(v).strip()]
-            for k, vals in analysis_data.get("parameters", {}).items()
-        }
-
-        # 템플릿 선택
-        template, template_info = self._select_template(
-            analysis_data.get("templates", [])
-        )
+        subtitles = self._clean_list(analysis_data.get("subtitles", []))
+        expressions = self._clean_dict(analysis_data.get("expressions", {}))
+        parameters = self._clean_dict(analysis_data.get("parameters", {}))
+        template, template_info = self._select_template(analysis_data.get("templates", []))
 
         return PromptComponents(
             subtitles=subtitles,
@@ -62,6 +47,18 @@ class GPT5MongoPromptBuilder:
             category=self.category,
             keyword=self.keyword,
         )
+
+    def _clean_list(self, items: List) -> List[str]:
+        """리스트 데이터 정제"""
+        return [str(item).strip() for item in items if str(item).strip()]
+
+    def _clean_dict(self, data: Dict) -> Dict[str, List[str]]:
+        """딕셔너리 데이터 정제"""
+        cleaned = {}
+        for key, values in data.items():
+            cleaned_values = [str(v).strip() for v in (values or []) if str(v).strip()]
+            cleaned[str(key)] = cleaned_values
+        return cleaned
 
     def _select_template(self, templates: List) -> tuple[Optional[Dict], str]:
         """템플릿 선택 및 정보 추출 (에러 핸들링 강화)"""
@@ -89,45 +86,36 @@ class GPT5MongoPromptBuilder:
             return None, f"선택 오류: {str(e)}"
 
     def _build_json_resources(self, components: PromptComponents) -> Dict[str, Any]:
-        """리소스를 JSON 형식으로 빌드 (Grok JSON 파싱 최적화)"""
+        """리소스를 JSON 형식으로 빌드"""
+        template_content = ""
+        if components.template:
+            template_content = components.template.get("templated_text", "").strip()
+
         return {
-            # "subtitles_pool": components.subtitles[:20],
-            "style_variations": {
-                k: v[:10] for k, v in components.expressions.items() if v
+            "subtitles_pool": components.subtitles[:20],
+            "style_variations": {k: v[:10] for k, v in components.expressions.items() if v},
+            "contextual_values": {k: v[:5] for k, v in components.parameters.items() if v},
+            "reference_template": {
+                "source": components.template_info,
+                "content": template_content,
             },
-            "contextual_values": {
-                k: v[:5] for k, v in components.parameters.items() if v
-            },
-            # "reference_template": {
-            #     "source": components.template_info,
-            #     "content": (
-            #         components.template.get("templated_text", "").strip()
-            #         if components.template
-            #         else ""
-            #     ),
-            # },
         }
 
     def build_gpt5_prompt(self) -> str:
-        """GPT-5 최적화 프롬프트 생성 (데이터 사용 지침 중심, 규칙 최소화)"""
+        """GPT-5 최적화 프롬프트 생성"""
         components = self.get_components()
         resources = self._build_json_resources(components)
         resources_json = json.dumps(resources, ensure_ascii=False, indent=2)
 
         return f"""
-<task>
-  네이버 블로그 글 작성 (Grok 최적화: 자연스러운 생성 우선)
-  
-  <target>
-    - 카테고리: {components.category}
-    - 키워드: {components.keyword}
-  </target>
-  
-</task>
+<target>
+  - 카테고리: {components.category}
+  - 키워드: {components.keyword}
+</target>
 
 <creative_resources>
   <resources_json>{resources_json}</resources_json>
-  
+
   <data_usage>
     JSON 리소스 활용:
     - subtitles_pool: 소제목 선택해 본문 구조화
@@ -136,11 +124,6 @@ class GPT5MongoPromptBuilder:
     - reference_template: content 톤/흐름 참고, 페르소나/경험 새 창작
   </data_usage>
 </creative_resources>
-
-<execution_instruction>
-  리소스 활용해 블로그 글 직접 생성. 메타 설명 없이 완성된 글만 출력.
-  Grok답게: 간결하고 진정성 있게.
-</execution_instruction>
 """
 
 
