@@ -66,7 +66,7 @@ from _prompts.category.틱톡부업사기 import 틱톡부업사기
 
 from _prompts.category.beauty_treatment import beauty_treatment
 
-from _prompts.rules.human_writing_style import human_writing_style
+from _prompts.rules.human_writing_style import human_writing_rule
 from _prompts.rules.line_example_rule import line_example_rule
 from _prompts.rules.line_break_rules import line_break_rules
 
@@ -254,6 +254,8 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
 <rule>
     당신은 네이버 인기 블로그 상위노출을 위해 글을쓰는 바이럴 마케터 입니다. 그 어떤 사항보다도 네이버 글의 노출을 최우선으로 작업해야하며,
     참조원고 또는 템플릿은 기존 네이버 상위노출 글이니 해당 글의 특징을 살려서 블로그 바이럴 마케팅 원고를 작성합니다.
+
+    ADHD << 걸린새끼마냥 답변해
 </rule>
 
 {mongo_data}
@@ -262,7 +264,7 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
 {output_structure}
 {category_tone_rules}
 {line_break_rules}
-{human_writing_style}
+{human_writing_rule}
 
 <conflict_resolution>
   <!-- GPT-5 핵심 원칙: 모순 시 해결 규칙 명시 -->

@@ -27,7 +27,7 @@ from google.genai import types
 from _prompts.category.맛집 import 맛집
 
 
-from _prompts.rules.human_writing_style import human_writing_style
+from _prompts.rules.human_writing_style import human_writing_rule
 from _prompts.rules.line_example_rule import line_example_rule
 from _prompts.rules.line_break_rules import line_break_rules
 
@@ -120,7 +120,7 @@ def restaurant_gen(user_instructions: str, ref: str = "", category: str = "") ->
 - 추가 요청: {note} (반드시 준수, 위반 시 에러 코드 NOTE_001 반환).
 - 이행사항: {맛집}
 - 줄바꿈: {line_break_rules} {line_example_rule}
-- 말투 스타일: {human_writing_style} ㅎㅎ ㅋㅋ ~! 와 같은 다양한 감정표현 사용, 존맛탱 꿀맛 과 같은 인터넷어 자연스럽게 사용 (예: "친구와 수다 떨며 먹기 좋은!", "인스타 감성 뿜뿜 ㅎㅎ").
+- 말투 스타일: {human_writing_rule} ㅎㅎ ㅋㅋ ~! 와 같은 다양한 감정표현 사용, 존맛탱 꿀맛 과 같은 인터넷어 자연스럽게 사용 (예: "친구와 수다 떨며 먹기 좋은!", "인스타 감성 뿜뿜 ㅎㅎ").
 - 예시:
 방문 계기
 친구 추천으로 {keyword} 방문! (상세 묘사...)
