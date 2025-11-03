@@ -1,28 +1,30 @@
 from __future__ import annotations
 import json
 from textwrap import dedent
+from typing import Optional
+
 from _constants.Model import Model
-from config import grok_client
-from xai_sdk.chat import system as grok_system_message
-from xai_sdk.chat import user as grok_user_message
+from utils.ai_client_factory import call_ai
 
 
-model_name: str = Model.GROK_4_NON_RES  # Grok Fast 사용
+model_name: str = Model.GROK_4_NON_RES
 
 
-def get_문장해체(ref: str, model: str = model_name):
+def get_문장해체(ref: str, model_name_override: Optional[str] = None):
     """
-    참조 원고를 분석해 Grok 최적화 JSON 메타데이터 반환 (상품/서비스 + 노출 원인 학습)
+    참조 원고를 분석해 AI 최적화 JSON 메타데이터 반환 (상품/서비스 + 노출 원인 학습)
 
     Args:
         ref: 참조 원고 텍스트
-        model: Grok 모델명 (기본: GROK_4_FAST)
+        model_name_override: 모델 이름 오버라이드 (기본: GROK_4_NON_RES)
 
     Returns:
         JSON 형식 메타데이터 (화자/구성/부제/스타일)
     """
     if not ref:
         return "{}"
+
+    model = model_name_override or model_name
 
     system = """
 You are an expert in text analysis for blog content. Analyze the manuscript to extract metadata for style, structure, and key themes (product/service details, exposure reasons like episodes/benefits). Output ONLY JSON, no extra text.
@@ -70,15 +72,13 @@ You are an expert in text analysis for blog content. Analyze the manuscript to e
     """
     ).strip()
 
-    # Grok API 호출 (non-reasoning 모드 기본)
-    if grok_client:
-        chat_session = grok_client.chat.create(model=model)
-        chat_session.append(grok_system_message(system))
-        chat_session.append(grok_user_message(prompt))
-        response = chat_session.sample()
-        text = getattr(response, "content", "") or ""
+    text = call_ai(
+        model_name=model,
+        system_prompt=system,
+        user_prompt=prompt,
+    )
 
-        return text
+    return text
 
 
 # 사용 예시

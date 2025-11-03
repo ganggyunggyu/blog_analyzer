@@ -5,14 +5,12 @@ import time
 import json
 import re
 
-from openai import OpenAI
-from config import OPENAI_API_KEY
 from _constants.Model import Model
 from mongodb_service import MongoDBService
+from utils.ai_client_factory import call_ai
 
 
-model_name: str = Model.GPT5_MINI
-client = OpenAI(api_key=OPENAI_API_KEY)
+model_name: str = Model.GROK_4_NON_RES
 
 
 def gen_subtitles(
@@ -22,9 +20,6 @@ def gen_subtitles(
     model_name_override: Optional[str] = None,
     max_items: int = 5,
 ) -> List[str]:
-    if not OPENAI_API_KEY:
-        raise ValueError("OPENAI_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요.")
-
     db_service = MongoDBService()
     if category:
         db_service.set_db_name(category)
@@ -59,8 +54,11 @@ JSON만 반환해.
     start_ts = time.time()
 
     try:
-        res = get_openai(model=model, user=prompt, system=system)
-        text_content = get_openai_text(res)
+        text_content = call_ai(
+            model_name=model,
+            system_prompt=system,
+            user_prompt=prompt,
+        )
         subtitles = parse_subtitle_response(text_content)
     except Exception:
         subtitles = rule_based_subtitles(full_text)[:max_items]
@@ -184,15 +182,3 @@ def rule_based_subtitles(full_text: str) -> List[str]:
     return heads[:12]
 
 
-def get_openai(model, user, system):
-    return client.chat.completions.create(
-        model=model,
-        messages=[
-            {"role": "system", "content": system},
-            {"role": "user", "content": user},
-        ],
-    )
-
-
-def get_openai_text(res):
-    return res.choices[0].message.content or "".strip()

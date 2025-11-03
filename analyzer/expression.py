@@ -1,27 +1,23 @@
 from __future__ import annotations
 from datetime import datetime
-from typing import Dict, List
+from typing import Dict, List, Optional
 import time
 import json
 import re
 
-from openai import OpenAI
-from config import OPENAI_API_KEY
 from _constants.Model import Model
 from mongodb_service import MongoDBService
+from utils.ai_client_factory import call_ai
 
 
-model_name: str = Model.GPT5_MINI
-client = OpenAI(api_key=OPENAI_API_KEY)
+model_name: str = Model.GROK_4_NON_RES
 
 
 def gen_expressions(
-    text: str, category: str = "", file_name: str = ""
+    text: str, category: str = "", file_name: str = "", model_name_override: Optional[str] = None
 ) -> Dict[str, List[str]]:
-    if not OPENAI_API_KEY:
-        raise ValueError("OPENAI_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요.")
-
     db_service = MongoDBService()
+    model = model_name_override or model_name
     if category:
         db_service.set_db_name(category)
 
@@ -74,8 +70,11 @@ You are an expert in marketing content analysis. Your task is to extract useful 
 
     start_ts = time.time()
 
-    res = get_openai(model=model_name, user=prompt, system=system)
-    text_content = get_openai_text(res)
+    text_content = call_ai(
+        model_name=model,
+        system_prompt=system,
+        user_prompt=prompt,
+    )
 
     expressions = parse_expressions_response(text_content)
 
@@ -141,15 +140,3 @@ def strip_code_fence(text: str) -> str:
     return text
 
 
-def get_openai(model, user, system):
-    return client.chat.completions.create(
-        model=model,
-        messages=[
-            {"role": "system", "content": system},
-            {"role": "user", "content": user},
-        ],
-    )
-
-
-def get_openai_text(res):
-    return res.choices[0].message.content or "".strip()

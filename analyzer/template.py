@@ -1,27 +1,26 @@
 from __future__ import annotations
 from datetime import datetime
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 import time
 import json
 
-
-from openai import OpenAI
-from config import OPENAI_API_KEY
 from _constants.Model import Model
 from mongodb_service import MongoDBService
+from utils.ai_client_factory import call_ai
 
 
-model_name: str = Model.GPT5
-client = OpenAI(api_key=OPENAI_API_KEY)
+model_name: str = Model.GROK_4_RES
 
 
 def template_gen(
-    user_instructions: str, docs: str, category: str, file_name: str = ""
+    user_instructions: str,
+    docs: str,
+    category: str,
+    file_name: str = "",
+    model_name_override: Optional[str] = None,
 ) -> str:
-    if not OPENAI_API_KEY:
-        raise ValueError("OPENAI_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요.")
-
     db_service = MongoDBService()
+    model = model_name_override or model_name
     db_service.set_db_name(category)
 
     # 파일명 중복 체크 (파일명이 있는 경우에만) - AI 요청 전에 체크!
@@ -62,6 +61,9 @@ You are a text templating assistant. Your task is to replace specific values in 
 
 [요청]
 - 원본 텍스트 세그먼트 내에서 '파라미터 목록'에 있는 VALUE들을 찾아서 해당 KEY로 대체해주세요.
+- [KEY]는 반드시 메타표현 형태로 대체해야 합니다(대괄호 포함).
+- 대체는 원본 텍스트 내에서 VALUE가 등장하는 모든 위치에 대해 수행해야 합니다.
+- 대체 작업 후의 최종 텍스트만 출력해주세요. 다른 설명이나 추가적인 텍스트는 포함하지 마세요.
 - 예를 들어, '갤럭시S24'라는 값이 '제품명'이라는 KEY에 속한다면, 원본 텍스트의 '갤럭시S24'를 '[제품명]'으로 대체해야 합니다.
 - 예를 들어, '일론 머스크' or '빠니보틀' 등의 값이 '인물명'이라는 KEY에 속한다면, 원본 텍스트의 '일론 머스크'를 '[인물명]'으로 대체해야 합니다.
 
@@ -121,6 +123,59 @@ You are a text templating assistant. Your task is to replace specific values in 
 - "가격이 너무 비싸다" → [부정평가]
 - "재구매 의사 없음" → [부정평가]
 - "서비스가 불친절하다" → [부정평가]
+
+- '가격은 얼마일까?' → [질문유도]
+- '어떤 효과가 있을까?' → [질문유도]
+- '부작용은 없을까?' → [질문유도]
+- '어디서 구매할 수 있을까?' → [질문유도]
+- '얼마나 지속될까?' → [질문유도]
+
+- '구매 시 확인할 사항' → [행동유도]
+- '사용 전 주의사항' → [행동유도]
+- '복용 방법 안내' → [행동유도]
+- '효과적인 사용법' → [행동유도]
+- '추천하는 제품 선택법' → [행동유도]
+
+- '물가가 올라 김장 재료비도 신경 쓰이지만' → [문제점 제시]
+- '운동할 시간이 부족한 현대인들에게는' → [문제점 제시]
+- '스트레스가 많은 직장인들에게는' → [문제점 제시]
+- '수면 부족으로 피로를 느끼는 사람들에게는' → [문제점 제시]
+- '바쁜 일상 속에서 건강을 챙기기 어려운 현대인들에게는' → [문제점 제시]
+
+- '이러한 문제를 해결하기 위해서는' → [해결책 제시]
+- '효과적인 다이어트를 위해서는' → [해결책 제시]
+- '건강한 식습관을 유지하기 위해서는' → [해결책 제시]
+- '스트레스 관리를 위해서는' → [해결책 제시]
+- '충분한 수면을 위해서는' → [해결책 제시]      
+
+- '절임 여부, 산지, 시기에 따라 가격 차이가 크게 납니다"' → [비교대조]
+- '운동과 식이요법을 병행했을 때 더 큰 효과를 볼 수 있습니다"' → [비교대조]
+- '천연 성분과 합성 성분의 차이점은 다음과 같습니다"' → [비교대조]
+- '온라인 구매와 오프라인 구매의 장단점은 다음과 같습니다"' → [비교대조]
+- '다양한 브랜드 간의 성능 비교는 다음과 같습니다"' → [비교대조]
+
+- "최근 연구에 따르면 70% 이상의 사람들이 효과를 경험했다고 합니다" → [수치통계]
+- "설문 조사 결과, 85%의 사용자가 만족한다고 답변했습니다" → [수치통계]
+- "임상 시험에서 90%의 참가자가 긍정적인 결과를 보였습니다" → [수치통계]
+- "시장 조사에 따르면, 이 제품은 2023년 가장 많이 판매된 제품 중 하나입니다" → [수치통계]
+- "최근 통계에 따르면, 이 성분의 수요가 급격히 증가하고 있습니다" → [수치통계]
+
+- "이 제품을 사용해 본 사람들의 후기입니다" → [사용후기]
+- "많은 사람들이 이 서비스를 이용하고 있습니다" → [사용후기]
+- "고객들의 생생한 경험담을 소개합니다" → [사용후기]
+- "이 브랜드를 선택한 이유를 들어보세요" → [사용후기]
+- "실제 사용자들의 평가를 확인해 보세요" → [사용후기]
+
+- '속이 꽉찬 묵직한 배추' -> [제품특징]
+- '신선한 재료 사용' -> [제품특징]
+- '빠른 배송 서비스' -> [서비스장점]
+- '24시간 고객 지원' -> [서비스장점]
+- '기분 좋은 경험이었어요' -> [감성표현]
+- '사실은 꺼려졌어요​' -> [부정적표현]
+- '매우 깨끗하게 보관이 되었어요​' -> [긍정적표현]
+- '하는 경우에는 참고해 보세요​' -> [행동유도]  
+- '이 외에도 유동적으로 추가 가능' → [{{기타}}]
+
 
 ***예시는 참고만! 실제 값은 표현 라이브러리와 파라미터를 필수 참고***
 ---
@@ -191,9 +246,11 @@ EXP_END>>>
 """.strip()
     start_ts = time.time()
 
-    res = get_openai(model=model_name, user=prompt, system=system)
-
-    text = get_openai_text(res)
+    text = call_ai(
+        model_name=model,
+        system_prompt=system,
+        user_prompt=prompt,
+    )
 
     now = datetime.utcnow()
     doc = {
@@ -207,7 +264,9 @@ EXP_END>>>
     template_id = "저장 실패"
     try:
         result = db_service.insert_document("templates", doc)
-        template_id = str(result.inserted_id) if hasattr(result, 'inserted_id') else "저장 완료"
+        template_id = (
+            str(result.inserted_id) if hasattr(result, "inserted_id") else "저장 완료"
+        )
         print(f"템플릿 저장 완료: {file_name or '파일명 없음'}")
     except Exception as e:
         print(f"템플릿 저장 중 오류 (계속 진행): {e}")
@@ -228,24 +287,6 @@ EXP_END>>>
     db_service.close_connection()
 
     return text
-
-
-def get_openai(model, user, system):
-    return client.chat.completions.create(
-        model=model,
-        messages=[
-            {"role": "system", "content": system},
-            {"role": "user", "content": user},
-        ],
-    )
-
-
-def get_openai_text(res):
-    return res.choices[0].message.content or "".strip()
-
-
-def get_minute(start_ts):
-    elapsed = time.time() - start_ts
 
 
 _KEY_LIST = [
