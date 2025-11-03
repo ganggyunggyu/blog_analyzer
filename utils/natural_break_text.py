@@ -1,16 +1,86 @@
 import re
 
+from _constants.text_processing import (
+    EMOJI_PATTERNS,
+    ENDING_PATTERNS,
+    MARKDOWN_BOLD_PATTERN,
+    MARKDOWN_CODE_PATTERN,
+    MARKDOWN_HEADING_PATTERN,
+    MARKDOWN_LINK_PATTERN,
+    MAX_CHUNK_LENGTH,
+    MAX_CONSECUTIVE_EMPTY_LINES,
+    MAX_LINE_LENGTH,
+    MIN_PARAGRAPH_LINES,
+    SECTION_TRAILING_EMPTY_LINES,
+    SPLIT_PATTERN,
+    SUB_CHUNK_LENGTH,
+    SUBTITLE_PATTERN,
+    TITLE_REPEAT_COUNT,
+    TITLE_SEARCH_LENGTH,
+)
 
-MAX_CHUNK_LENGTH = 33
-MAX_LINE_LENGTH = 27
 
-ENDING_PATTERNS = r"(어요|아요|니다|습니다|했어요|했죠|하죠|네요|게요|랍니다|랐어요|했습니다|합니다|거예요|고요|구요|져요|인데|요.|다.|죠.)"
+def _remove_markdown(text: str) -> str:
+    """마크다운 문법 제거"""
+    text = re.sub(MARKDOWN_BOLD_PATTERN, r"\1", text)
+    text = re.sub(MARKDOWN_HEADING_PATTERN, r"\1", text)
+    text = re.sub(MARKDOWN_LINK_PATTERN, r"\1", text)
+    text = re.sub(MARKDOWN_CODE_PATTERN, r"\1", text)
+    return text
 
-EMOJI_PATTERNS = r"^[ㅎㅋㅠ\s]{1,3}$"
-SUBTITLE_PATTERN = r"^\d+\.\s+"
+
+def _add_title_lines(text: str) -> list[str]:
+    """특정 타이틀이 있으면 반복 추가"""
+    lines = []
+    first_part = text[:TITLE_SEARCH_LENGTH]
+    title_pattern = r"당산 고기집"
+    if re.search(title_pattern, first_part):
+        for _ in range(TITLE_REPEAT_COUNT):
+            lines.append("당산 고기집 추천")
+    return lines
 
 
-def natural_break_text(text):
+def _merge_emoji_chunks(chunks: list[str]) -> list[str]:
+    """이모티콘이 어미 뒤에 붙으면 병합"""
+    i = 1
+    while i < len(chunks):
+        if (
+            re.match(EMOJI_PATTERNS, chunks[i].strip())
+            and i > 0
+            and re.search(ENDING_PATTERNS + r"\s*$", chunks[i - 1])
+        ):
+            chunks[i - 1] = chunks[i - 1].rstrip() + " " + chunks[i].strip()
+            chunks.pop(i)
+        else:
+            i += 1
+    return chunks
+
+
+def _split_long_chunk(chunk: str) -> list[str]:
+    """긴 청크를 적절한 길이로 분할"""
+    return re.findall(rf"[^!;\s]{{1,{SUB_CHUNK_LENGTH}}}(?=[!;\s]|$)", chunk)
+
+
+def _clean_consecutive_empty_lines(result: list[str]) -> list[str]:
+    """연속된 빈 줄 제한"""
+    cleaned = []
+    empty_count = 0
+    for line in result:
+        if not line.strip():
+            empty_count += 1
+            if empty_count <= MAX_CONSECUTIVE_EMPTY_LINES:
+                cleaned.append(line)
+        else:
+            cleaned.append(line)
+            empty_count = 0
+
+    if cleaned and not cleaned[-1].strip():
+        cleaned.pop()
+
+    return cleaned
+
+
+def natural_break_text(text: str) -> str:
     """
     - 기존 줄바꿈 유지 긴 줄 쪼개기.
     - 문장 끝(. ! ? , ;)에서 줄바꿈 우선.
@@ -22,22 +92,13 @@ def natural_break_text(text):
     - 하지만 ㅎㅎ ㅋㅋ 같은 이모티콘 붙으면 줄바꿈 스킵, 이모티콘 chunk merge.
     """
 
-    text = re.sub(r"\*\*(.*?)\*\*", r"\1", text)
-    text = re.sub(r"#{1,6}\s*(.*?)(?=\n|$)", r"\1", text)
-    text = re.sub(r"\[([^\]]+)\]\([^\)]+\)", r"\1", text)
-    text = re.sub(r"`([^`]+)`", r"\1", text)
-
-    lines = []
-    first_part = text[:300]
-    title_pattern = r"당산 고기집"
-    if re.search(title_pattern, first_part):
-        for _ in range(4):
-            lines.append("당산 고기집 추천")
+    text = _remove_markdown(text)
+    title_lines = _add_title_lines(text)
 
     raw_lines = text.splitlines()
     result = []
-    # NEW: 현재 단락 라인 수를 추적
     current_para_lines = 0
+
     for raw_line in raw_lines:
         line = raw_line.strip()
         if not line:
@@ -47,25 +108,14 @@ def natural_break_text(text):
 
         if re.match(SUBTITLE_PATTERN, line):
             result.append(line)
-            result.append("")
-            result.append("")
-            current_para_lines = 0  # NEW: 섹션 시작이므로 단락 카운터 초기화
+            for _ in range(SECTION_TRAILING_EMPTY_LINES):
+                result.append("")
+            current_para_lines = 0
             continue
 
-        split_pattern = r"(?<=[!;])\s*|(?<=어요)\s*(?=\s)|(?<=아요)\s*(?=\s)|(?<=니다)\s*(?=\s)|(?<=습니다)\s*(?=\s)|(?<=했어요)\s*(?=\s)|(?<=했죠)\s*(?=\s)|(?<=하죠)\s*(?=\s)|(?<=네요)\s*(?=\s)|(?<=게요)\s*(?=\s)|(?<=라고)\s*(?=\s)|(?<=라서)\s*(?=\s)|(?<=랍니다)\s*(?=\s)|(?<=랐어요)\s*(?=\s)|(?<=했습니다)\s*(?=\s)|(?<=합니다)\s*(?=\s)|(?<=거예요)\s*(?=\s)|(?<=고요)\s*(?=\s)|(?<=구요)\s*(?=\s)|(?<=져요)\s*(?=\s)"
-        chunks = re.split(split_pattern, line)
+        chunks = re.split(SPLIT_PATTERN, line)
+        chunks = _merge_emoji_chunks(chunks)
 
-        i = 1
-        while i < len(chunks):
-            if (
-                re.match(EMOJI_PATTERNS, chunks[i].strip())
-                and i > 0
-                and re.search(ENDING_PATTERNS + r"\s*$", chunks[i - 1])
-            ):
-                chunks[i - 1] = chunks[i - 1].rstrip() + " " + chunks[i].strip()
-                chunks.pop(i)
-            else:
-                i += 1
         current_chunk = ""
         for chunk in chunks:
             chunk = chunk.strip()
@@ -74,20 +124,16 @@ def natural_break_text(text):
 
             is_ending = re.search(ENDING_PATTERNS + r"\s*$", chunk)
             has_emoji = re.search(EMOJI_PATTERNS, chunk)
-            # has_number = re.search(NUMBER_PATTERNS, chunk)
+
             if is_ending and not has_emoji:
                 if current_chunk:
                     result.append(current_chunk.strip())
                 result.append(chunk)
-                current_para_lines += 1  # NEW
+                current_para_lines += 1
 
-                # ★ NEW: 단락 종료 조건 — 부제 제외, 최소 2줄 보장
-                # 직전이 부제가 아니고, 현재 단락이 1줄뿐이면 종료를 보류
-                # (= 빈 줄을 넣지 않고 다음 문장을 같은 단락으로 이어감)
-                if current_para_lines >= 2:
-                    result.append("")  # 단락 종료
+                if current_para_lines >= MIN_PARAGRAPH_LINES:
+                    result.append("")
                     current_para_lines = 0
-                # else: 종료 보류 → 다음 문장과 같은 단락으로 이어짐
 
             else:
                 if has_emoji:
@@ -96,9 +142,8 @@ def natural_break_text(text):
                     result.append(chunk)
                     current_chunk = ""
                 else:
-
                     if len(chunk) > MAX_CHUNK_LENGTH:
-                        sub_chunks = re.findall(r"[^!;\s]{1,28}(?=[!;\s]|$)", chunk)
+                        sub_chunks = _split_long_chunk(chunk)
                         for sub in sub_chunks:
                             sub = sub.strip()
                             if len(current_chunk + sub) > MAX_LINE_LENGTH:
@@ -118,21 +163,9 @@ def natural_break_text(text):
         if current_chunk:
             result.append(current_chunk.strip())
 
-    if lines:
-        result = lines + ["", ""] + result
+    if title_lines:
+        result = title_lines + ["", ""] + result
 
-    cleaned = []
-    empty_count = 0
-    for r in result:
-        if not r.strip():
-            empty_count += 1
-            if empty_count <= 2:
-                cleaned.append(r)
-        else:
-            cleaned.append(r)
-            empty_count = 0
-
-    if cleaned and not cleaned[-1].strip():
-        cleaned.pop()
+    cleaned = _clean_consecutive_empty_lines(result)
 
     return "\n".join(cleaned) + "\n"

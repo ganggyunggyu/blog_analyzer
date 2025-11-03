@@ -51,14 +51,12 @@ def build_category_prompt(keyword: str, categories: list[str]) -> str:
 """
 
 
-# 사용 예시
-from openai import OpenAI
 from _constants.Model import Model
-from config import OPENAI_API_KEY
+from utils.ai_client_factory import call_ai
 
 CATEGORIES = [
-    "공항_장기주차장:주차대행",
     "무지외반증",
+    "마운자로",
     "다이어트",
     "다이어트보조제",
     "라미네이트",
@@ -75,48 +73,35 @@ CATEGORIES = [
     "캐리어",
     "파비플로라",
     "알파CD",
-    "beauty-products",
-    "beauty-treatment",
-    "dentistry",
-    "e-ciga-liquid",
+    "웨딩홀",
     "functional-food",
     "hospital",
     "home-appliances",
-    "legalese",
     "luxury",
-    "melatonin",
-    "ophthalmology",
     "애견동물_반려동물_분양",
-    "startup",
-    "wedding",
     "맛집",
     "질분비물",
     "블록체인_가상화폐",
     "노래리뷰",
     "호텔",
     "영화리뷰",
+    "김장",
+    "공항_김포공항",
+    "공항_인천공항",
+    "정기청소",
 ]
 
 
 async def get_category_db_name(keyword: str) -> str:
     """
-    키워드를 분석하여 가장 적합한 카테고리 반환 (Responses API 사용)
+    키워드를 분석하여 가장 적합한 카테고리 반환
     """
-    if not OPENAI_API_KEY:
-        raise ValueError("OPENAI_API_KEY가 설정되지 않음")
-
-    client = OpenAI(api_key=OPENAI_API_KEY)
-
     try:
-        response = client.responses.create(
-            model=Model.GPT5_MINI,
-            instructions=CATEGORY_SYSTEM_PROMPT,
-            input=build_category_prompt(keyword, CATEGORIES),
-            reasoning={"effort": "minimal"},  # minimal, low, medium, high
-            text={"verbosity": "low"},  # low, medium, high
+        category = call_ai(
+            model_name=Model.GROK_4_RES,
+            system_prompt=CATEGORY_SYSTEM_PROMPT,
+            user_prompt=build_category_prompt(keyword, CATEGORIES),
         )
-
-        category = response.output_text.strip()
 
         return category if category in CATEGORIES else "기타"
 
