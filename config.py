@@ -1,9 +1,7 @@
 import os
-import anthropic
 from dotenv import load_dotenv
 from openai import OpenAI
 from xai_sdk import Client
-from xai_sdk.chat import user, system
 
 load_dotenv()
 
