@@ -36,7 +36,9 @@ class GPT5MongoPromptBuilder:
         subtitles = self._clean_list(analysis_data.get("subtitles", []))
         expressions = self._clean_dict(analysis_data.get("expressions", {}))
         parameters = self._clean_dict(analysis_data.get("parameters", {}))
-        template, template_info = self._select_template(analysis_data.get("templates", []))
+        template, template_info = self._select_template(
+            analysis_data.get("templates", [])
+        )
 
         return PromptComponents(
             subtitles=subtitles,
@@ -92,13 +94,17 @@ class GPT5MongoPromptBuilder:
             template_content = components.template.get("templated_text", "").strip()
 
         return {
-            "subtitles_pool": components.subtitles[:20],
-            "style_variations": {k: v[:10] for k, v in components.expressions.items() if v},
-            "contextual_values": {k: v[:5] for k, v in components.parameters.items() if v},
-            "reference_template": {
-                "source": components.template_info,
-                "content": template_content,
+            # "subtitles_pool": components.subtitles[:20],
+            "style_variations": {
+                k: v[:10] for k, v in components.expressions.items() if v
             },
+            "contextual_values": {
+                k: v[:5] for k, v in components.parameters.items() if v
+            },
+            # "reference_template": {
+            #     "source": components.template_info,
+            #     "content": template_content,
+            # },
         }
 
     def build_gpt5_prompt(self) -> str:
@@ -108,22 +114,10 @@ class GPT5MongoPromptBuilder:
         resources_json = json.dumps(resources, ensure_ascii=False, indent=2)
 
         return f"""
-<target>
-  - 카테고리: {components.category}
-  - 키워드: {components.keyword}
-</target>
-
-<creative_resources>
-  <resources_json>{resources_json}</resources_json>
-
-  <data_usage>
-    JSON 리소스 활용:
-    - subtitles_pool: 소제목 선택해 본문 구조화
-    - style_variations: 표현 변형으로 자연스러운 톤 적용
-    - contextual_values: [변수] 대체해 컨텍스트 맞춤
-    - reference_template: content 톤/흐름 참고, 페르소나/경험 새 창작
-  </data_usage>
-</creative_resources>
+{resources_json}
+- contextual_values: [변수] 대체해 컨텍스트 맞춤
+- style_variations: [표현] 대체해 다양한 문체 적용
+- reference_template: 작성 스타일 및 톤 참고
 """
 
 
