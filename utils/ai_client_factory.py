@@ -79,16 +79,24 @@ def validate_api_key(ai_service_type: str) -> None:
             raise ValueError("UPSTAGE_API_KEY가 설정되어 있지 않습니다.")
     elif ai_service_type == "gemini":
         if not GEMINI_API_KEY:
-            raise ValueError("GEMINI_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요.")
+            raise ValueError(
+                "GEMINI_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요."
+            )
     elif ai_service_type == "openai":
         if not OPENAI_API_KEY:
-            raise ValueError("OPENAI_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요.")
+            raise ValueError(
+                "OPENAI_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요."
+            )
     elif ai_service_type == "grok":
         if not GROK_API_KEY:
-            raise ValueError("GROK_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요.")
+            raise ValueError(
+                "GROK_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요."
+            )
     elif ai_service_type == "claude":
         if not CLAUDE_API_KEY:
-            raise ValueError("CLAUDE_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요.")
+            raise ValueError(
+                "CLAUDE_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요."
+            )
 
 
 def call_ai(
@@ -144,14 +152,14 @@ def call_ai(
         text = getattr(content_blocks[0], "text", "") if content_blocks else ""
 
     elif ai_service_type == "openai":
-        response = client.chat.completions.create(
+        response = client.responses.create(
             model=model_name,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
+            instructions=system_prompt,
+            input=user_prompt,
+            reasoning={"effort": "medium"},  # minimal, low, medium, high
+            text={"verbosity": "medium"},  # low, medium, high
         )
-        text = response.choices[0].message.content or ""
+        text = getattr(response, "output_text", "") or ""
 
     elif ai_service_type == "solar":
         response = client.chat.completions.create(
