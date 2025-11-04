@@ -70,7 +70,7 @@ from _prompts.rules.human_writing_style import human_writing_rule
 from ai_lib.line_break_service import apply_line_break
 
 
-model_name: str = Model.GROK_4_RES
+model_name: str = Model.GROK_4_NON_RES
 
 
 if model_name.startswith("gemini"):
@@ -146,18 +146,10 @@ def grok_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
 3. 위고비 부작용 후기
 4. 마운자로 위고비 비교
 5. 위고비 구매 팁
-
-- 소제목 당 본문 글자 수:
-    1. 첫 번째 소제목: 200-300자
-    2. 두 번째 소제목: 300-400자
-    3. 세 번째 소제목: 600-700자
-    4. 네 번째 소제목: 600-700자
-    5. 다섯 번째 소제목: 200-250자
-- 제목은 10-25자 이내, 쉼표(,) 금지
-- 동일한 제목 4회 반복 출력 필수
+---
 
 ### 원고 구조 참고형식:
-제목
+제목 (동일제목 4회 반복)
 제목
 제목
 제목
@@ -286,25 +278,6 @@ http://   https://   www.   .com   .co.kr
 # 필수 금기 지침
 {taboo_rules}
 
-# 충돌 해결 지침
-## 1번 규칙
-만약 "키워드 최적화"와 "자연스러운 문체"가 충돌하면:
-→ 항상 자연스러움을 우선하세요
-→ 키워드는 문맥에 자연스럽게 녹아들 때만 사용
-→ 억지로 키워드를 넣어 품질을 해치지 마세요
-
-## 2번 규칙
-만약 "목표 글자수"와 "내용 품질"이 충돌하면:
-→ 항상 내용 품질을 우선하세요
-→ 글자수 채우려고 불필요한 반복이나 군더더기 금지
-→ 자연스러운 호흡으로 작성하되 목표 범위 달성 노력
-
-## 3번 규칙
-만약 "템플릿 참조"와 "독창성"이 충돌하면:
-→ 항상 독창성을 우선하세요
-→ 내용, 화자, 경험담은 완전히 새롭게 창작
-
-
 # 참고 데이터
 {mongo_data}
 # 카테고리 별 추가 지침
@@ -410,7 +383,6 @@ http://   https://   www.   .com   .co.kr
 
     length_no_space = len(re.sub(r"\s+", "", text))
     print(f"원고 길이 체크: {length_no_space}")
-    print(text)
     print("줄바꿈 규칙 적용 중...")
     text = apply_line_break(text, model_name)
     print("줄바꿈 규칙 적용 완료!")

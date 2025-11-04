@@ -3,7 +3,7 @@ from _constants.Model import Model
 from utils.ai_client_factory import call_ai
 
 
-def apply_line_break(text: str, model_name: str = Model.GROK_4_NON_RES) -> str:
+def apply_line_break(text: str, model_name: str = Model.GPT5) -> str:
     """
     줄바꿈 규칙을 적용하여 텍스트를 재처리하는 함수
 
@@ -34,10 +34,10 @@ def apply_line_break(text: str, model_name: str = Model.GROK_4_NON_RES) -> str:
 - 3~5번째 문장마다 {{두 줄 줄바꿈}}을 적용하세요
 - 소제목 하단 {{두 줄 줄바꿈}}
 - 마침표 및 쉼표 제거
-- 제목, 소제목, 본문의 내용은 그대로 유지하세요
+- 제목 4개 반복 구간, 소제목, 본문의 내용은 그대로 유지하세요
 
 ## 금지 사항
-- 원본 텍스트의 내용 변경
+- 마침표 및 쉼표 제거를 제외한 원본 텍스트의 내용 변경
 - 제목 내에서의 줄바꿈
 - 소제목 내에서의 줄바꿈
 - 너무 짧은 문장의 줄바꿈
