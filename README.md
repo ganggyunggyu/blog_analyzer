@@ -1,41 +1,41 @@
-# 🤖 Blog Analyzer - AI 기반 블로그 원고 자동 생성 시스템
+# Blog Analyzer - AI 기반 블로그 원고 자동 생성 시스템
 
 **FastAPI 기반의 멀티 AI 엔진 블로그 콘텐츠 생성 플랫폼**
 
 네이버 블로그 바이럴 마케팅을 위한 SEO 최적화 콘텐츠를 AI로 자동 생성하는 서비스입니다.
-OpenAI GPT, Anthropic Claude, Google Gemini, Upstage SOLAR 등 **4가지 AI 엔진**을 지원하며,
-**32개 이상의 카테고리별 전문 프롬프트**로 자연스러운 블로그 후기를 생성합니다.
+OpenAI GPT, Anthropic Claude, Google Gemini, Upstage SOLAR, xAI Grok 등 **5가지 AI 엔진**을 지원하며,
+**43개 이상의 카테고리별 전문 프롬프트**로 자연스러운 블로그 후기를 생성합니다.
 
 ---
 
-## 📋 목차
+## 목차
 
-- [주요 기능](#-주요-기능)
-- [기술 스택](#-기술-스택)
-- [프로젝트 구조](#-프로젝트-구조)
-- [설치 및 실행](#-설치-및-실행)
-- [API 엔드포인트](#-api-엔드포인트)
-- [카테고리 시스템](#-카테고리-시스템)
-- [AI 서비스 비교](#-ai-서비스-비교)
-- [프롬프트 엔지니어링](#-프롬프트-엔지니어링)
-- [MongoDB 연동](#-mongodb-연동)
-- [개발 규칙](#-개발-규칙)
+- [주요 기능](#주요-기능)
+- [기술 스택](#기술-스택)
+- [프로젝트 구조](#프로젝트-구조)
+- [설치 및 실행](#설치-및-실행)
+- [API 엔드포인트](#api-엔드포인트)
+- [카테고리 시스템](#카테고리-시스템)
+- [AI 서비스 비교](#ai-서비스-비교)
+- [프롬프트 엔지니어링](#프롬프트-엔지니어링)
+- [MongoDB 연동](#mongodb-연동)
+- [개발 규칙](#개발-규칙)
 
 ---
 
-## ✨ 주요 기능
+## 주요 기능
 
-### 🎯 핵심 기능
+### 핵심 기능
 
-- **멀티 AI 엔진 지원**: GPT-4, GPT-5, Claude Sonnet 4.5, Gemini 2.5, SOLAR
-- **32+ 카테고리 전문화**: 각 카테고리별 맞춤형 프롬프트 엔지니어링
+- **멀티 AI 엔진 지원**: GPT-4, GPT-5, Claude Sonnet 4.5, Gemini 2.5, SOLAR, Grok
+- **43+ 카테고리 전문화**: 각 카테고리별 맞춤형 프롬프트 엔지니어링
 - **SEO 최적화**: 키워드 자연스러운 삽입, 네이버 상위 노출 최적화
 - **자연스러운 문체**: AI 티 제거, 실제 사람이 작성한 듯한 구어체
 - **참조 원고 학습**: 기존 상위 노출 글 학습 및 스타일 모방
 - **MongoDB 데이터 통합**: 카테고리별 DB 데이터 활용
 - **텍스트 분석**: 형태소 분석, 문장 구조 분석, 표현 패턴 추출
 
-### 🚀 고급 기능
+### 고급 기능
 
 - **단계별 원고 생성**: Phase별 세밀한 원고 제어
 - **청크 분할 생성**: 긴 원고를 여러 청크로 나눠 생성
@@ -44,7 +44,7 @@ OpenAI GPT, Anthropic Claude, Google Gemini, Upstage SOLAR 등 **4가지 AI 엔�
 
 ---
 
-## 🛠 기술 스택
+## 기술 스택
 
 ### Backend Framework
 - **FastAPI** - 비동기 웹 프레임워크
@@ -72,7 +72,7 @@ OpenAI GPT, Anthropic Claude, Google Gemini, Upstage SOLAR 등 **4가지 AI 엔�
 
 ---
 
-## 📂 프로젝트 구조
+## 프로젝트 구조
 
 ```
 blog_analyzer/
@@ -132,11 +132,16 @@ blog_analyzer/
 │   ├── expression.py          # 표현 패턴 분석
 │   └── template.py            # 템플릿 생성
 │
+├── ai_lib/                     # AI 라이브러리
+│   └── line_break_service.py  # 줄바꿈 처리 서비스
+│
 ├── utils/                      # 유틸리티 함수
+│   ├── ai_client_factory.py   # AI 클라이언트 팩토리
 │   ├── text_cleaner.py        # 텍스트 정제
 │   ├── format_paragraphs.py   # 문단 포맷팅
 │   ├── query_parser.py        # 쿼리 파싱
-│   └── get_category_db_name.py # 카테고리 DB 매핑
+│   ├── get_category_db_name.py # 카테고리 DB 매핑
+│   └── natural_break_text.py  # 자연스러운 텍스트 분할
 │
 ├── schema/                     # Pydantic 스키마
 │   ├── generate.py            # 생성 요청 스키마
@@ -148,7 +153,7 @@ blog_analyzer/
 
 ---
 
-## 🚀 설치 및 실행
+## 설치 및 실행
 
 ### 1. 환경 설정
 
@@ -182,6 +187,9 @@ GEMINI_API_KEY=...
 # Upstage SOLAR
 UPSTAGE_API_KEY=...
 
+# xAI Grok
+GROK_API_KEY=...
+
 # MongoDB
 MONGO_URI=mongodb+srv://...
 MONGO_DB_NAME=default_db
@@ -204,7 +212,7 @@ python cli.py
 
 ---
 
-## 🌐 API 엔드포인트
+## API 엔드포인트
 
 ### 원고 생성 (Generate)
 
@@ -290,9 +298,9 @@ Content-Type: application/json
 
 ---
 
-## 🎨 카테고리 시스템
+## 카테고리 시스템
 
-### 지원 카테고리 (32개+)
+### 지원 카테고리 (43개+)
 
 #### 뷰티/미용
 - `미용학원` - 헤어/네일/피부 미용 학원 후기
@@ -305,7 +313,8 @@ Content-Type: application/json
 #### 건강/다이어트
 - `다이어트` - 일반 다이어트 후기
 - `위고비` - 위고비(GLP-1) 다이어트 후기
-- `마운자로_부작용` - 마운자로 다이어트 주사 부작용 정보
+- `마운자로` - 마운자로 다이어트 주사 후기
+- `마운자로_부작용` - 마운자로 부작용 정보
 - `서브웨이다이어트` - 서브웨이 다이어트 후기
 - `스위치온다이어트` - 스위치온 다이어트 후기
 - `브로멜라인` - 브로멜라인 보조제 후기
@@ -353,7 +362,7 @@ Content-Type: application/json
 
 ---
 
-## 🤖 AI 서비스 비교
+## AI 서비스 비교
 
 | AI 엔진 | 모델명 | 특징 | 추천 용도 |
 |---------|--------|------|-----------|
@@ -363,6 +372,7 @@ Content-Type: application/json
 | **Gemini 2.5 Flash** | `gemini-2.5-flash-lite` | 빠른 속도, 저렴한 비용 | 대량 생성, 빠른 테스트 |
 | **Gemini 2.0 Flash** | `gemini-2.0-flash-lite` | 최신 모델, 향상된 성능 | 균형잡힌 품질 |
 | **SOLAR** | `solar-pro` | Upstage 한국어 특화 | 한국어 전문 콘텐츠 |
+| **Grok** | `grok-4-reasoning` | xAI 추론 모델, 긴 컨텍스트 | 복잡한 추론, 긴 원고 |
 
 ### API 파라미터 튜닝
 
@@ -377,7 +387,7 @@ text={"verbosity": "low"}        # low, medium, high
 
 ---
 
-## 🧠 프롬프트 엔지니어링
+## 프롬프트 엔지니어링
 
 ### 프롬프트 구조
 
@@ -466,7 +476,7 @@ def get_mongo_prompt(category: str, parsed: dict) -> str:
 
 ---
 
-## 💾 MongoDB 연동
+## MongoDB 연동
 
 ### 데이터베이스 구조
 
@@ -524,7 +534,7 @@ finally:
 
 ---
 
-## 📐 개발 규칙
+## 개발 규칙
 
 ### Python 코딩 컨벤션
 
@@ -613,7 +623,7 @@ finally:
 
 ---
 
-## 🎓 사용 예시
+## 사용 예시
 
 ### 1. 미용학원 후기 생성
 
@@ -671,18 +681,19 @@ curl -X POST "http://localhost:8000/claude/generate" \
 
 ---
 
-## 📊 프로젝트 통계
+## 프로젝트 통계
 
-- **지원 AI 모델**: 6개 (GPT-4, GPT-5, Claude, Gemini, SOLAR)
-- **카테고리 프롬프트**: 32개+
-- **API 엔드포인트**: 20개+
+- **지원 AI 모델**: 6개 (GPT-4, GPT-5, Claude, Gemini, SOLAR, Grok)
+- **카테고리 프롬프트**: 43개+
+- **API 엔드포인트**: 30개+
+- **LLM 서비스**: 30개+
 - **코드 라인**: 15,000+ lines
 - **평균 원고 길이**: 2,800~3,500자 (공백 제외)
 - **생성 시간**: 10~60초 (모델별 상이)
 
 ---
 
-## 🤝 기여 방법
+## 기여 방법
 
 ### 새로운 카테고리 추가
 
@@ -724,7 +735,7 @@ CATEGORY_DB_MAP = {
 
 ---
 
-## 🔧 문제 해결
+## 문제 해결
 
 ### 1. MongoDB 연결 오류
 ```
@@ -765,22 +776,22 @@ sudo apt-get install openjdk-11-jdk
 
 ---
 
-## 📝 라이선스
+## 라이선스
 
 이 프로젝트는 비공개 프로젝트입니다.
 
 ---
 
-## 👨‍💻 개발자
+## 개발자
 
 **21lab** - AI 블로그 콘텐츠 생성 전문팀
 
 ---
 
-## 📞 문의
+## 문의
 
 프로젝트 관련 문의사항은 이슈 트래커를 이용해 주세요.
 
 ---
 
-**Made with ❤️ by 21lab**
+**Made by 21lab**
