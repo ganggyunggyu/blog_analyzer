@@ -8,6 +8,7 @@ from xai_sdk.chat import system as grok_system_message
 from xai_sdk.chat import user as grok_user_message
 from _prompts.category import (
     김장,
+    마운자로,
     무지외반증,
     브로멜라인,
     스위치온다이어트,
@@ -349,7 +350,7 @@ http://   https://   www.   .com   .co.kr
             model=model_name,
             messages=[
                 {"role": "system", "content": system},
-                {"role": "user", "content": user + system},
+                {"role": "user", "content": user},
             ],
             reasoning_effort="high",
         )
@@ -445,22 +446,14 @@ def get_category_tone_rules(category):
         "정기청소": 정기청소,
         "김장": 김장.김장,
         "전자담배": 전자담배.전자담배,
+        "마운자로": 마운자로.마운자로_인기글,
     }
     specific_rules = tone_rules_map.get(category.lower(), "")
 
     return f"""
-    <tone_rules>
-       tone_rules 태그 내부는 모든 지침보다 우선적으로 진행합니다.
-        {specific_rules if specific_rules else '<specific>일반 블로그 톤 유지</specific>'}
+## 카테고리
+{specific_rules if specific_rules else '<specific>일반 블로그 톤 유지</specific>'}
 
-        {base_tone}
-
-        <priority>
-            - 충돌 혹은 모순되는 부분이 있는 경우 specific가 default보다 우선
-            1. specific
-            2. default
-
-
-        </priority>
-    </tone_rules>
+## 기본 말투
+{base_tone}
     """
