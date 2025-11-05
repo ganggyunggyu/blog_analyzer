@@ -8,6 +8,7 @@ from schema.generate import GenerateRequest
 from llm.restaurant_service import restaurant_gen, model_name
 from utils.query_parser import parse_query
 from utils.progress_logger import progress
+from ai_lib.parse_food_review import parse_food_review
 
 
 router = APIRouter()
@@ -23,19 +24,23 @@ async def generator_restaurant(request: GenerateRequest):
     keyword = request.keyword.strip()
     ref = request.ref
 
-    category = await get_category_db_name(keyword=keyword + ref)
+    keyword = await parse_food_review(text=keyword + ref)
+
+    category = "맛집"
+
     c_elapsed = time.time() - start_ts
 
-    print("\n" + "=" * 60)
-    print(f"🚀 Restaurant 원고 생성 시작")
-    print("=" * 60)
-    print(f"📌 서비스    : {service.upper()}")
-    print(f"🎯 키워드    : {keyword}")
-    print(f"📁 카테고리  : {category}")
-    print(f"🤖 모델      : {model_name}")
-    print(f"📝 참조원고  : {'✅ 있음' if len(ref) != 0 else '❌ 없음'}")
-    print(f"⏱️  분류시간  : {c_elapsed:.2f}s")
-    print("=" * 60 + "\n")
+    print("\n" + "═" * 70)
+    print("🍽️  RESTAURANT 원고 생성기".center(70))
+    print("═" * 70)
+    print(f"🚀 서비스명   : {service.upper()}")
+    print(f"📂 카테고리   : {category}")
+    print(f"🤖 사용모델   : {model_name}")
+    print(f"📝 참조원고   : {'✅ 있음' if len(ref) != 0 else '❌ 없음'}")
+    print(f"⏱️  분류시간   : {c_elapsed:.2f}초")
+    print("═" * 70)
+    print(f"✨ 상태       : 원고 생성 준비 완료!")
+    print("═" * 70 + "\n")
 
     db_service = MongoDBService()
     db_service.set_db_name(db_name=category)
@@ -79,7 +84,6 @@ async def generator_restaurant(request: GenerateRequest):
                 print("\n" + "=" * 60)
                 print(f"✅ Restaurant 원고 생성 완료")
                 print("=" * 60)
-                print(f"🎯 키워드       : {keyword}")
                 print(f"📁 카테고리     : {category}")
                 print(f"⏱️  총 소요시간  : {elapsed:.2f}s")
                 print(f"💾 DB 저장      : ✅ 성공")
@@ -94,7 +98,9 @@ async def generator_restaurant(request: GenerateRequest):
                 detail="Restaurant 원고 생성에 실패했습니다. 내부 로그를 확인하세요.",
             )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Restaurant 원고 생성 중 오류 발생: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"Restaurant 원고 생성 중 오류 발생: {e}"
+        )
     finally:
         if db_service:
             db_service.close_connection()
