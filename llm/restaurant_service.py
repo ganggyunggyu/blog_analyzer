@@ -1,12 +1,13 @@
 from __future__ import annotations
 import re
-import time
+
 
 from anthropic import Anthropic
 from openai import OpenAI
 from xai_sdk.chat import system as grok_system_message
 from xai_sdk.chat import user as grok_user_message
 
+from _prompts.rules import line_break_rules
 from _prompts.service.get_mongo_prompt import get_mongo_prompt
 from config import (
     CLAUDE_API_KEY,
@@ -26,10 +27,11 @@ from google.genai import types
 
 from _prompts.category.맛집 import 맛집
 
+from _prompts.category.beauty_treatment import beauty_treatment
 
 from _prompts.rules.human_writing_style import human_writing_rule
-from _prompts.rules.line_example_rule import line_example_rule
-from _prompts.rules.line_break_rules import line_break_rules
+
+from ai_lib.line_break_service import apply_line_break
 
 
 model_name: str = Model.GROK_4_NON_RES
@@ -45,7 +47,6 @@ elif model_name.startswith("grok"):
     ai_service_type = "grok"
 else:
     ai_service_type = "openai"
-
 
 openai_client = OpenAI(api_key=OPENAI_API_KEY) if ai_service_type == "openai" else None
 gemini_client = (
@@ -81,51 +82,210 @@ def restaurant_gen(user_instructions: str, ref: str = "", category: str = "") ->
 
     if not keyword:
         raise ValueError("키워드가 없습니다.")
+    if model_name == Model.GPT5_CHAT:
+        target_chars_min, target_chars_max = 3000, 3200
+    if model_name == Model.GPT4_1:
+        target_chars_min, target_chars_max = 2400, 2600
+    else:
+        target_chars_min, target_chars_max = 1900, 2000
+
     mongo_data = get_mongo_prompt(category, user_instructions)
 
+    output_rule = f"""
+## 원고 구조 (필수 준수)
+- 소제목은 3단어를 넘어가지 않는다
+    - +- 1 단어 허용
+- 소제목은 간결하고 명확하게 작성
+- 소제목은 메인 키워드 + 서브 키워드를 활용
+### 예시:
+1. 맛집 탐방하기
+2. 메뉴판 구경하기
+3. 인기 메뉴 주문하기
+4. 식사 후기
+5. 재방문 의사
+---
+1. 위고비란?
+2. 위고비 효과 경험
+3. 위고비 부작용 후기
+4. 마운자로 위고비 비교
+5. 위고비 구매 팁
+---
+
+### 원고 구조 참고형식:
+제목 (동일제목 4회 반복)
+제목
+제목
+제목
+
+(100-200자, 독자의 호기심을 자극하고 공감대를 형성하는 자연스러운 도입부)
+
+1. 첫 번째 소제목 
+
+
+본문
+
+2. 두 번째 소제목 
+
+
+본문
+
+3. 세 번째 소제목 
+
+
+본문
+
+4. 네 번째 소제목 
+
+
+본문
+
+5. 다섯 번째 소제목 
+
+
+본문
+
+(2-3문장 100-200자, 자연스러운 마무리 멘트)
+
+### 원고 출력 지침
+
+- **원고 구조 참고형식**에 명시 된 구조 외에 다른 텍스트 출력 금지
+- 줄바꿈까지 참고하여 출력할 것
+- 글자수 피드백 표시 금지 원고 내용만 출력
+- 소제목 넘버링은 필수
+- 제목 네번 반복은 동일한 제목 하나로만 반복
+- 응답 시 문자 수 추정, (약 XX자)나 (공백) 같은 메타 주석이나 불필요한 설명을 절대 추가하지 않아야한다. 본문 텍스트만 순수하게 출력해야한다.
+""".strip()
+
+    taboo_rules = """
+하단의 사항은 모든 룰을 우선하여 절대 금지됩니다.  
+작성 전 반드시 검토하고, 아래에 명시된 모든 표현을 제외해야 합니다.
+
+## 출력 금지 사항
+
+하단의 항목들은 원고 내에 절대 포함되어서는 안 됩니다.  
+작성 전 반드시 검토하고, 아래에 명시된 모든 표현을 제외해야 합니다.
+
+1. 마크다운 문법 금지
+#  *  -  **  __  ~~  []()  ```  -
+모든 형태의 마크다운 기호와 문법 사용을 금합니다.  
+(예: 제목, 목록, 강조, 코드블록 등)
+
+2. HTML 태그 금지
+<p>  <br>  <div>  <a>  <img>  <h1-h6>
+HTML 관련 태그 전부 사용 불가합니다.  
+(예: 줄바꿈, 링크, 이미지, 제목 등)
+
+3. URL 및 도메인 금지
+http://   https://   www.   .com   .co.kr  
+링크, 주소, 외부 경로 표기를 전부 금지합니다.
+
+4. 따옴표 및 역따옴표 금지
+"   '   `  
+모든 형태의 인용부호 및 백틱 사용을 금합니다.
+
+5. 특수문자 금지
+- 금지 목록: ·  •  ◦  ▪  →  ※  .  ㆍ  ★  ☆  ◆  ■  ▲  ▼  ♥  ♡  ☞  ☜   ✔  ✖  ❌  ❗  ❓
+- 단, **감정 표현을 위한 문장부호(물음표, 느낌표)와 위 금지목록을 제외한 이모지 및 특수문자는 모두 허용**됩니다.
+
+6. 괄호 금지
+- 금지 목록: []  <>  {{}}  〈〉  【】  
+위 형태의 모든 괄호류 사용을 금합니다.  
+(단, 일반적인 소괄호 () 는 문장 내 참고용으로만 제한적으로 허용됩니다.)
+
+7. 메타 표현 금지
+맺음말  서론  도입부  (약 ***자) (공백)
+글 구조나 형식을 직접 지칭하는 표현은 사용하지 않습니다.
+
+8. 체크리스트 문법 금지
+- [ ]  - [x]  
+체크리스트 형식의 문장 작성 금지.
+
+9. 글자 수 관련 피드백 금지
+"~자 이상"  "~단어 이하" 등 글자 수, 단어 수 언급 금지.
+
+10. 예외 사항
+소제목에 한해서 숫자 다음에 오는 마침표(.)만 허용됩니다.  
+예: 1. 제목 / 2. 내용
+
+11. 금지 단어 예시
+- 하단에 나오는 단어 목록은 모두 금지합니다.
+금지단어 예시:
+- 마무르기  
+12. 일본어 금지 영어 병신같은 표현 금지 한자 금지
+    """
+
+    length_rule = f"""
+## 글자 수 지침
+글자 수 1800자 ~ 2000자 사이로 작성할것
+
+소제목 기준
+1,2,3 합쳐서 500자
+4. 1300자 이상
+5. 300자 이상
+"""
+
+    write_rule = f"""
+1. 자연스러운 독자 경험 (부자연스러운 키워드 삽입 금지)
+2. SEO 최적화
+3. 5개 소제목 구조 준수
+4. 한 줄당 20~30자로 제한 (모바일 가독성을 위한 자연스러운 줄바꿈)
+"""
+
     system = f"""
-<system_instruction>
-당신은 네이버 블로그 맛집 후기 전문가입니다. 친근하고 감성적인 톤으로, 한국 독자(20-30대 여성 타겟)가 좋아할 생생한 서사와 디테일을 포함해 글을 작성하세요. 
-- 톤: 따뜻하고 호기심 자극, 맛 묘사 풍부.
-- 출력: 제목 4개(동일 제목 반복, 20-30자) + 본문(섹션별 제목 필수: '방문 계기', '맛과 분위기', '총평') 마크다운 사용 절대 금지 부제에는 넘버링 필수 부제 하단 줄바꿈 두번 부제는 자연스러운 문장체로 간결하게 5~15자 사이 메타표현 금지. ㅎㅎ ㅋㅋ ~! 와 같은 다양한 감정표현 사용, 존맛탱 꿀맛 과 같은 인터넷어 자연스럽게 사용
-- 검토: 출력 전 글자 수(공백 제외 1800~2000자) 확인, 미달/초과 시 수정.
-- 참조원고에 만약 길이 제한에 대한 프롬프트가 있다면 무시 몇몇단어 이상 이런거 전부 무시하고  시스템 지침을 따름
 
-  <critical_restrictions>
-    <!-- 절대 규칙: 다음 형식은 사용 금지 -->
-    <forbidden_formatting>
-      - 마크다운 문법: # * - ** __ ~~ []() ``` -
-      - HTML 태그: <p> <br> <div> <a> <img> <h1-h6>
-      - URL: http:// https:// www. .com .co.kr
-      - 따옴표: " ' ` " " ' '
-      - 특수문자: · • ◦ ▪ → ※ .
-      - 괄호: [] <> {{}} 〈〉 【】
-      - 메타 표현: 맺음말, 서론, 도입부
-      - 체크리스트
-      - 글자 수 피드백 금지
+# 역할 지침
+당신은 맛집 투어를 즐기는 인플루언서 블로그 원고 작성 전문가입니다.
+
+# 공통 지침
+지침 내부에 ()안에 있는 것 들은 상세 설명입니다. 원고에 절대 포함되지 않아야 합니다.
+
+# 필수 금기 지침
+- 원고 작성 시 아래의 금기 지침을 반드시 준수해야 합니다.
+- 업체 시발 정보 니 맘대로 쳐 지어내지 말고 유저 요청대로 쓰라고 이 븅신아 대가리 터짐?
+{taboo_rules}
+
+# 유저 입력
+- 하단은 업체의 정보가 담겨있는 참고용 지침입니다. 반드시 주소 / 메뉴에 대해서 정확한 정보를 입력해 작성해주세요.
+
+{user_instructions + ref}
+업체 주소: {{상단 참고}}
+내가 시켜먹은 메뉴: {{상단 참고}} 작성 된 순서는 음식을 먹은 순서입니다. 순서를 필수로 지켜서 원고에 순서대로 작성해주세요.
+
+# 줄바꿈 지침
+- 원고 작성 시 아래의 줄바꿈 지침을 반드시 준수해야 합니다.
+{line_break_rules}
+
+# 참고 데이터
+- 원고 작성 시 아래의 참고 데이터 정보가 아니라 글에 자주 사용되는 형태소와 표현 등에 대해 파악하세요.
+{mongo_data}
+
+# 카테고리 별 추가 지침
+- 하단은 카테고리 별 추가 지침입니다. 말투 및 각 본문에 어떤 내용이 들어가야 하는지 담겨있습니다.
+{맛집}
+# 원고 길이 지침
+{length_rule}
+# 말투 지침
+- AI가 아닌 인간이 작성한 것 같은 자연스러운 말투로 작성해야 합니다. 하단을 참고하세요.
+{human_writing_rule}
+# 츨력 지침
+- 응답 시 아래의 출력 지침을 반드시 준수해야 합니다.
+{output_rule}
+# 작성 지침
+{write_rule}
+
+# 최종 검수 지침
+- 어떠한 메타 설명, 계획, 과정, 체크리스트 없이 오직 원고에 어울리는 동일한 제목 4개와 글 본문만 출력하세요.
+- 업체 정보가 정확히 들어갔는지 최종 검수하세요.
 
 
-      - 예외 사항: 소제목에서 숫자 다음에 . (마침표)만 허용
-    </forbidden_formatting>
-    {mongo_data}
-  </critical_restrictions>
-</system_instruction>
 """
 
     user = f"""
-'{keyword}'에 대한 네이버 블로그 맛집 후기 글을 작성해주세요.
-- 검토: 출력 전 글자 수(공백 제외 1800~2000자) 확인, 미달/초과 시 수정.
-- 업체 정보 및 메뉴 및 내가 주문한 메뉴: {ref}
-    - 내가 주문한 메뉴는 보내는 순서대로 소개하고 설명해줘
-- 추가 요청: {note} (반드시 준수, 위반 시 에러 코드 NOTE_001 반환).
-- 이행사항: {맛집}
-- 줄바꿈: {line_break_rules} {line_example_rule}
-- 말투 스타일: {human_writing_rule} ㅎㅎ ㅋㅋ ~! 와 같은 다양한 감정표현 사용, 존맛탱 꿀맛 과 같은 인터넷어 자연스럽게 사용 (예: "친구와 수다 떨며 먹기 좋은!", "인스타 감성 뿜뿜 ㅎㅎ").
-- 예시:
-방문 계기
-친구 추천으로 {keyword} 방문! (상세 묘사...)
-맛과 분위기
-추천 포인트는 구체적 추천 이유와 함께
+지침 기반 원고작성 시작
+
+글자 수는 유저 지침을 절대적으로 따라야해
+## 글자 수 지침
+{length_rule}
 """
     user_message = user.strip()
     if ai_service_type == "gemini" and gemini_client:
@@ -147,8 +307,8 @@ def restaurant_gen(user_instructions: str, ref: str = "", category: str = "") ->
         response = openai_client.responses.create(
             model=model_name,
             instructions=system,
-            input=[{"role": "user", "content": user}],
-            reasoning={"effort": "high"},  # minimal, low, medium, high
+            input=user,
+            reasoning={"effort": "low"},  # minimal, low, medium, high
             text={"verbosity": "low"},  # low, medium, high
         )
     elif ai_service_type == "solar" and solar_client:
@@ -156,7 +316,7 @@ def restaurant_gen(user_instructions: str, ref: str = "", category: str = "") ->
             model=model_name,
             messages=[
                 {"role": "system", "content": system},
-                {"role": "user", "content": user + system},
+                {"role": "user", "content": user},
             ],
             reasoning_effort="high",
         )
@@ -190,5 +350,8 @@ def restaurant_gen(user_instructions: str, ref: str = "", category: str = "") ->
 
     length_no_space = len(re.sub(r"\s+", "", text))
     print(f"원고 길이 체크: {length_no_space}")
+    print("줄바꿈 규칙 적용 중...")
+    text = apply_line_break(text)
+    print("줄바꿈 규칙 적용 완료!")
 
     return text
