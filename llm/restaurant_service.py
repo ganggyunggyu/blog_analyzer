@@ -210,6 +210,7 @@ http://   https://   www.   .com   .co.kr
 금지단어 예시:
 - 마무르기  
 12. 일본어 금지 영어 병신같은 표현 금지 한자 금지
+- 向き
     """
 
     length_rule = f"""
@@ -283,6 +284,8 @@ http://   https://   www.   .com   .co.kr
 
     user = f"""
 지침 기반 원고작성 시작
+
+- 일본어 금지 영어 병신같은 표현 금지 한자 금지
 """
     user_message = user.strip()
     if ai_service_type == "gemini" and gemini_client:
