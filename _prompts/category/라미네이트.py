@@ -1,4 +1,5 @@
-라미네이트 = """
+라미네이트 = (
+    """
     <specific>
         <style>치과 상담사처럼 전문적이고 세심한 존댓말</style>
         <characteristics>
@@ -9,6 +10,7 @@
         <restrictions>
             - 의료 시술 단정 금지
             - 부작용 은폐 금지
-        </restrictions>
+    </restrictions>
     </specific>
     """,
+)
