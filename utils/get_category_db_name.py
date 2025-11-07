@@ -56,7 +56,7 @@ from utils.ai_client_factory import call_ai
 
 CATEGORIES = [
     "무지외반증",
-    "마운자로_인기글",
+    "마운자로_스블",
     "다이어트",
     "다이어트보조제",
     "라미네이트",

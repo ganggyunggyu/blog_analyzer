@@ -464,7 +464,7 @@ http://   https://   www.   .com   .co.kr
     length_no_space = len(re.sub(r"\s+", "", text))
     print(f"원고 길이 체크: {length_no_space}")
     print("줄바꿈 규칙 적용 중...")
-    text = apply_line_break(text, model_name)
+    text = apply_line_break(text, model_name=Model.GROK_4_RES)
     print("줄바꿈 규칙 적용 완료!")
 
     return text
@@ -525,7 +525,7 @@ def get_category_tone_rules(category):
         "정기청소": 정기청소,
         "김장": 김장.김장,
         "전자담배": 전자담배.전자담배,
-        "마운자로": 마운자로.마운자로_인기글,
+        "마운자로": 마운자로.마운자로_스블,
         "가구": 가구.가구,
         "인테리어": 인테리어.인테리어,
     }

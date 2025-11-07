@@ -34,7 +34,7 @@ from _prompts.rules.human_writing_style import human_writing_rule
 from ai_lib.line_break_service import apply_line_break
 
 
-model_name: str = Model.GROK_4_NON_RES
+model_name: str = Model.GEMINI_2_5_FLASH
 
 
 if model_name.startswith("gemini"):
