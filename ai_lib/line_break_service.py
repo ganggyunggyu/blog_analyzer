@@ -22,9 +22,13 @@ def apply_line_break(text: str, model_name: str = Model.GROK_4_RES) -> str:
         raise ValueError("입력 텍스트가 비어있습니다.")
 
     system_prompt = f"""
-당신은 블로그 원고의 줄바꿈을 최적화하는 전문가입니다.
-아래 줄바꿈 규칙을 정확히 따라 텍스트를 재구성하세요.
 
+
+""".strip()
+
+    """
+    
+    
 {line_break_rules}
 
 # 중요 지침
@@ -55,12 +59,15 @@ def apply_line_break(text: str, model_name: str = Model.GROK_4_RES) -> str:
 주말 및 공휴일: 11:30 - 21:15 (노 브레이크, 라스트오더 20:30)
 
 ## 출력 형식
-어떠한 메타 설명이나 추가 텍스트 없이 재구성된 원고만 출력하세요
-""".strip()
+어떠한 메타 설명이나 추가 텍스트 없이 재구성된 원고만 출력하세요"""
 
     user_prompt = f"""
-아래 텍스트에 줄바꿈 규칙을 적용해주세요:
+소제목이랑 단위에 사용 된 마침표나 쉼표 빼고 전부 지워 이 시발럼아
+소제목 건드리지 마 이 시발럼아
+단위에 있는거 지우지마 이 시발럼아
+여러개 말할때 중간헤 , 하는거 건드리지 마 이 시발럼아
 
+그 외에는 건드리지마 이 시발롬아
 {text}
 """.strip()
 
