@@ -149,11 +149,9 @@ def grok_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
 """
     )
 
-    output_rule = (
-        """
-## 원고 구조 (필수 준수)
+    """
 - 소제목은 3단어를 넘어가지 않는다
-    - +- 1 단어 허용
+- +- 1 단어 허용
 - 소제목은 간결하고 명확하게 작성
 - 소제목은 메인 키워드 + 서브 키워드를 활용
 ### 예시:
@@ -169,6 +167,11 @@ def grok_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
 4. 마운자로 위고비 비교
 5. 위고비 구매 팁
 ---
+    """
+
+    output_rule = (
+        """
+## 원고 구조 (필수 준수)
 
 ### 원고 구조 참고형식:
 제목 (동일제목 4회 반복)
@@ -176,7 +179,6 @@ def grok_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
 제목
 제목
 
-(100-200자, 독자의 호기심을 자극하고 공감대를 형성하는 자연스러운 도입부)
 
 1. 첫 번째 소제목
 
@@ -230,23 +232,7 @@ def grok_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
 - 마운자로 처방 가격 다이어트 후기 (내돈내산)
 
 ## 원고 구조 (필수 준수)
-- 소제목은 3단어를 넘어가지 않는다
-    - +- 1 단어 허용
-- 소제목은 간결하고 명확하게 작성
-- 소제목은 메인 키워드 + 서브 키워드를 활용
-### 예시:
-1. 맛집 탐방하기
-2. 메뉴판 구경하기
-3. 인기 메뉴 주문하기
-4. 식사 후기
-5. 재방문 의사
----
-1. 위고비란?
-2. 위고비 효과 경험
-3. 위고비 부작용 후기
-4. 마운자로 위고비 비교
-5. 위고비 구매 팁
----
+
 
 ### 원고 구조 참고형식:
 제목 (동일제목 4회 반복)
@@ -254,7 +240,6 @@ def grok_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
 제목
 제목
 
-(100-200자, 독자의 호기심을 자극하고 공감대를 형성하는 자연스러운 도입부)
 
 1. 첫 번째 소제목 (200-300자)
 
@@ -463,9 +448,9 @@ http://   https://   www.   .com   .co.kr
 
     length_no_space = len(re.sub(r"\s+", "", text))
     print(f"원고 길이 체크: {length_no_space}")
-    print("줄바꿈 규칙 적용 중...")
-    text = apply_line_break(text, model_name=Model.GROK_4_RES)
-    print("줄바꿈 규칙 적용 완료!")
+    # print("줄바꿈 규칙 적용 중...")
+    # text = apply_line_break(text, model_name=Model.GROK_4_RES)
+    # print("줄바꿈 규칙 적용 완료!")
 
     return text
 

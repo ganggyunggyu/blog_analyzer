@@ -34,7 +34,7 @@ from _prompts.rules.human_writing_style import human_writing_rule
 from ai_lib.line_break_service import apply_line_break
 
 
-model_name: str = Model.GEMINI_2_5_FLASH
+model_name: str = Model.GROK_4_RES
 
 
 if model_name.startswith("gemini"):
@@ -118,8 +118,6 @@ def restaurant_gen(user_instructions: str, ref: str = "", category: str = "") ->
 제목
 제목
 제목
-
-(50-100자, 독자의 호기심을 자극하고 공감대를 형성하는 자연스러운 도입부)
 
 1. 첫 번째 소제목 
 
