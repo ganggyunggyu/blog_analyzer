@@ -288,6 +288,20 @@ http://   https://   www.   .com   .co.kr
 지침 기반 원고작성 시작
 
 - 일본어 금지 영어 병신같은 표현 금지 한자 금지
+
+# 줄바꿈 지침
+{line_break_rules.line_break_rules}
+# 한자 일본어 중국어 전부 씨발 쓰지 말라고 미친놈아
+# 한자 일본어 중국어 전부 씨발 쓰지 말라고 미친놈아
+# 한자 일본어 중국어 전부 씨발 쓰지 말라고 미친놈아
+# 한자 일본어 중국어 전부 씨발 쓰지 말라고 미친놈아
+# 한자 일본어 중국어 전부 씨발 쓰지 말라고 미친놈아
+# 한자 일본어 중국어 전부 씨발 쓰지 말라고 미친놈아
+# 한자 일본어 중국어 전부 씨발 쓰지 말라고 미친놈아
+# 한자 일본어 중국어 전부 씨발 쓰지 말라고 미친놈아
+# 한자 일본어 중국어 전부 씨발 쓰지 말라고 미친놈아
+# 한자 일본어 중국어 전부 씨발 쓰지 말라고 미친놈아
+# 한자 일본어 중국어 전부 씨발 쓰지 말라고 미친놈아
 """
     user_message = user.strip()
     if ai_service_type == "gemini" and gemini_client:
@@ -352,8 +366,5 @@ http://   https://   www.   .com   .co.kr
 
     length_no_space = len(re.sub(r"\s+", "", text))
     print(f"원고 길이 체크: {length_no_space}")
-    print("줄바꿈 규칙 적용 중...")
-    text = apply_line_break(text)
-    print("줄바꿈 규칙 적용 완료!")
 
     return text
