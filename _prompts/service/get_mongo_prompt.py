@@ -2,7 +2,6 @@ from __future__ import annotations
 import json
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass
-from bson import ObjectId
 from mongodb_service import MongoDBService
 from utils.select_template import select_template
 
