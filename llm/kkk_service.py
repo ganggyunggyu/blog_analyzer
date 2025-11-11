@@ -71,7 +71,7 @@ from _prompts.rules.line_example_rule import line_example_rule
 from _prompts.rules.line_break_rules import line_break_rules
 
 
-model_name: str = Model.GROK_4_RES
+model_name: str = Model.GROK_4_NON_RES
 
 
 if model_name.startswith("gemini"):
@@ -303,8 +303,9 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     
     추가 요청: {note}
     추가 요청은 어떤일이 있어도 반드시 지켜져야 합니다.
-
+---
     참조 원고: {ref}
+    - 참조원고가 있다면?: 참조원고의 내용의 흐름을 따라 그대로 작성할 것
     """
     user_message = user.strip()
     if ai_service_type == "gemini" and gemini_client:
@@ -427,18 +428,8 @@ def get_category_tone_rules(category):
     specific_rules = tone_rules_map.get(category.lower(), "")
 
     return f"""
-    <tone_rules>
-       tone_rules 태그 내부는 모든 지침보다 우선적으로 진행합니다.
-        {specific_rules if specific_rules else '<specific>일반 블로그 톤 유지</specific>'}
+
 
         {base_tone}
-
-        <priority>
-            - 충돌 혹은 모순되는 부분이 있는 경우 specific가 default보다 우선
-            1. specific
-            2. default
-
-            
-        </priority>
     </tone_rules>
     """

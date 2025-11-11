@@ -607,6 +607,7 @@ http://   https://   www.   .com   .co.kr
 
 ---
 참조 원고: {ref}
+- 참조원고가 있다면?: 참조원고의 내용의 흐름을 따라 그대로 작성할 것
     """
     user_message = user.strip()
     if ai_service_type == "gemini" and gemini_client:
