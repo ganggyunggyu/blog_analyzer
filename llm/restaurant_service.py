@@ -34,7 +34,7 @@ from _prompts.rules.human_writing_style import human_writing_rule
 from ai_lib.line_break_service import apply_line_break
 
 
-model_name: str = Model.GROK_4_RES
+model_name: str = Model.GPT5_1
 
 
 if model_name.startswith("gemini"):
@@ -218,16 +218,16 @@ http://   https://   www.   .com   .co.kr
     length_rule = f"""
 
 ## 글자 수 지침
-- 공백 제와 글자 수 2000자 
+- 공백 제와 글자 수 1500자 
 - +- 100 까지만 허용
 
 ### !주의사항!
 - 4번에 내가 먹은 메뉴 개수가 3개 이하인 경우 경우: 3번과 5번에서 매장의 특장점을 더 많이 작성하여 보완합니다. 인테리어 분위기 {{화자의}}의 경험을 이용하여 원고 글자 수를 채우도록 해야합니다.
 
 ### 소제목 기준
-1,2,3 합쳐서 400자
-4. 1300자 (중요)
-5. 200자
+1,2,3 합쳐서 20% 분량
+4. 50% 분량 (중요)
+5. 30% 분량
 """
 
     write_rule = f"""

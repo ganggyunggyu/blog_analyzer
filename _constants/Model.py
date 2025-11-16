@@ -1,5 +1,6 @@
 class Model:
     GPT5 = "gpt-5-2025-08-07"
+    GPT5_1 = "gpt-5.1-2025-11-13"
     GPT5_MINI = "gpt-5-mini-2025-08-07"
     GPT5_NANO = "gpt-5-nano-2025-08-07"
     GPT5_CHAT = "gpt-5-chat-latest"
