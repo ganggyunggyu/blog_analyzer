@@ -45,3 +45,4 @@ class Model:
 
     GROK_4_RES = "grok-4-fast-reasoning"
     GROK_4_NON_RES = "grok-4-fast-non-reasoning"
+    GROK_CODE = "grok-code-fast-1-0825"
