@@ -24,17 +24,10 @@ from utils.text_cleaner import comprehensive_text_clean
 
 from google import genai
 from google.genai import types
-
 from _prompts.category.맛집 import 맛집
-
-from _prompts.category.beauty_treatment import beauty_treatment
-
 from _prompts.rules.human_writing_style import human_writing_rule
 
-from ai_lib.line_break_service import apply_line_break
-
-
-model_name: str = Model.GPT5_1
+model_name: str = Model.GROK_4_NON_RES
 
 
 if model_name.startswith("gemini"):
@@ -114,10 +107,6 @@ def restaurant_gen(user_instructions: str, ref: str = "", category: str = "") ->
 
 
 ### 원고 구조 참고형식:
-제목 (동일제목 4회 반복)
-제목
-제목
-제목
 
 1. 첫 번째 소제목 
 
@@ -234,7 +223,7 @@ http://   https://   www.   .com   .co.kr
 1. 자연스러운 독자 경험 (부자연스러운 키워드 삽입 금지)
 2. SEO 최적화
 3. 5개 소제목 구조 준수
-4. 한 줄당 20~30자로 제한 (모바일 가독성을 위한 자연스러운 줄바꿈)
+4. 한 줄당 30~40자로 제한 (모바일 가독성을 위한 자연스러운 줄바꿈)
 """
 
     system = f"""
@@ -278,7 +267,6 @@ http://   https://   www.   .com   .co.kr
 {write_rule}
 
 # 최종 검수 지침
-- 어떠한 메타 설명, 계획, 과정, 체크리스트 없이 오직 원고에 어울리는 동일한 제목 4개와 글 본문만 출력하세요.
 - 업체 정보가 정확히 들어갔는지 최종 검수하세요.
 
 
@@ -291,17 +279,6 @@ http://   https://   www.   .com   .co.kr
 
 # 줄바꿈 지침
 {line_break_rules.line_break_rules}
-# 한자 일본어 중국어 전부 씨발 쓰지 말라고 미친놈아
-# 한자 일본어 중국어 전부 씨발 쓰지 말라고 미친놈아
-# 한자 일본어 중국어 전부 씨발 쓰지 말라고 미친놈아
-# 한자 일본어 중국어 전부 씨발 쓰지 말라고 미친놈아
-# 한자 일본어 중국어 전부 씨발 쓰지 말라고 미친놈아
-# 한자 일본어 중국어 전부 씨발 쓰지 말라고 미친놈아
-# 한자 일본어 중국어 전부 씨발 쓰지 말라고 미친놈아
-# 한자 일본어 중국어 전부 씨발 쓰지 말라고 미친놈아
-# 한자 일본어 중국어 전부 씨발 쓰지 말라고 미친놈아
-# 한자 일본어 중국어 전부 씨발 쓰지 말라고 미친놈아
-# 한자 일본어 중국어 전부 씨발 쓰지 말라고 미친놈아
 """
     user_message = user.strip()
     if ai_service_type == "gemini" and gemini_client:
