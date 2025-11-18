@@ -10,11 +10,14 @@ from mongodb_service import MongoDBService
 from utils.ai_client_factory import call_ai
 
 
-model_name: str = Model.GROK_4_NON_RES
+model_name: str = Model.GROK_4_RES
 
 
 def gen_expressions(
-    text: str, category: str = "", file_name: str = "", model_name_override: Optional[str] = None
+    text: str,
+    category: str = "",
+    file_name: str = "",
+    model_name_override: Optional[str] = None,
 ) -> Dict[str, List[str]]:
     db_service = MongoDBService()
     model = model_name_override or model_name
@@ -96,7 +99,9 @@ You are an expert in marketing content analysis. Your task is to extract useful 
             result = db_service.upsert_many_documents(
                 "expressions", docs, ["category", "expression"]
             )
-            print(f"신규 표현: {result['upserted']}개, 중복 제외: {result['matched']}개")
+            print(
+                f"신규 표현: {result['upserted']}개, 중복 제외: {result['matched']}개"
+            )
         except Exception as e:
             print(f"표현 저장 중 오류 (계속 진행): {e}")
             result = {"upserted": 0, "matched": 0}
@@ -138,5 +143,3 @@ def strip_code_fence(text: str) -> str:
             flags=re.IGNORECASE | re.DOTALL,
         ).strip()
     return text
-
-

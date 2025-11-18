@@ -10,7 +10,7 @@ from mongodb_service import MongoDBService
 from utils.ai_client_factory import call_ai
 
 
-model_name: str = Model.GROK_4_NON_RES
+model_name: str = Model.GROK_4_RES
 
 
 def gen_subtitles(
@@ -180,5 +180,3 @@ def rule_based_subtitles(full_text: str) -> List[str]:
     heads = [head for head in heads if 4 <= len(head) <= 40]
     heads = dedupe_keeping_order(heads)
     return heads[:12]
-
-
