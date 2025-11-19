@@ -5,6 +5,15 @@
 import re
 
 
+def replace_middle_dot(text: str) -> str:
+    """
+    중간점 문자 '·' 를 ',' 로 변환
+    """
+    if not text:
+        return text
+    return text.replace("·", ",")
+
+
 def clean_trailing_spaces(text: str) -> str:
     """
     줄바꿈이 있는 부분에서 문장 우측 끝의 공백 제거
@@ -60,6 +69,7 @@ def comprehensive_text_clean(text: str) -> str:
     """
     if not text:
         return text
+    text = replace_middle_dot(text)
 
     text = clean_trailing_spaces(text)
 
