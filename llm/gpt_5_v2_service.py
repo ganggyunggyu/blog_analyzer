@@ -21,7 +21,7 @@ from analyzer.request_문장해체분석기 import get_문장해체
 from utils.text_cleaner import comprehensive_text_clean
 
 
-model_name: str = Model.GPT5
+model_name: str = Model.GPT5_1
 
 기본_프롬프트 = ""
 
