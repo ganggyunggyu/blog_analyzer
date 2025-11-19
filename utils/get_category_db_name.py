@@ -52,52 +52,8 @@ def build_category_prompt(keyword: str, categories: list[str]) -> str:
 
 
 from _constants.Model import Model
+from _constants.categories import CATEGORIES
 from utils.ai_client_factory import call_ai
-
-CATEGORIES = [
-    "무지외반증",
-    "안과",
-    "마운자로_스블",
-    "다이어트",
-    "다이어트보조제",
-    "라미네이트",
-    "멜라논크림",
-    "브로멜라인",
-    "anime",
-    "서브웨이다이어트",
-    "스위치온다이어트",
-    "에리스리톨",
-    "외국어교육_학원",
-    "위고비",
-    "미용학원",
-    "족저근막염깔창",
-    "캐리어",
-    "파비플로라",
-    "알파CD",
-    "웨딩홀",
-    "functional-food",
-    "hospital",
-    "home-appliances",
-    "luxury",
-    "애견동물_반려동물_분양",
-    "맛집",
-    "질분비물",
-    "블록체인_가상화폐",
-    "노래리뷰",
-    "호텔",
-    "영화리뷰",
-    "김장",
-    "공항_김포공항",
-    "공항_인천공항",
-    "정기청소",
-    "전자담배",
-    "가구",
-    "인테리어",
-    "커피머신",
-    "거북목교정기",
-    "리쥬란",
-    "결혼정보회사_결정사",
-]
 
 
 async def get_category_db_name(keyword: str) -> str:

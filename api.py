@@ -45,7 +45,11 @@ from routers.generate import (
 from routers.category import keyword
 from routers.analysis import get_sub_title, upload_text, analyzer_router
 from routers.ref import get_ref
-from routers.search import keyword as search_keyword, manuscript as search_manuscript
+from routers.search import (
+    keyword as search_keyword,
+    manuscript as search_manuscript,
+    all as search_all,
+)
 
 LLM_CONCURRENCY = int(os.getenv("LLM_CONCURRENCY", "3"))
 llm_semaphore = asyncio.Semaphore(LLM_CONCURRENCY)
@@ -100,3 +104,4 @@ app.include_router(story_analysis.router)
 app.include_router(requirement_analysis.router)
 app.include_router(search_keyword.router)
 app.include_router(search_manuscript.router)
+app.include_router(search_all.router)

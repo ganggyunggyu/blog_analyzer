@@ -7,3 +7,8 @@ class KeywordSearchRequest(BaseModel):
     category: Optional[str] = Field(None, description="카테고리 필터 (선택)")
     page: int = Field(1, ge=1, description="페이지 번호")
     limit: int = Field(20, ge=1, le=100, description="페이지당 결과 수")
+
+
+class SearchRequest(BaseModel):
+    q: str = Field(..., description="검색 키워드")
+    limit: int = Field(20, ge=1, le=100, description="결과 수 제한")
