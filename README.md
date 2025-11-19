@@ -1,185 +1,197 @@
-# Blog Analyzer - AI 기반 블로그 원고 자동 생성 시스템
+# Blog Analyzer
 
-**FastAPI 기반의 멀티 AI 엔진 블로그 콘텐츠 생성 플랫폼**
-
-네이버 블로그 바이럴 마케팅을 위한 SEO 최적화 콘텐츠를 AI로 자동 생성하는 서비스입니다.
-OpenAI GPT, Anthropic Claude, Google Gemini, Upstage SOLAR, xAI Grok 등 **5가지 AI 엔진**을 지원하며,
-**43개 이상의 카테고리별 전문 프롬프트**로 자연스러운 블로그 후기를 생성합니다.
+멀티 AI 엔진으로 네이버 블로그용 원고를 자동 생성·분석하는 FastAPI 기반 백엔드입니다.  
+GPT, Claude, Gemini, SOLAR, Grok을 한 곳에서 제어하고, 카테고리별 MongoDB 데이터와 참조 원고를 섞어서 “사람이 쓴 것 같은 후기형 글”을 뽑아내는 게 목적입니다.
 
 ---
 
-## 목차
+## 1. 개요
 
-- [주요 기능](#주요-기능)
-- [기술 스택](#기술-스택)
-- [프로젝트 구조](#프로젝트-구조)
-- [설치 및 실행](#설치-및-실행)
-- [API 엔드포인트](#api-엔드포인트)
-- [카테고리 시스템](#카테고리-시스템)
-- [AI 서비스 비교](#ai-서비스-비교)
-- [프롬프트 엔지니어링](#프롬프트-엔지니어링)
-- [MongoDB 연동](#mongodb-연동)
-- [개발 규칙](#개발-규칙)
+Blog Analyzer는 다음 시나리오를 타겟으로 합니다.
 
----
+1. **키워드 & 카테고리 입력**
+2. 카테고리별 MongoDB에서 **상위 노출 글·키워드 패턴** 조회
+3. 필요하면 **참조 원고(ref)**까지 함께 투입
+4. 선택한 AI 엔진(GPT / Claude / Gemini / SOLAR / Grok)으로 원고 생성
+5. 생성된 텍스트를 **형태소·문장·표현 패턴 분석** 후 DB에 저장
 
-## 주요 기능
-
-### 핵심 기능
-
-- **멀티 AI 엔진 지원**: GPT-4, GPT-5, Claude Sonnet 4.5, Gemini 2.5, SOLAR, Grok
-- **43+ 카테고리 전문화**: 각 카테고리별 맞춤형 프롬프트 엔지니어링
-- **SEO 최적화**: 키워드 자연스러운 삽입, 네이버 상위 노출 최적화
-- **자연스러운 문체**: AI 티 제거, 실제 사람이 작성한 듯한 구어체
-- **참조 원고 학습**: 기존 상위 노출 글 학습 및 스타일 모방
-- **MongoDB 데이터 통합**: 카테고리별 DB 데이터 활용
-- **텍스트 분석**: 형태소 분석, 문장 구조 분석, 표현 패턴 추출
-
-### 고급 기능
-
-- **단계별 원고 생성**: Phase별 세밀한 원고 제어
-- **청크 분할 생성**: 긴 원고를 여러 청크로 나눠 생성
-- **배치 처리**: JSONL 포맷 배치 처리 지원
-- **실시간 진행률 로깅**: 원고 생성 단계별 실시간 추적
+FastAPI + Uvicorn 기반의 비동기 API 서버로 구성되어 있으며, ASGI 프레임워크 특성상 높은 동시성을 지원합니다. [oai_citation:0‡위키백과](https://en.wikipedia.org/wiki/Comparison_of_server-side_web_frameworks?utm_source=chatgpt.com)
 
 ---
 
-## 기술 스택
+## 2. 주요 기능
 
-### Backend Framework
-- **FastAPI** - 비동기 웹 프레임워크
-- **Uvicorn** - ASGI 서버
-- **Python 3.7+**
+### 2.1 콘텐츠 생성
 
-### AI/ML
-- **OpenAI API** (GPT-4 Turbo, GPT-5 Responses API)
-- **Anthropic API** (Claude 3.5 Sonnet, Claude Sonnet 4.5)
-- **Google Generative AI** (Gemini 2.5 Flash, Gemini 2.0 Flash)
-- **Upstage API** (SOLAR LLM)
+- **멀티 AI 엔진 지원**
 
-### NLP
-- **KoNLPy** - 한국어 형태소 분석
-- **KSS (Korean Sentence Splitter)** - 한국어 문장 분리
+  - OpenAI GPT-4 / GPT-5 (Responses API) [oai_citation:1‡Microsoft Learn](https://learn.microsoft.com/en-us/azure/ai-foundry/openai/how-to/responses?utm_source=chatgpt.com)
+  - Anthropic Claude (Sonnet 계열)
+  - Google Gemini (2.5 / 2.0 Flash 계열)
+  - Upstage SOLAR (한국어 특화)
+  - xAI Grok (reasoning 중심)
 
-### Database
-- **MongoDB** (PyMongo) - 카테고리별 데이터 저장
-- **MongoDB Atlas** 클라우드 지원
+- **카테고리 맞춤 프롬프트**
 
-### Infrastructure
-- **python-dotenv** - 환경변수 관리
-- **CORS Middleware** - API CORS 설정
-- **Semaphore** - LLM 동시 호출 제한
+  - 40개+ 카테고리별로 **별도 프롬프트 파일** 보유
+  - 맛집 / 다이어트 / 의료 / 인테리어 / 공항 주차대행 / 애니 리뷰 등
+  - 각 카테고리는 tone, 구조, 금지 표현, 필수 요소를 따로 정의
 
----
+- **SEO & 네이버 최적화**
 
-## 프로젝트 구조
+  - 키워드 자연스러운 삽입
+  - 제목·소제목에 변형 키워드 분산 배치
+  - 과도한 키워드 반복/광고체/AI티 제거 규칙 포함
 
-```
-blog_analyzer/
-├── api.py                      # FastAPI 애플리케이션 진입점
-├── config.py                   # 환경변수 및 AI 클라이언트 설정
-├── mongodb_service.py          # MongoDB CRUD 서비스
-├── cli.py                      # CLI 인터페이스
-│
-├── routers/                    # FastAPI 라우터
-│   ├── generate/               # AI 원고 생성 엔드포인트
-│   │   ├── gpt_4_v2.py        # GPT-4 Turbo 생성
-│   │   ├── gpt_5_v2.py        # GPT-5 Responses API 생성
-│   │   ├── kkk.py             # 멀티 AI 엔진 (GPT/Claude/Gemini)
-│   │   ├── claude.py          # Claude 전용
-│   │   ├── gemini.py          # Gemini 전용
-│   │   ├── solar.py           # SOLAR 전용
-│   │   ├── chunk.py           # 청크 분할 생성
-│   │   └── step_by_step.py    # 단계별 생성
-│   ├── analysis/               # 텍스트 분석 엔드포인트
-│   │   ├── get_sub_title.py   # 소제목 추출
-│   │   ├── upload_text.py     # 텍스트 업로드 분석
-│   │   └── analyzer_router.py # 통합 분석기
-│   ├── category/               # 카테고리 관련
-│   │   └── keyword.py         # 키워드 추출
-│   └── ref/                    # 참조 원고
-│       └── get_ref.py         # 참조 원고 조회
-│
-├── llm/                        # LLM 서비스 로직
-│   ├── kkk_service.py         # 멀티 AI 서비스 (핵심)
-│   ├── gpt_4_v2_service.py    # GPT-4 서비스
-│   ├── gpt_5_v2_service.py    # GPT-5 서비스
-│   ├── claude_service.py      # Claude 서비스
-│   ├── gemini_service.py      # Gemini 서비스
-│   └── chunk_service.py       # 청크 분할 서비스
-│
-├── _prompts/                   # 프롬프트 엔지니어링
-│   ├── category/               # 카테고리별 프롬프트 (32개+)
-│   │   ├── 맛집.py
-│   │   ├── 미용학원.py
-│   │   ├── 공항_장기주차장_주차대행.py
-│   │   ├── 위고비.py
-│   │   ├── 다이어트.py
-│   │   ├── wedding.py
-│   │   ├── anime.py
-│   │   └── ... (32개 카테고리)
-│   ├── service/                # 서비스 프롬프트
-│   │   ├── get_mongo_prompt.py   # MongoDB 데이터 통합
-│   │   └── get_ref_prompt.py     # 참조 원고 통합
-│   └── rules/                  # 작성 규칙
-│       ├── anti_ai_writing_patterns.py
-│       └── line_break_rules.py
-│
-├── analyzer/                   # 텍스트 분석 모듈
-│   ├── sentence.py            # 문장 분석
-│   ├── morpheme.py            # 형태소 분석
-│   ├── subtitle.py            # 소제목 분석
-│   ├── expression.py          # 표현 패턴 분석
-│   └── template.py            # 템플릿 생성
-│
-├── ai_lib/                     # AI 라이브러리
-│   └── line_break_service.py  # 줄바꿈 처리 서비스
-│
-├── utils/                      # 유틸리티 함수
-│   ├── ai_client_factory.py   # AI 클라이언트 팩토리
-│   ├── text_cleaner.py        # 텍스트 정제
-│   ├── format_paragraphs.py   # 문단 포맷팅
-│   ├── query_parser.py        # 쿼리 파싱
-│   ├── get_category_db_name.py # 카테고리 DB 매핑
-│   └── natural_break_text.py  # 자연스러운 텍스트 분할
-│
-├── schema/                     # Pydantic 스키마
-│   ├── generate.py            # 생성 요청 스키마
-│   └── analysis.py            # 분석 요청 스키마
-│
-└── _constants/                 # 상수 정의
-    └── Model.py               # AI 모델 상수
-```
+- **참조 원고 기반 스타일 모방**
+  - MongoDB에 저장된 상위 노출 글 / 수집한 ref 원고를 합쳐
+    “이 카테고리에서 실제로 상위에 떠 있는 글의 문체”를 따라감
+
+### 2.2 텍스트 분석
+
+- **소제목 추출 / 재구성**
+- **문장 분리 / 줄바꿈 규칙 적용**
+- **형태소 분석 (KoNLPy, KSS 등 사용)**
+- **표현 패턴 / 템플릿 추출**
+- 분석 결과 역시 MongoDB에 저장해서 재학습에 사용
+
+### 2.3 운영 편의 기능
+
+- **청크 분할 생성**
+  - 2~4개 청크로 나눠 생성 후 합치는 방식 지원
+- **단계별 생성**
+  - 개요 → 소제목 → 본문 순으로 점진 생성
+- **배치 처리**
+  - JSONL 기반 대량 생성 API/CLI 제공
+- **동시 호출 제한**
+  - 세마포어로 LLM 동시 요청 수를 제어 (기본 3개)
 
 ---
 
-## 설치 및 실행
+## 3. 기술 스택
 
-### 1. 환경 설정
+### 3.1 Backend
+
+- **FastAPI** (Python ASGI 웹 프레임워크) [oai_citation:2‡위키백과](https://en.wikipedia.org/wiki/Comparison_of_server-side_web_frameworks?utm_source=chatgpt.com)
+- **Uvicorn** (ASGI 서버)
+- **Python 3.12 권장**
+
+### 3.2 LLM / AI
+
+- OpenAI API – GPT-4 Turbo / GPT-5 Responses API [oai_citation:3‡Microsoft Learn](https://learn.microsoft.com/en-us/azure/ai-foundry/openai/how-to/responses?utm_source=chatgpt.com)
+- Anthropic Claude
+- Google Gemini
+- Upstage SOLAR
+- xAI Grok
+
+### 3.3 NLP
+
+- KoNLPy (형태소 분석)
+- KSS (문장 분리)
+
+### 3.4 Database
+
+- **MongoDB / MongoDB Atlas** – 카테고리별 DB 분리 전략 사용 [oai_citation:4‡위키백과](https://ru.wikipedia.org/wiki/MongoDB?utm_source=chatgpt.com)
+
+---
+
+## 4. 아키텍처 & 데이터 흐름
+
+### 4.1 전체 흐름
+
+1. 클라이언트가 `/generate/...` 엔드포인트로 요청 전송
+2. FastAPI 라우터가 Pydantic 스키마로 요청 검증
+3. `llm/` 서비스에서:
+   - 카테고리별 프롬프트 불러오기 (`_prompts/category/...`)
+   - MongoDB에서 카테고리 DB 접속 후 상위 노출 데이터 조회
+   - 참조 원고(ref)와 합쳐 최종 system / user prompt 구성
+4. 선택된 AI 엔진 호출 (GPT / Claude / Gemini / SOLAR / Grok)
+5. 응답 텍스트를 `utils/text_cleaner.py`, `ai_lib/line_break_service.py` 등으로 후처리
+6. `generated` 컬렉션에 결과 저장 (content, 모델, 카테고리, 키워드 등)
+
+### 4.2 카테고리별 DB 분리 전략
+
+MongoDB에서 각 카테고리를 **별도 데이터베이스**로 분리해서 관리합니다.
+
+- 예시:
+  - `맛집_db`
+  - `다이어트_db`
+  - `공항_장기주차장_주차대행_db`
+  - `anime_db`
+- 공통으로 `generated` 컬렉션에서 생성 결과를 관리하고,
+  `articles`, `keywords`, `analysis` 등은 카테고리 용도에 맞춰 씀.
+
+이 구조 덕분에:
+
+- 카테고리별 인덱싱·백업이 쉬움
+- 특정 카테고리만 따로 실험 가능
+- 나중에 카테고리 단위로 Atlas 클러스터를 분리하는 것도 자연스러움
+
+---
+
+## 5. 디렉터리 구조
+
+요약 버전만 적으면:
 
 ```bash
-# 저장소 클론
-git clone <repository-url>
+blog_analyzer/
+├── api.py                # FastAPI 엔트리 포인트
+├── config.py             # 환경변수 / AI 클라이언트 설정
+├── mongodb_service.py    # MongoDB CRUD 래퍼
+├── cli.py                # 배치 실행용 CLI
+│
+├── routers/              # FastAPI 라우터 계층
+│   ├── generate/         # 원고 생성 관련 API
+│   ├── analysis/         # 텍스트 분석 API
+│   ├── category/         # 키워드/카테고리 API
+│   └── ref/              # 참조 원고 조회
+│
+├── llm/                  # LLM 호출 비즈니스 로직
+│   ├── kkk_service.py    # 멀티 AI 엔진 통합 서비스 (핵심)
+│   ├── gpt_4_v2_service.py
+│   ├── gpt_5_v2_service.py
+│   ├── claude_service.py
+│   ├── gemini_service.py
+│   └── chunk_service.py
+│
+├── _prompts/             # 프롬프트 엔지니어링 모음
+│   ├── category/         # 카테고리별 프롬프트
+│   ├── service/          # Mongo, ref 통합용 시스템 프롬프트
+│   └── rules/            # 공통 금기/줄바꿈 규칙
+│
+├── analyzer/             # 텍스트 분석 모듈
+├── ai_lib/               # 줄바꿈 등 AI 보조 로직
+├── utils/                # 공용 유틸
+├── schema/               # Pydantic 스키마
+└── _constants/           # 모델 상수 등
+
+
+⸻
+
+6. 설치 및 실행
+
+6.1 로컬 개발 환경
+
+# 1. 클론
+git clone https://github.com/ganggyunggyu/blog_analyzer.git
 cd blog_analyzer
 
-# 가상환경 생성 (권장)
+# 2. 가상환경
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 
-# 의존성 설치
+# 3. 패키지 설치
 pip install -r requirements.txt
-```
 
-### 2. 환경변수 설정
+6.2 환경 변수 설정
 
-`.env` 파일 생성:
+프로젝트 루트에 .env 파일 생성:
 
-```env
 # OpenAI
 OPENAI_API_KEY=sk-...
 
 # Anthropic Claude
-ANTHROPIC_API_KEY=sk-ant-...
+ANTHROPIC_API_KEY=...
 
 # Google Gemini
 GEMINI_API_KEY=...
@@ -192,606 +204,191 @@ GROK_API_KEY=...
 
 # MongoDB
 MONGO_URI=mongodb+srv://...
-MONGO_DB_NAME=default_db
+MONGO_DB_NAME=default_db   # 기본 DB명 (카테고리별로 set_db_name으로 교체)
 
-# 동시 호출 제한
+# LLM 동시 호출 개수
 LLM_CONCURRENCY=3
-```
 
-### 3. 서버 실행
+6.3 서버 실행
 
-```bash
-# Uvicorn으로 실행
 uvicorn api:app --reload --host 0.0.0.0 --port 8000
 
-# 또는 CLI로 실행
-python cli.py
-```
+실행 후:
+	•	Swagger: http://localhost:8000/docs
+	•	OpenAPI JSON: http://localhost:8000/openapi.json
 
-서버 실행 후: http://localhost:8000/docs (Swagger UI)
+⸻
 
----
+7. API 사용 예시
 
-## API 엔드포인트
+7.1 KKK 멀티 AI 서비스
 
-### 원고 생성 (Generate)
+하나의 엔드포인트에서 GPT / Claude / Gemini를 교체해서 쓸 수 있는 통합 서비스.
 
-#### GPT-4 Turbo
-```http
-POST /gpt-4-v2/generate
+POST /kkk/generate
 Content-Type: application/json
 
+요청 예시:
+
 {
-  "service": "헤어미용사_자격증",
-  "keyword": "천안미용학원",
-  "ref": "참조 원고 텍스트 (선택)"
+  "service": "다이어트",
+  "keyword": "위고비 다이어트 후기 부작용",
+  "ref": ""
 }
-```
 
-#### GPT-5 Responses API
-```http
-POST /gpt-5-v2/generate
-```
+	•	service : 카테고리 이름 (프롬프트 + MongoDB DB 이름과 매핑)
+	•	keyword: 블로그 원고의 메인 키워드
+	•	ref    : 선택. 상위 노출 글 등을 그대로 넣어 스타일을 따라 쓰게 할 때 사용
 
-#### KKK 멀티 AI (GPT/Claude/Gemini)
-```http
-POST /kkk/generate
-```
+사용 모델은 llm/kkk_service.py 내부에서 설정:
 
-- 모델 선택: `llm/kkk_service.py`의 `model_name` 변수로 제어
-- 지원 모델:
-  - `gpt-4-turbo`
-  - `gpt-5o`
-  - `claude-sonnet-4-5-20250929`
-  - `gemini-2.5-flash-lite`
+MODEL_NAME = "gpt-5o"  # gpt-4-turbo, claude-sonnet-4.5, gemini-2.5-flash-lite 등
 
-#### Claude 전용
-```http
-POST /claude/generate
-```
+7.2 GPT-4 전용
 
-#### Gemini 전용
-```http
-POST /gemini/generate
-```
+POST /gpt-4-v2/generate
 
-#### SOLAR 전용
-```http
-POST /solar/generate
-```
+{
+  "service": "맛집",
+  "keyword": "성수 맛집 예약",
+  "ref": "수집해둔 상위 노출 글 전문 텍스트..."
+}
 
-### 텍스트 분석 (Analysis)
+7.3 텍스트 분석
 
-#### 소제목 추출
-```http
+소제목 추출
+
 POST /analysis/get-sub-title
 Content-Type: application/json
 
 {
-  "text": "분석할 블로그 원고"
+  "text": "분석할 블로그 원고 전체 텍스트..."
 }
-```
 
-#### 텍스트 업로드 분석
-```http
+텍스트 파일 업로드 분석
+
 POST /analysis/upload-text
 Content-Type: multipart/form-data
+file: blog.txt
 
-file: 텍스트파일.txt
-```
 
-#### 통합 분석
-```http
-POST /analysis/analyze
-```
+⸻
 
-### 참조 원고 (Reference)
+8. 카테고리 시스템
 
-```http
-POST /ref/get-ref
-Content-Type: application/json
+8.1 구조
 
-{
-  "category": "헤어미용사_자격증"
-}
-```
+각 카테고리 프롬프트 파일은 다음 요소를 가진다.
+	•	content_essence : 글의 본질(어떤 독자, 어떤 상황, 어떤 목적)
+	•	writing_style   : 말투, 감정 농도, 존댓말/반말
+	•	narrative_structure : 글 흐름 (도입 → 경험 → 디테일 → 한줄 정리 등)
+	•	linguistic_patterns : 자주 쓰는 표현 / 피해야 할 표현
+	•	key_components  : 필수 포함 요소 (가격, 위치, 부작용, 대안 등)
+	•	emotional_arc   : 감정선 (불안 → 안도, 호기심 → 확신 등)
+	•	transformation_examples : 좋은 예 / 나쁜 예 비교
 
----
+8.2 실제 사용 예
+	•	다이어트 카테고리
+	•	위고비 / 마운자로 / 일반 식단 다이어트 등 다양한 케이스를 다룰 수 있게 설계
+	•	“살 빼야지 → 정보 검색 → 시도 → 부작용/후기 → 내 결론” 흐름을 기본값으로 사용
+	•	맛집 카테고리
+	•	위치·주차·대기시간·가격·대표메뉴·실제 방문 동선 등
+	•	사진 설명 없이도 포스팅이 성립되도록 문장 중심 서술
+	•	공항_장기주차장_주차대행
+	•	공식 주차장 vs 사설 대행비 비교
+	•	맡기고 돌아올 때까지 타임라인 기준으로 서술
 
-## 카테고리 시스템
+⸻
 
-### 지원 카테고리 (43개+)
+9. MongoDB 연동 패턴
 
-#### 뷰티/미용
-- `미용학원` - 헤어/네일/피부 미용 학원 후기
-- `울쎄라` - 피부 리프팅 시술 후기
-- `리쥬란` - 피부 재생 시술 후기
-- `리들샷` - 피부 개선 시술 후기
-- `라미네이트` - 치아 성형 후기
-- `beauty_treatment` - 일반 미용 시술
+9.1 기본 사용
 
-#### 건강/다이어트
-- `다이어트` - 일반 다이어트 후기
-- `위고비` - 위고비(GLP-1) 다이어트 후기
-- `마운자로` - 마운자로 다이어트 주사 후기
-- `마운자로_부작용` - 마운자로 부작용 정보
-- `서브웨이다이어트` - 서브웨이 다이어트 후기
-- `스위치온다이어트` - 스위치온 다이어트 후기
-- `브로멜라인` - 브로멜라인 보조제 후기
-- `알파CD` - 알파CD 다이어트 보조제
-- `에리스리톨` - 제로 칼로리 감미료 후기
-- `영양제` - 건강기능식품 후기
-- `질분비물` - 여성 건강 정보
-
-#### 여행/생활
-- `공항_장기주차장_주차대행` - 인천공항 주차대행 후기
-- `맛집` - 맛집 방문 후기
-- `wedding` - 결혼 준비/웨딩홀 후기
-- `캐리어` - 여행용 캐리어 추천
-- `애견동물_반려동물_분양` - 반려동물 분양 정보
-
-#### 교육
-- `외국어교육` - 외국어 학습 후기
-- `외국어교육_학원` - 외국어 학원 후기
-
-#### 엔터테인먼트
-- `anime` - 애니메이션 리뷰
-- `movie` - 영화 리뷰
-
-#### 정보/주의
-- `텔레그램사기` - 텔레그램 사기 주의 정보
-- `틱톡부업사기` - 틱톡 부업 사기 주의 정보
-- `족저근막염깔창` - 족저근막염 깔창 추천
-- `족저근막염신발_추천` - 족저근막염 신발 추천
-- `멜라논크림` - 멜라논 크림 후기
-
-#### 기타
-- `기타` - 일반 블로그 포스팅
-
-### 카테고리별 특징
-
-각 카테고리는 독립적인 프롬프트 템플릿을 가지며:
-
-1. **content_essence**: 글의 핵심 정체성
-2. **writing_style**: 어조, 문체, 감정 수준
-3. **narrative_structure**: 글의 흐름과 단계별 비율
-4. **linguistic_patterns**: 자주 쓰는 표현, 전환어
-5. **key_components**: 필수/권장/금지 요소
-6. **emotional_arc**: 감정 변화 흐름
-7. **transformation_examples**: 좋은 예시 vs 나쁜 예시
-
----
-
-## AI 서비스 비교
-
-| AI 엔진 | 모델명 | 특징 | 추천 용도 |
-|---------|--------|------|-----------|
-| **GPT-4 Turbo** | `gpt-4-turbo` | 안정적, 높은 품질 | 일반 블로그 원고 |
-| **GPT-5** | `gpt-5o` | Responses API, reasoning 지원 | 고급 추론이 필요한 콘텐츠 |
-| **Claude Sonnet 4.5** | `claude-sonnet-4-5-20250929` | 자연스러운 문체, 긴 컨텍스트 | 감성적 후기, 긴 원고 |
-| **Gemini 2.5 Flash** | `gemini-2.5-flash-lite` | 빠른 속도, 저렴한 비용 | 대량 생성, 빠른 테스트 |
-| **Gemini 2.0 Flash** | `gemini-2.0-flash-lite` | 최신 모델, 향상된 성능 | 균형잡힌 품질 |
-| **SOLAR** | `solar-pro` | Upstage 한국어 특화 | 한국어 전문 콘텐츠 |
-| **Grok** | `grok-4-reasoning` | xAI 추론 모델, 긴 컨텍스트 | 복잡한 추론, 긴 원고 |
-
-### API 파라미터 튜닝
-
-#### GPT-5 / KKK Service
-```python
-reasoning={"effort": "minimal"}  # minimal, low, medium, high
-text={"verbosity": "low"}        # low, medium, high
-```
-
-- **effort**: 추론 깊이 (minimal: 빠르고 간결, high: 심도있는 분석)
-- **verbosity**: 응답 상세도 (low: 핵심만, high: 풍부한 설명)
-
----
-
-## 프롬프트 엔지니어링
-
-### 프롬프트 구조
-
-모든 원고는 다음 프롬프트 구조를 따릅니다:
-
-```
-[System Prompt]
-├── Task Definition (작업 정의)
-├── Output Structure (출력 구조)
-├── Category Tone Rules (카테고리 규칙)
-├── Line Break Rules (줄바꿈 규칙)
-├── Human Writing Style (자연스러운 문체)
-└── Anti-AI Patterns (AI 티 제거)
-
-[User Prompt]
-├── MongoDB Data (카테고리별 DB 데이터)
-├── Reference Article (참조 원고)
-├── Keyword Integration (키워드 통합)
-└── Quality Standards (품질 기준)
-```
-
-### 핵심 프롬프트 원칙
-
-#### 1. 금지된 형식 (Forbidden Formats)
-```python
-# 마크다운 문법
-✗ # * - ** __ ~~ []() ```
-
-# HTML 태그
-✗ <p> <br> <div> <a> <img>
-
-# 특수문자
-✗ · • ◦ ▪ → ※
-
-# 구조 라벨
-✗ "서론", "본문", "결론", "들어가며", "마무리"
-
-# 메타 표현
-✗ "요약하자면", "결론적으로", "정리하면"
-
-# 어색한 단어
-✗ "루틴"
-```
-
-#### 2. SEO 최적화
-- 키워드 자연스럽게 문맥에 통합
-- 제목에 키워드 포함 (20-35자)
-- 소제목에 키워드 변형 포함
-- 과도한 키워드 반복 금지
-
-#### 3. 자연스러운 문체
-- 구어체 존댓말 (반말 금지)
-- 감정 표현 풍부하게 (진짜, 정말, 너무)
-- 전환어 자연스럽게 사용 (그래서, 그런데, 그렇게)
-- 1인칭 경험담 형식
-
-### MongoDB 데이터 통합
-
-카테고리별 MongoDB에 저장된 **상위 노출 글 데이터**를 학습:
-
-```python
-# _prompts/service/get_mongo_prompt.py
-
-def get_mongo_prompt(category: str, parsed: dict) -> str:
-    """
-    MongoDB에서 카테고리별 데이터 조회 후
-    프롬프트에 통합하여 스타일 학습
-    """
-    # 1. MongoDB 연결
-    db_service = MongoDBService()
-    db_service.set_db_name(db_name=category)
-
-    # 2. 데이터 조회 (상위 5개)
-    documents = db_service.find_documents(
-        collection_name="articles",
-        limit=5
-    )
-
-    # 3. 프롬프트 구성
-    # - 소제목 리스트
-    # - 문체 분석
-    # - 키워드 배치 패턴
-
-    return formatted_prompt
-```
-
----
-
-## MongoDB 연동
-
-### 데이터베이스 구조
-
-```
-MongoDB Atlas
-├── 카테고리1_db (예: 헤어미용사_자격증)
-│   ├── articles (상위 노출 글)
-│   ├── keywords (키워드 풀)
-│   └── analysis (분석 결과)
-├── 카테고리2_db (예: 맛집)
-│   └── ...
-└── generated (생성된 원고)
-    ├── content (원고 본문)
-    ├── timestamp (생성 시간)
-    ├── engine (사용 AI 모델)
-    ├── category (카테고리)
-    └── keyword (키워드)
-```
-
-### MongoDB 서비스 사용
-
-```python
 from mongodb_service import MongoDBService
 
-# 초기화
-db_service = MongoDBService()
-
-# 카테고리 DB 선택
-db_service.set_db_name(db_name="헤어미용사_자격증")
+db = MongoDBService()
+db.set_db_name("맛집")  # 카테고리 DB 선택
 
 try:
-    # 문서 삽입
-    db_service.insert_document(
+    # 생성된 글 저장
+    db.insert_document(
         collection_name="generated",
         document={
             "content": generated_text,
-            "timestamp": time.time(),
-            "engine": "gpt-4-turbo",
-            "category": "헤어미용사_자격증",
-            "keyword": "천안미용학원"
-        }
+            "engine": "gpt-5o",
+            "category": "맛집",
+            "keyword": "성수 맛집 예약",
+            "created_at": time.time()
+        },
     )
 
-    # 문서 조회
-    results = db_service.find_documents(
+    # 참조용 상위 노출 글 조회
+    refs = db.find_documents(
         collection_name="articles",
-        query={"keyword": "천안미용학원"},
-        limit=5
+        query={"keyword": "성수 맛집 예약"},
+        limit=5,
     )
 
 finally:
-    # 반드시 연결 종료
-    db_service.close_connection()
+    db.close_connection()
+
+9.2 전체 카테고리 검색 전략
+
+현재 구조는 “카테고리별 DB 분리”라서, 전체 검색을 하고 싶으면:
+	1.	utils/get_category_db_name.py에 등록된 카테고리 목록을 가져온다.
+	2.	각 카테고리에 대해:
+	•	set_db_name(category_db) 호출
+	•	generated 또는 articles 컬렉션에서 동일 쿼리 실행
+	3.	결과를 하나의 리스트로 합쳐서 반환
+
+규모가 커지면:
+	•	검색 전용 공통 DB (search_index)를 두고,
+	•	생성 시점에 요약 정보(카테고리, 키워드, 제목, 주요 토픽)만 search_index에 동시에 적어두고
+	•	검색 API는 search_index만 치는 식으로 스케일링 가능하다.
+
+⸻
+
+10. 개발 컨벤션
+	•	Pydantic 스키마로 모든 요청/응답 타입 명시
+	•	FastAPI 엔드포인트에서는 비즈니스 로직 금지, llm/ 및 analyzer/ 레이어로 위임
+	•	동기 CPU 바운드 작업은 run_in_threadpool로 감싸서 이벤트 루프 블로킹 방지
+	•	MongoDB 연결은 항상 try / finally로 감싸서 close_connection() 보장
+	•	LLM 호출 에러 처리:
+	•	사용자의 잘못된 입력 → HTTPException(status_code=400)
+	•	외부 API/서버 에러 → HTTPException(status_code=500)
+
+⸻
+
+11. 실제 사용 시나리오 예시
+
+11.1 성형·피부 시술 후기 자동 생성
+	1.	service = "리쥬란"
+	2.	키워드: "리쥬란 힐러 효과 개인후기"
+	3.	ref: 해당 병원/시술 상위 노출 3개 원고 합본
+	4.	kkk/generate 또는 gpt-5-v2/generate 호출
+	5.	생성된 글을 검토 후, 그대로 네이버 블로그에 업로드
+
+11.2 다이어트 인포/경험 혼합형 글 생성
+	1.	service = "위고비"
+	2.	키워드: "위고비 다이어트 부작용 비용"
+	3.	MongoDB에서 위고비 관련 상위 노출 글의 정보·수치(가격범위, 부작용 빈도)를 추출
+	4.	LLM 프롬프트에 실제 범위값을 포함해
+“체험담 + 정보 글” 구조로 생성
+
+11.3 맛집 체인 통합 운영
+	1.	각 지점별 DB(예: 성수맛집, 서면맛집)에 리뷰 데이터를 쌓는다.
+	2.	체인 전체에 대한 마케팅 글 작성 시,
+여러 DB에서 공통 패턴을 뽑아 통합 프롬프트를 구성.
+	3.	“지점별 공통 장점 + 지역별 차이점”을 살린 체인 브랜딩 글 생성.
+
+⸻
+
+12. 참고 링크
+
+GitHub Repository: https://github.com/ganggyunggyu/blog_analyzer
+
+FastAPI Docs:      https://fastapi.tiangolo.com/
+OpenAI Responses:  https://platform.openai.com/docs/api-reference/responses
+MongoDB Atlas:     https://www.mongodb.com/atlas
+
 ```
-
----
-
-## 개발 규칙
-
-### Python 코딩 컨벤션
-
-```python
-# 1. 네이밍 규칙
-class GenerateService:           # PascalCase
-    API_KEY = "..."             # UPPER_SNAKE_CASE
-
-    def generate_blog(self):     # snake_case
-        user_keyword = "..."     # snake_case
-        _private_method()        # _leading_underscore
-
-# 2. Import 순서
-# Python 표준 라이브러리
-import os
-import time
-from typing import Optional
-
-# 서드파티 라이브러리
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-
-# 프로젝트 내부 모듈
-from config import OPENAI_API_KEY
-from mongodb_service import MongoDBService
-```
-
-### FastAPI 패턴
-
-```python
-from fastapi import APIRouter, HTTPException
-from fastapi.concurrency import run_in_threadpool
-
-router = APIRouter()
-
-@router.post("/generate/service")
-async def generate_endpoint(request: GenerateRequest):
-    """
-    비동기 엔드포인트 패턴
-    """
-    # 동기 함수는 run_in_threadpool로 감싸기
-    result = await run_in_threadpool(
-        service_function,
-        request.keyword,
-        request.ref
-    )
-    return result
-```
-
-### 에러 처리 패턴
-
-```python
-try:
-    # 메인 로직
-    result = ai_generate(keyword, ref, category)
-    return result
-
-except ValueError as e:
-    # 클라이언트 오류 (400)
-    raise HTTPException(status_code=400, detail=str(e))
-
-except Exception as e:
-    # 서버 오류 (500)
-    raise HTTPException(status_code=500, detail=f"내부 오류: {e}")
-
-finally:
-    # 리소스 정리
-    if db_service:
-        db_service.close_connection()
-```
-
-### MongoDB 연결 패턴
-
-```python
-db_service = MongoDBService()
-db_service.set_db_name(db_name=category)
-
-try:
-    # DB 작업
-    db_service.insert_document(collection_name, document)
-
-finally:
-    # 반드시 연결 종료
-    db_service.close_connection()
-```
-
----
-
-## 사용 예시
-
-### 1. 미용학원 후기 생성
-
-```bash
-curl -X POST "http://localhost:8000/kkk/generate" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "service": "헤어미용사_자격증",
-    "keyword": "천안미용학원 헤어미용사 자격증",
-    "ref": ""
-  }'
-```
-
-**생성되는 글 특징:**
-- 고등학생/진로 전환자 1인칭 시점
-- 진로 고민 → 학원 선택 → 학습 과정 → 합격 흐름
-- 처음 가위 잡았을 때의 떨림, 선생님 피드백 등 구체적 에피소드
-- 자격증 시험 준비 과정 상세 묘사
-
-### 2. 다이어트 후기 생성 (위고비)
-
-```bash
-curl -X POST "http://localhost:8000/gpt-5-v2/generate" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "service": "위고비",
-    "keyword": "위고비 다이어트 후기 부작용",
-    "ref": ""
-  }'
-```
-
-**생성되는 글 특징:**
-- 위고비 사용 경험 → 부작용 발생 → 대안 발견 구조
-- GLP-1 작용 원리 과학적 설명
-- 메스꺼움, 비용 부담 등 솔직한 단점
-- 유산균/보조제 대안 제시
-
-### 3. 공항 주차대행 후기 생성
-
-```bash
-curl -X POST "http://localhost:8000/claude/generate" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "service": "공항_장기주차장_주차대행",
-    "keyword": "인천공항 장기주차 주차대행 블루주차대행",
-    "ref": ""
-  }'
-```
-
-**생성되는 글 특징:**
-- 여행 준비 → 주차 고민 → 업체 발견 → 이용 경험
-- 공식 주차장 vs 사설 업체 가격 비교 (구체적 숫자)
-- 발렛 서비스 과정 시간순 묘사
-- 안전 장치 (보험, CCTV) 언급
-
----
-
-## 프로젝트 통계
-
-- **지원 AI 모델**: 6개 (GPT-4, GPT-5, Claude, Gemini, SOLAR, Grok)
-- **카테고리 프롬프트**: 43개+
-- **API 엔드포인트**: 30개+
-- **LLM 서비스**: 30개+
-- **코드 라인**: 15,000+ lines
-- **평균 원고 길이**: 2,800~3,500자 (공백 제외)
-- **생성 시간**: 10~60초 (모델별 상이)
-
----
-
-## 기여 방법
-
-### 새로운 카테고리 추가
-
-1. `_prompts/category/` 폴더에 프롬프트 파일 생성
-```python
-# _prompts/category/새카테고리.py
-
-새카테고리 = """
-<category_specific_rules category="새카테고리">
-  <content_essence>
-    글의 핵심 정체성 정의
-  </content_essence>
-
-  <writing_style>
-    <tone>어조</tone>
-    <formality>격식</formality>
-    <emotion_level>감정 수준</emotion_level>
-  </writing_style>
-
-  <!-- 나머지 구조 정의 -->
-</category_specific_rules>
-"""
-```
-
-2. `llm/kkk_service.py`에 import 추가
-```python
-from _prompts.category.새카테고리 import 새카테고리
-```
-
-3. `utils/get_category_db_name.py`에 매핑 추가
-```python
-CATEGORY_DB_MAP = {
-    "새카테고리": "new_category_db",
-    # ...
-}
-```
-
-4. 테스트 후 커밋
-
----
-
-## 문제 해결
-
-### 1. MongoDB 연결 오류
-```
-pymongo.errors.ServerSelectionTimeoutError
-```
-
-**해결 방법:**
-- `.env` 파일의 `MONGO_URI` 확인
-- MongoDB Atlas IP 화이트리스트 확인
-- 네트워크 방화벽 확인
-
-### 2. OpenAI API 오류
-```
-openai.error.RateLimitError
-```
-
-**해결 방법:**
-- API 키 유효성 확인
-- 사용량 한도 확인
-- `LLM_CONCURRENCY` 값 줄이기 (기본 3 → 1)
-
-### 3. KoNLPy 설치 오류
-```
-JPype1 installation error
-```
-
-**해결 방법:**
-```bash
-# macOS
-brew install java
-
-# Ubuntu
-sudo apt-get install openjdk-11-jdk
-
-# Windows
-# JDK 11 수동 설치 필요
-```
-
----
-
-## 라이선스
-
-이 프로젝트는 비공개 프로젝트입니다.
-
----
-
-## 개발자
-
-**21lab** - AI 블로그 콘텐츠 생성 전문팀
-
----
-
-## 문의
-
-프로젝트 관련 문의사항은 이슈 트래커를 이용해 주세요.
-
----
-
-**Made by 21lab**
