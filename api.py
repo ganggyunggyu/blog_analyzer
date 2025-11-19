@@ -14,6 +14,7 @@ from routers.generate import (
     chunk,
     claude,
     gemini,
+    gemini_3_pro,
     gpt,
     gpt_5,
     gpt_4_v2,
@@ -62,6 +63,7 @@ app.add_middleware(
 app.include_router(ingest.router)
 app.include_router(test.router)
 app.include_router(gemini.router)
+app.include_router(gemini_3_pro.router)
 app.include_router(claude.router)
 app.include_router(gpt.router)
 app.include_router(gpt_5.router)
