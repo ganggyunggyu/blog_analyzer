@@ -27,7 +27,7 @@ from google.genai import types
 from _prompts.category.맛집 import 맛집
 from _prompts.rules.human_writing_style import human_writing_rule
 
-model_name: str = Model.GROK_4_NON_RES
+model_name: str = Model.GEMINI_3_PRO
 
 
 if model_name.startswith("gemini"):
@@ -172,7 +172,7 @@ http://   https://   www.   .com   .co.kr
 "   '   `  
 모든 형태의 인용부호 및 백틱 사용을 금합니다.
 
-5. 특수문자 금지
+5. 하단에 명시 된 특수문자 금지
 - 금지 목록: ·  •  ◦  ▪  →  ※  .  ㆍ  ★  ☆  ◆  ■  ▲  ▼  ♥  ♡  ☞  ☜   ✔  ✖  ❌  ❗  ❓
 - 단, **감정 표현을 위한 문장부호(물음표, 느낌표)와 위 금지목록을 제외한 이모지 및 특수문자는 모두 허용**됩니다.
 
