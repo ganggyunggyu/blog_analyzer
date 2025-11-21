@@ -75,19 +75,11 @@ def restaurant_gen(user_instructions: str, ref: str = "", category: str = "") ->
 
     if not keyword:
         raise ValueError("키워드가 없습니다.")
-    if model_name == Model.GPT5_CHAT:
-        target_chars_min, target_chars_max = 3000, 3200
-    if model_name == Model.GPT4_1:
-        target_chars_min, target_chars_max = 2400, 2600
-    else:
-        target_chars_min, target_chars_max = 1900, 2000
 
     mongo_data = get_mongo_prompt(category, user_instructions)
 
     output_rule = f"""
 ## 제목 / 소제목 출력 유의사항
-- ~~~에요 하며 문장 형태로 끊내지 않고 매력적! 추천! 이런식으로 작성해야된다
-- 총평으로 재방문 각, 신불당 소갈비 맛집 강추해요 X / 총평으로 재방문 각, 신불당 소갈비 맛집 강추! O
 ## 제목 출력
 1번으로 체크해야할 사항:
 - 유저 입력에 제목: 으로 시작하고 제목을 이미 지어뒀다면 반드시 그 제목을 사용하고 제목 출력 과정은 종료한다.

@@ -125,7 +125,7 @@ def gemini_3_pro_gen(user_instructions: str, ref: str = "", category: str = "") 
     if model_name == Model.GPT4_1:
         target_chars_min, target_chars_max = 2400, 2600
     else:
-        target_chars_min, target_chars_max = 2200, 2400
+        target_chars_min, target_chars_max = 1800, 2000
 
     mongo_data = get_mongo_prompt(category, user_instructions)
     category_tone_rules = get_category_tone_rules(category)
@@ -150,12 +150,12 @@ def gemini_3_pro_gen(user_instructions: str, ref: str = "", category: str = "") 
       3. 세 번째 소제목
 
 
-      본문 (800-900자)
+      본문 (400-500자)
 
       4. 네 번째 소제목
 
 
-      본문 (700-800자)
+      본문 (500-600자)
 
       5. 다섯 번째 소제목
 
