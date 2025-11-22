@@ -134,7 +134,7 @@ def gemini_3_pro_gen(user_instructions: str, ref: str = "", category: str = "") 
 <output_structure>
   <format>
     <structure>
-      제목 (10-25자, 제목에는 쉼표(,)를 넣지 않음, **동일한** 제목 4개 반복 출력, 메인 키워드 관련 서브 키워드를 이용하여 제작)
+      제목 (5-10자, 제목에는 쉼표(,)를 넣지 않음, **동일한** 제목 4개 반복 출력, 메인 키워드 관련 서브 키워드를 이용하여 제작)
 
 
       1. 첫 번째 소제목
