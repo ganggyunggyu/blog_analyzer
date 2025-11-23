@@ -50,7 +50,9 @@ claude_client = (
 )
 
 
-def restaurant_gpt5_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
+def restaurant_gpt5_gen(
+    user_instructions: str, ref: str = "", category: str = ""
+) -> str:
     if ai_service_type == "solar":
         if not UPSTAGE_API_KEY:
             raise ValueError("UPSTAGE_API_KEY가 설정되어 있지 않습니다.")
