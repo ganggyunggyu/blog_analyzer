@@ -132,6 +132,16 @@ def gemini_3_pro_gen(user_instructions: str, ref: str = "", category: str = "") 
 
     output_structure = f"""
 <output_structure>
+<sub_title>
+소제목은 핵심만 간결히 작성
+
+위고비란?
+
+위고비 처방 과정
+위고비 가격 정리
+
+이런 형식으로
+</sub_title>
   <format>
     <structure>
       제목 (5-10자, 제목에는 쉼표(,)를 넣지 않음, **동일한** 제목 4개 반복 출력, 메인 키워드 관련 서브 키워드를 이용하여 제작)
