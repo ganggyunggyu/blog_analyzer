@@ -10,7 +10,7 @@ from mongodb_service import MongoDBService
 from utils.ai_client_factory import call_ai
 
 
-model_name: str = Model.GROK_4_RES
+model_name: str = Model.GROK_4_1_RES
 
 
 def gen_subtitles(

@@ -10,11 +10,14 @@ from mongodb_service import MongoDBService
 from utils.ai_client_factory import call_ai
 
 
-model_name: str = Model.GROK_4_NON_RES
+model_name: str = Model.GROK_4_1_RES
 
 
 def parameter_gen(
-    docs: str, category: str = "", file_name: str = "", model_name_override: Optional[str] = None
+    docs: str,
+    category: str = "",
+    file_name: str = "",
+    model_name_override: Optional[str] = None,
 ) -> Dict[str, List[str]]:
     db_service = MongoDBService()
     model = model_name_override or model_name
@@ -97,7 +100,9 @@ You are an expert in Named Entity Recognition and text analysis. Extract key ent
             result = db_service.upsert_many_documents(
                 "parameters", docs_to_save, ["category", "parameter"]
             )
-            print(f"신규 파라미터: {result['upserted']}개, 중복 제외: {result['matched']}개")
+            print(
+                f"신규 파라미터: {result['upserted']}개, 중복 제외: {result['matched']}개"
+            )
         except Exception as e:
             print(f"파라미터 저장 중 오류 (계속 진행): {e}")
             result = {"upserted": 0, "matched": 0}
@@ -165,5 +170,3 @@ def is_json(text: str) -> bool:
         return True
     except Exception:
         return False
-
-

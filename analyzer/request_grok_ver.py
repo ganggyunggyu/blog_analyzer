@@ -7,7 +7,7 @@ from _constants.Model import Model
 from utils.ai_client_factory import call_ai
 
 
-model_name: str = Model.GROK_4_RES
+model_name: str = Model.GROK_4_1_RES
 
 
 def get_문장해체(ref: str, model_name_override: Optional[str] = None):

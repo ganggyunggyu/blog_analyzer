@@ -6,7 +6,7 @@ from config import OPENAI_API_KEY
 from _constants.Model import Model
 
 
-model_name: str = Model.GPT4_1
+model_name: str = Model.GROK_4_1_RES
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 
