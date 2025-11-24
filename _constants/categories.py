@@ -7,7 +7,7 @@
 CATEGORIES = [
     "무지외반증",
     "안과",
-    "마운자로_스블",
+    # "마운자로_스블",
     "다이어트",
     "다이어트보조제",
     "라미네이트",
@@ -28,6 +28,7 @@ CATEGORIES = [
     "functional-food",
     "hospital",
     "home-appliances",
+    "식용유_오일",
     "luxury",
     "애견동물_반려동물_분양",
     "맛집",
