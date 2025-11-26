@@ -21,6 +21,7 @@ from _prompts.category import (
 )
 from _prompts.rules import line_break_rules
 from _prompts.service.get_mongo_prompt import get_mongo_prompt
+from _prompts.system.ver1 import V1
 from config import (
     CLAUDE_API_KEY,
     GEMINI_API_KEY,
@@ -561,7 +562,10 @@ http://   https://   www.   .com   .co.kr
 """
 
     user = f"""
-'{keyword}'에 대한 네이버 블로그 글을 작성해주세요.
+
+
+
+키워드: {keyword}
 ---
 추가 요청: ({note})
 # 줄바꿈 지침
@@ -607,6 +611,8 @@ http://   https://   www.   .com   .co.kr
 ---
 참조 원고: {ref}
 - 참조원고가 있다면?: 참조원고의 내용의 흐름을 따라 그대로 작성할 것
+
+{V1}
     """
     user_message = user.strip()
     if ai_service_type == "gemini" and gemini_client:
