@@ -6,14 +6,8 @@ from anthropic import Anthropic
 from openai import OpenAI
 from xai_sdk.chat import system as grok_system_message
 from xai_sdk.chat import user as grok_user_message
-from _prompts.category import (
-    다이어트보조제,
-    무지외반증,
-    브로멜라인,
-    스위치온다이어트,
-    알파CD,
-)
 from _prompts.service.get_mongo_prompt import get_mongo_prompt
+from _prompts.service.get_category_tone_rules import get_category_tone_rules
 from config import (
     CLAUDE_API_KEY,
     GEMINI_API_KEY,
@@ -31,40 +25,6 @@ from utils.text_cleaner import comprehensive_text_clean
 
 from google import genai
 from google.genai import types
-
-from _prompts.category.맛집 import 맛집
-from _prompts.category.영화리뷰 import 영화리뷰
-from _prompts.category.호텔 import 호텔
-from _prompts.category.노래리뷰 import 노래리뷰
-from _prompts.category.블록체인_가상화폐 import 블록체인_가상화폐
-from _prompts.category.애견동물_반려동물_분양 import 애견동물_반려동물_분양
-from _prompts.category.공항_장기주차장_주차대행 import 공항_장기주차장_주차대행
-from _prompts.category.미용학원 import 미용학원
-from _prompts.category.다이어트 import 다이어트
-from _prompts.category.멜라논크림 import 멜라논크림
-from _prompts.category.위고비 import 위고비
-from _prompts.category.질분비물 import 질분비물
-from _prompts.category.족저근막염신발_추천 import 족저근막염신발_추천
-
-from _prompts.category.anime import anime
-from _prompts.category.movie import movie
-from _prompts.category.wedding import wedding
-from _prompts.category.캐리어 import 캐리어
-from _prompts.category.기타 import 기타
-from _prompts.category.라미네이트 import 라미네이트
-from _prompts.category.리쥬란 import 리쥬란
-from _prompts.category.리들샷 import 리들샷
-from _prompts.category.서브웨이다이어트 import 서브웨이다이어트
-from _prompts.category.에리스리톨 import 에리스리톨
-from _prompts.category.외국어교육 import 외국어교육
-from _prompts.category.외국어교육_학원 import 외국어교육_학원
-from _prompts.category.영양제 import 영양제
-from _prompts.category.울쎄라 import 울쎄라
-from _prompts.category.족저근막염깔창 import 족저근막염깔창
-from _prompts.category.텔레그램사기 import 텔레그램사기
-from _prompts.category.틱톡부업사기 import 틱톡부업사기
-
-from _prompts.category.beauty_treatment import beauty_treatment
 
 from _prompts.rules.human_writing_style import human_writing_rule
 from _prompts.rules.line_example_rule import line_example_rule
@@ -372,64 +332,3 @@ def kkk_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     print(f"원고 길이 체크: {length_no_space}")
 
     return text
-
-
-def get_category_tone_rules(category):
-    """카테고리별 톤 규칙을 XML 구조로 반환"""
-
-    base_tone = """
-    <default>
-        <style>친근하고 활기찬 존댓말</style>
-        <tone>인공지능이 아닌 인간이 작성한것 처럼 자연스러운 말투</tone>
-        <emotion>자연스러운 감정표현 (ㅎㅎ, ㅜㅜ, !! 등)</emotion>
-        <emoji>적절한 이모지 사용 허용</emoji>
-        <restrictions>과장/단정 표현 금지</restrictions>
-    </default>
-    """
-
-    tone_rules_map = {
-        "anime": anime,
-        "beauty-treatment": beauty_treatment,
-        "movie": movie,
-        "functional-food": 영양제,
-        "맛집": 맛집,
-        "알파CD": 알파CD,
-        "wedding": wedding,
-        "위고비": 위고비,
-        "다이어트": 다이어트,
-        "다이어트보조제": 다이어트보조제,
-        "브로멜라인": 브로멜라인,
-        "애견동물_반려동물_분양": 애견동물_반려동물_분양,
-        "외국어교육": 외국어교육,
-        "외국어교육_학원": 외국어교육_학원,
-        "미용학원": 미용학원,
-        "라미네이트": 라미네이트,
-        "리쥬란": 리쥬란,
-        "울쎄라": 울쎄라,
-        "리들샷": 리들샷,
-        "멜라논크림": 멜라논크림,
-        "서브웨이다이어트": 서브웨이다이어트,
-        "스위치온다이어트": 스위치온다이어트,
-        "파비플로라": 다이어트,
-        "공항_장기주차장:주차대행": 공항_장기주차장_주차대행,
-        "에리스리톨": 에리스리톨,
-        "족저근막염깔창": 족저근막염깔창,
-        "캐리어": 캐리어,
-        "텔레그램사기": 텔레그램사기,
-        "틱톡부업사기": 틱톡부업사기,
-        "기타": 기타,
-        "질분비물": 질분비물,
-        "무지외반증": 무지외반증,
-        "블록체인_가상화폐": 블록체인_가상화폐,
-        "노래리뷰": 노래리뷰,
-        "호텔": 호텔,
-        "영화리뷰": 영화리뷰,
-    }
-    specific_rules = tone_rules_map.get(category.lower(), "")
-
-    return f"""
-
-
-        {base_tone}
-    </tone_rules>
-    """

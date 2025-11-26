@@ -1,16 +1,10 @@
 from fastapi import HTTPException, APIRouter
+from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel
-from llm.claude_service import claude_gen, ClaudeModel
 
+from llm.claude_service import claude_gen, model_name
 from mongodb_service import MongoDBService
-
-
 from utils.get_category_db_name import get_category_db_name
-
-from fastapi.concurrency import run_in_threadpool
-from fastapi import HTTPException
-from fastapi.concurrency import run_in_threadpool
-
 from utils.progress_logger import progress
 
 router = APIRouter()
@@ -25,7 +19,7 @@ class GenerateRequest(BaseModel):
 @router.post("/generate/claude")
 async def generate_manuscript_claude_api(request: GenerateRequest):
     """
-    Claude로 원고 생성 (GPT 엔드포인트와 동일한 처리 흐름)
+    Claude로 원고 생성
     """
     service = (request.service or "claude").lower()
     keyword = (request.keyword or "").strip()
@@ -39,7 +33,6 @@ async def generate_manuscript_claude_api(request: GenerateRequest):
     db_service = MongoDBService()
     db_service.set_db_name(db_name=category)
 
-    model_name = ClaudeModel.SONNET_3_7.value
     is_ref = bool(ref and ref.strip())
     print(
         f"[GEN] service={service} | model={model_name} | category={category} | keyword={keyword} | hasRef={is_ref}"
@@ -49,8 +42,9 @@ async def generate_manuscript_claude_api(request: GenerateRequest):
         with progress(label=f"{service}:{model_name}:{keyword}"):
             generated_manuscript = await run_in_threadpool(
                 claude_gen,
-                keyword=keyword,
+                user_instructions=keyword,
                 ref=ref,
+                category=category,
             )
 
         if generated_manuscript:
@@ -60,14 +54,16 @@ async def generate_manuscript_claude_api(request: GenerateRequest):
             document = {
                 "content": generated_manuscript,
                 "timestamp": current_time,
+                "engine": model_name,
+                "service": service,
+                "category": category,
+                "keyword": keyword,
             }
             try:
                 db_service.insert_document("manuscripts", document)
-
                 document["_id"] = str(document["_id"])
                 return document
             except Exception:
-
                 raise HTTPException(
                     status_code=500, detail="생성 성공했지만 DB 저장에 실패했습니다."
                 )
