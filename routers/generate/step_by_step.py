@@ -5,6 +5,7 @@
 """
 
 import time
+from datetime import datetime
 from fastapi import HTTPException, APIRouter
 from fastapi.concurrency import run_in_threadpool
 
@@ -76,10 +77,9 @@ async def generate_step_by_step_manuscript(request: GenerateRequest):
             )
 
         # MongoDB에 저장
-        current_time = time.time()
         document = {
             "content": generated_manuscript,
-            "timestamp": current_time,
+            "createdAt": datetime.now(),
             "engine": MODEL_NAME,
             "keyword": keyword,
             "category": category,
@@ -102,7 +102,7 @@ async def generate_step_by_step_manuscript(request: GenerateRequest):
             # DB 저장 실패해도 원고는 반환
             return {
                 "content": generated_manuscript,
-                "timestamp": current_time,
+                "createdAt": datetime.now(),
                 "engine": MODEL_NAME,
                 "keyword": keyword,
                 "category": category,
@@ -175,11 +175,10 @@ async def generate_step_by_step_detailed(request: GenerateRequest):
             )
 
         # 상세 문서 구성
-        current_time = time.time()
         detailed_document = {
             "content": detailed_result["content"],
             "title": detailed_result.get("title", ""),
-            "timestamp": current_time,
+            "createdAt": datetime.now(),
             "engine": MODEL_NAME,
             "keyword": keyword,
             "category": category,

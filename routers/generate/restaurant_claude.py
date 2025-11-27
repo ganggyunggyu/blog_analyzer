@@ -48,12 +48,11 @@ async def generate_manuscript_restaurant_claude_api(request: GenerateRequest):
             )
 
         if generated_manuscript:
-            import time
+            from datetime import datetime
 
-            current_time = time.time()
             document = {
                 "content": generated_manuscript,
-                "timestamp": current_time,
+                "createdAt": datetime.now(),
                 "engine": model_name,
                 "service": service,
                 "category": category,

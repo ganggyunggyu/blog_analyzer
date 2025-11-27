@@ -41,14 +41,13 @@ async def generator_my(request: GenerateRequest):
             )
 
         if generated_manuscript:
-            import time
+            from datetime import datetime
 
             parsed = parse_query(keyword)
 
-            current_time = time.time()
             document = {
                 "content": generated_manuscript,
-                "timestamp": current_time,
+                "createdAt": datetime.now(),
                 "engine": model_name,
                 "service": f"{service}_my",
                 "category": category,

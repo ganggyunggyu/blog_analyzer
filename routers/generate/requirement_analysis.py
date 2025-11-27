@@ -1,4 +1,5 @@
 import time
+from datetime import datetime
 from fastapi import HTTPException, APIRouter
 from fastapi.concurrency import run_in_threadpool
 
@@ -51,11 +52,9 @@ async def generator_requirement_analysis(request: GenerateRequest):
 
             parsed = parse_query(keyword)
 
-            current_time = time.time()
-
             document = {
                 "content": generated_manuscript,
-                "timestamp": current_time,
+                "createdAt": datetime.now(),
                 "service": f"{service}_requirement_analysis",
                 "category": category,
                 "ref": ref if ref else "",

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import time
 import re
+from datetime import datetime
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException
@@ -186,10 +187,9 @@ async def generate_solar(request: GenerateRequest):
         if not manuscript:
             raise HTTPException(status_code=500, detail="SOLAR 원고 생성 실패")
 
-        current_time = time.time()
         document = {
             "content": manuscript,
-            "timestamp": current_time,
+            "createdAt": datetime.now(),
             "engine": SOLAR_MODEL_NAME,
             "service": service or "solar",
             "category": category,

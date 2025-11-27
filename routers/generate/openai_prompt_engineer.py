@@ -1,4 +1,5 @@
 import time
+from datetime import datetime
 from fastapi import HTTPException, APIRouter
 from fastapi.concurrency import run_in_threadpool
 
@@ -52,11 +53,9 @@ async def generator_openai_prompt_engineer(request: GenerateRequest):
 
             parsed = parse_query(keyword)
 
-            current_time = time.time()
-
             document = {
                 "content": generated_manuscript,
-                "timestamp": current_time,
+                "createdAt": datetime.now(),
                 "engine": model_name,
                 "service": f"{service}_openai_prompt_engineer",
                 "category": category,

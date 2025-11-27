@@ -1,4 +1,5 @@
 import time
+from datetime import datetime
 from fastapi import HTTPException, APIRouter
 from fastapi.concurrency import run_in_threadpool
 
@@ -50,11 +51,10 @@ async def generator_mdx_post(request: GenerateRequest):
 
         if generated_manuscript:
             parsed = parse_query(keyword)
-            current_time = time.time()
 
             document = {
                 "content": generated_manuscript,
-                "timestamp": current_time,
+                "createdAt": datetime.now(),
                 "engine": model_name,
                 "service": f"{service}_mdx_post",
                 "category": category,

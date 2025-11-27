@@ -35,12 +35,11 @@ async def generator_gpt(request: GenerateRequest):
             generated_manuscript = await gpt_5_gen(user_instructions=keyword, ref=ref)
 
         if generated_manuscript:
-            import time
+            from datetime import datetime
 
-            current_time = time.time()
             document = {
                 "content": generated_manuscript,
-                "timestamp": current_time,
+                "createdAt": datetime.now(),
                 "engine": model_name,
                 "service": service,
                 "category": category,
