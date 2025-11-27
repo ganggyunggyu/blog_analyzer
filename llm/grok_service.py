@@ -172,6 +172,7 @@ def grok_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
 제목
 제목
 
+서론 (유저의 호기심을 끌만한 내용 + 네이버 DIA SEO 최적화)
 
 1. 첫 번째 소제목
 
