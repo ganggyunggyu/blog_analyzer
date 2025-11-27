@@ -47,6 +47,9 @@ def claude_gen(user_instructions: str, ref: str = "", category: str = "") -> str
 # 글자수
 - 한국어 공백 제거 기준 1800~2300
 
+# 부제 규약
+- 1~5번 넘버링 필수
+
 """
 
     user = f"""

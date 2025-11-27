@@ -19,8 +19,6 @@ from config import (
     solar_client,
 )
 from _constants.Model import Model
-from _prompts.service.get_ref_prompt import get_ref_prompt
-from utils.format_paragraphs import format_paragraphs
 from utils.query_parser import parse_query
 from utils.text_cleaner import comprehensive_text_clean
 
