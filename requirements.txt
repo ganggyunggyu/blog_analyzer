@@ -32,3 +32,5 @@ openai
 google-genai
 python-multipart
 xai-sdk
+PySide6
+pyinstaller
