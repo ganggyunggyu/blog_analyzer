@@ -1,7 +1,9 @@
+"""메인 윈도우"""
 from __future__ import annotations
 
 from datetime import datetime
-from PySide6.QtCore import Qt, QThread, Signal, QTimer
+
+from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import (
     QMainWindow,
     QWidget,
@@ -12,445 +14,29 @@ from PySide6.QtWidgets import (
     QTextEdit,
     QComboBox,
     QPushButton,
-    QMessageBox,
     QStatusBar,
     QProgressBar,
     QListWidget,
     QListWidgetItem,
     QFrame,
-    QGraphicsDropShadowEffect,
     QSizePolicy,
     QScrollArea,
     QApplication,
 )
-from PySide6.QtGui import QColor
 
 from program.core import Generator
-
-
-COLORS = {
-    "canvas": "#F5F7FA",
-    "surface": "#FFFFFF",
-    "primary": "#0064FF",
-    "primary_soft": "#E0EDFF",
-    "primary_hover": "#0055DD",
-    "text_strong": "#111827",
-    "text_muted": "#6B7280",
-    "border": "#E5E7EB",
-    "success": "#34C759",
-    "error": "#FF3B30",
-    "warning": "#FF9500",
-}
-
-STYLE_SHEET = f"""
-QMainWindow {{
-    background-color: {COLORS["canvas"]};
-}}
-
-QWidget {{
-    background-color: transparent;
-    color: {COLORS["text_strong"]};
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Pretendard", sans-serif;
-    font-size: 14px;
-}}
-
-QLabel {{
-    color: {COLORS["text_muted"]};
-    font-size: 13px;
-    background: transparent;
-}}
-
-QLabel#app_title {{
-    color: {COLORS["text_strong"]};
-    font-size: 22px;
-    font-weight: 700;
-}}
-
-QLabel#app_subtitle {{
-    color: {COLORS["text_muted"]};
-    font-size: 13px;
-}}
-
-QLabel#section_title {{
-    color: {COLORS["text_strong"]};
-    font-size: 15px;
-    font-weight: 600;
-}}
-
-QLabel#badge {{
-    color: {COLORS["primary"]};
-    background-color: {COLORS["primary_soft"]};
-    font-size: 12px;
-    font-weight: 600;
-    padding: 6px 12px;
-    border-radius: 14px;
-}}
-
-QLabel#char_count {{
-    color: {COLORS["text_muted"]};
-    font-size: 13px;
-    font-weight: 500;
-}}
-
-QLineEdit {{
-    background-color: {COLORS["surface"]};
-    border: 1.5px solid {COLORS["border"]};
-    border-radius: 12px;
-    padding: 14px 16px;
-    color: {COLORS["text_strong"]};
-    font-size: 15px;
-}}
-
-QLineEdit:focus {{
-    border: 2px solid {COLORS["primary"]};
-    padding: 13px 15px;
-}}
-
-QTextEdit {{
-    background-color: {COLORS["surface"]};
-    border: 1.5px solid {COLORS["border"]};
-    border-radius: 12px;
-    padding: 14px;
-    color: {COLORS["text_strong"]};
-    font-size: 14px;
-    line-height: 1.7;
-}}
-
-QTextEdit:focus {{
-    border: 2px solid {COLORS["primary"]};
-}}
-
-QComboBox {{
-    background-color: {COLORS["surface"]};
-    border: 1.5px solid {COLORS["border"]};
-    border-radius: 12px;
-    padding: 14px 16px;
-    color: {COLORS["text_strong"]};
-    font-size: 15px;
-    min-width: 180px;
-}}
-
-QComboBox:hover, QComboBox:focus {{
-    border: 2px solid {COLORS["primary"]};
-}}
-
-QComboBox::drop-down {{
-    border: none;
-    padding-right: 12px;
-}}
-
-QComboBox::down-arrow {{
-    image: none;
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-top: 6px solid {COLORS["text_muted"]};
-}}
-
-QComboBox QAbstractItemView {{
-    background-color: {COLORS["surface"]};
-    border: 1px solid {COLORS["border"]};
-    border-radius: 8px;
-    padding: 6px;
-    selection-background-color: {COLORS["primary_soft"]};
-    selection-color: {COLORS["primary"]};
-}}
-
-QPushButton#secondary {{
-    background-color: {COLORS["surface"]};
-    border: 1.5px solid {COLORS["border"]};
-    border-radius: 10px;
-    padding: 10px 20px;
-    color: {COLORS["text_strong"]};
-    font-size: 14px;
-    font-weight: 500;
-}}
-
-QPushButton#secondary:hover {{
-    background-color: {COLORS["canvas"]};
-    border-color: {COLORS["primary"]};
-}}
-
-QPushButton#ghost {{
-    background-color: transparent;
-    border: none;
-    color: {COLORS["primary"]};
-    font-size: 13px;
-    font-weight: 500;
-    padding: 8px 12px;
-}}
-
-QPushButton#ghost:hover {{
-    background-color: {COLORS["primary_soft"]};
-    border-radius: 8px;
-}}
-
-QPushButton#toggle {{
-    background-color: transparent;
-    border: none;
-    color: {COLORS["text_muted"]};
-    font-size: 13px;
-    padding: 8px 0;
-    text-align: left;
-}}
-
-QPushButton#toggle:hover {{
-    color: {COLORS["primary"]};
-}}
-
-QListWidget {{
-    background-color: transparent;
-    border: none;
-    outline: none;
-}}
-
-QListWidget::item {{
-    background-color: {COLORS["surface"]};
-    border: 1px solid {COLORS["border"]};
-    border-radius: 12px;
-    padding: 14px 16px;
-    margin-bottom: 8px;
-    color: {COLORS["text_strong"]};
-}}
-
-QListWidget::item:selected {{
-    background-color: {COLORS["primary_soft"]};
-    border-color: {COLORS["primary"]};
-}}
-
-QListWidget::item:hover {{
-    border-color: {COLORS["primary"]};
-}}
-
-QStatusBar {{
-    background-color: {COLORS["surface"]};
-    border-top: 1px solid {COLORS["border"]};
-    color: {COLORS["text_muted"]};
-    font-size: 12px;
-}}
-
-QProgressBar {{
-    background-color: {COLORS["border"]};
-    border: none;
-    border-radius: 3px;
-    height: 6px;
-}}
-
-QProgressBar::chunk {{
-    background-color: {COLORS["primary"]};
-    border-radius: 3px;
-}}
-
-QScrollBar:vertical {{
-    background: transparent;
-    width: 8px;
-}}
-
-QScrollBar::handle:vertical {{
-    background: {COLORS["border"]};
-    border-radius: 4px;
-    min-height: 30px;
-}}
-
-QScrollBar::handle:vertical:hover {{
-    background: {COLORS["text_muted"]};
-}}
-
-QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical,
-QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{
-    background: none;
-    height: 0;
-}}
-
-QScrollBar:horizontal {{
-    height: 0;
-    background: transparent;
-}}
-
-QFrame#card {{
-    background-color: {COLORS["surface"]};
-    border-radius: 16px;
-}}
-
-QFrame#sidebar {{
-    background-color: {COLORS["surface"]};
-}}
-"""
-
-
-class BatchGenerateWorker(QThread):
-    """일괄 생성 워커"""
-    item_started = Signal(int)
-    item_finished = Signal(int, str, str)
-    item_error = Signal(int, str)
-    all_finished = Signal()
-
-    def __init__(self, engine: str, keywords: list[str], ref: str):
-        super().__init__()
-        self.engine = engine
-        self.keywords = keywords
-        self.ref = ref
-        self._stop_requested = False
-
-    def stop(self):
-        self._stop_requested = True
-
-    def run(self):
-        for idx, keyword in enumerate(self.keywords):
-            if self._stop_requested:
-                break
-
-            self.item_started.emit(idx)
-
-            try:
-                result, category = Generator.generate(
-                    engine=self.engine,
-                    keyword=keyword,
-                    ref=self.ref,
-                )
-                self.item_finished.emit(idx, result, category)
-            except Exception as e:
-                self.item_error.emit(idx, str(e))
-
-        self.all_finished.emit()
-
-
-class KeywordChip(QFrame):
-    """키워드 태그 칩"""
-    removed = Signal(str)
-
-    def __init__(self, keyword: str, parent=None):
-        super().__init__(parent)
-        self.keyword = keyword
-        self._setup_ui()
-
-    def _setup_ui(self):
-        self.setStyleSheet(f"""
-            QFrame {{
-                background-color: {COLORS["primary_soft"]};
-                border-radius: 16px;
-                padding: 0;
-            }}
-        """)
-
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(12, 6, 8, 6)
-        layout.setSpacing(6)
-
-        label = QLabel(self.keyword)
-        label.setStyleSheet(f"""
-            color: {COLORS["primary"]};
-            font-size: 13px;
-            font-weight: 500;
-            background: transparent;
-        """)
-        layout.addWidget(label)
-
-        remove_btn = QPushButton("✕")
-        remove_btn.setFixedSize(18, 18)
-        remove_btn.setStyleSheet(f"""
-            QPushButton {{
-                background-color: transparent;
-                border: none;
-                color: {COLORS["primary"]};
-                font-size: 12px;
-                font-weight: bold;
-                padding: 0;
-            }}
-            QPushButton:hover {{
-                color: {COLORS["error"]};
-            }}
-        """)
-        remove_btn.clicked.connect(lambda: self.removed.emit(self.keyword))
-        layout.addWidget(remove_btn)
-
-
-class QueueItem(QFrame):
-    """생성 큐 아이템"""
-
-    def __init__(self, keyword: str, index: int, parent=None):
-        super().__init__(parent)
-        self.keyword = keyword
-        self.index = index
-        self.status = "pending"
-        self._setup_ui()
-
-    def _setup_ui(self):
-        self.setStyleSheet(f"""
-            QFrame {{
-                background-color: {COLORS["surface"]};
-                border: 1px solid {COLORS["border"]};
-                border-radius: 10px;
-            }}
-        """)
-
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(14, 10, 14, 10)
-        layout.setSpacing(10)
-
-        self.status_label = QLabel("○")
-        self.status_label.setFixedWidth(20)
-        self.status_label.setStyleSheet(f"color: {COLORS['text_muted']}; font-size: 14px;")
-        layout.addWidget(self.status_label)
-
-        self.keyword_label = QLabel(self.keyword)
-        self.keyword_label.setStyleSheet(f"color: {COLORS['text_strong']}; font-size: 14px;")
-        layout.addWidget(self.keyword_label, stretch=1)
-
-        self.info_label = QLabel("대기")
-        self.info_label.setStyleSheet(f"color: {COLORS['text_muted']}; font-size: 12px;")
-        layout.addWidget(self.info_label)
-
-    def set_status(self, status: str, info: str = ""):
-        self.status = status
-
-        if status == "pending":
-            self.status_label.setText("○")
-            self.status_label.setStyleSheet(f"color: {COLORS['text_muted']}; font-size: 14px;")
-            self.info_label.setText("대기")
-            self.info_label.setStyleSheet(f"color: {COLORS['text_muted']}; font-size: 12px;")
-        elif status == "running":
-            self.status_label.setText("◐")
-            self.status_label.setStyleSheet(f"color: {COLORS['warning']}; font-size: 14px;")
-            self.info_label.setText("생성 중...")
-            self.info_label.setStyleSheet(f"color: {COLORS['warning']}; font-size: 12px;")
-        elif status == "done":
-            self.status_label.setText("✓")
-            self.status_label.setStyleSheet(f"color: {COLORS['success']}; font-size: 14px;")
-            self.info_label.setText(info or "완료")
-            self.info_label.setStyleSheet(f"color: {COLORS['success']}; font-size: 12px;")
-        elif status == "error":
-            self.status_label.setText("✕")
-            self.status_label.setStyleSheet(f"color: {COLORS['error']}; font-size: 14px;")
-            self.info_label.setText("실패")
-            self.info_label.setStyleSheet(f"color: {COLORS['error']}; font-size: 12px;")
-
-
-class HistoryItem:
-    def __init__(
-        self,
-        keyword: str,
-        category: str,
-        engine: str,
-        content: str,
-        created_at: datetime,
-    ):
-        self.keyword = keyword
-        self.category = category
-        self.engine = engine
-        self.content = content
-        self.created_at = created_at
-
-
-def create_shadow(blur: int = 24, y_offset: int = 4, opacity: int = 20):
-    shadow = QGraphicsDropShadowEffect()
-    shadow.setBlurRadius(blur)
-    shadow.setXOffset(0)
-    shadow.setYOffset(y_offset)
-    shadow.setColor(QColor(0, 0, 0, opacity))
-    return shadow
+from program.ui.styles import COLORS, STYLE_SHEET
+from program.ui.workers import BatchGenerateWorker
+from program.ui.models import HistoryItem
+from program.ui.utils import create_shadow
+from program.ui.widgets import KeywordChip, QueueItem, FlowLayout
+
+__all__ = ["MainWindow"]
 
 
 class MainWindow(QMainWindow):
+    """메인 윈도우"""
+
     def __init__(self):
         super().__init__()
         self.worker: BatchGenerateWorker | None = None
@@ -464,7 +50,7 @@ class MainWindow(QMainWindow):
         self._setup_ui()
         self._load_history_from_db()
 
-    def _setup_ui(self):
+    def _setup_ui(self) -> None:
         self.setWindowTitle("Blog Analyzer")
         self.setMinimumSize(1200, 750)
         self.setStyleSheet(STYLE_SHEET)
@@ -477,7 +63,12 @@ class MainWindow(QMainWindow):
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
-        # ==================== 좌측 사이드바 ====================
+        self._setup_sidebar(main_layout)
+        self._setup_content(main_layout)
+        self._setup_status_bar()
+
+    def _setup_sidebar(self, main_layout: QHBoxLayout) -> None:
+        """좌측 사이드바 설정"""
         sidebar = QFrame()
         sidebar.setObjectName("sidebar")
         sidebar.setFixedWidth(300)
@@ -531,14 +122,22 @@ class MainWindow(QMainWindow):
 
         main_layout.addWidget(sidebar)
 
-        # ==================== 우측 메인 컨텐츠 ====================
+    def _setup_content(self, main_layout: QHBoxLayout) -> None:
+        """우측 메인 컨텐츠 설정"""
         content = QWidget()
         content.setStyleSheet(f"background-color: {COLORS['canvas']};")
         content_layout = QVBoxLayout(content)
         content_layout.setContentsMargins(28, 28, 28, 28)
         content_layout.setSpacing(20)
 
-        # -------------------- 입력 섹션 --------------------
+        self._setup_input_card(content_layout)
+        self._setup_queue_card(content_layout)
+        self._setup_result_card(content_layout)
+
+        main_layout.addWidget(content, stretch=1)
+
+    def _setup_input_card(self, content_layout: QVBoxLayout) -> None:
+        """입력 카드 설정"""
         input_card = QFrame()
         input_card.setObjectName("card")
         input_card.setGraphicsEffect(create_shadow())
@@ -572,7 +171,7 @@ class MainWindow(QMainWindow):
         keyword_group.addWidget(self.keyword_input)
         input_row.addLayout(keyword_group, stretch=1)
 
-        # 생성 버튼 (메인 CTA)
+        # 생성 버튼
         self.generate_btn = QPushButton("원고 생성")
         self.generate_btn.setMinimumHeight(52)
         self.generate_btn.setEnabled(False)
@@ -612,7 +211,8 @@ class MainWindow(QMainWindow):
 
         content_layout.addWidget(input_card)
 
-        # -------------------- 생성 큐 섹션 (일괄 생성 시 표시) --------------------
+    def _setup_queue_card(self, content_layout: QVBoxLayout) -> None:
+        """생성 큐 카드 설정"""
         self.queue_card = QFrame()
         self.queue_card.setObjectName("card")
         self.queue_card.setGraphicsEffect(create_shadow())
@@ -639,7 +239,9 @@ class MainWindow(QMainWindow):
         self.queue_scroll = QScrollArea()
         self.queue_scroll.setWidgetResizable(True)
         self.queue_scroll.setMaximumHeight(200)
-        self.queue_scroll.setStyleSheet("QScrollArea { border: none; background: transparent; }")
+        self.queue_scroll.setStyleSheet(
+            "QScrollArea { border: none; background: transparent; }"
+        )
 
         self.queue_list_widget = QWidget()
         self.queue_list_layout = QVBoxLayout(self.queue_list_widget)
@@ -652,7 +254,8 @@ class MainWindow(QMainWindow):
 
         content_layout.addWidget(self.queue_card)
 
-        # -------------------- 결과 섹션 --------------------
+    def _setup_result_card(self, content_layout: QVBoxLayout) -> None:
+        """결과 카드 설정"""
         result_card = QFrame()
         result_card.setObjectName("card")
         result_card.setGraphicsEffect(create_shadow())
@@ -690,16 +293,17 @@ class MainWindow(QMainWindow):
         # 결과 출력
         self.result_output = QTextEdit()
         self.result_output.setReadOnly(True)
-        self.result_output.setPlaceholderText("키워드를 입력하고 원고 생성 버튼을 눌러주세요")
+        self.result_output.setPlaceholderText(
+            "키워드를 입력하고 원고 생성 버튼을 눌러주세요"
+        )
         self.result_output.textChanged.connect(self._update_char_count)
         self.result_output.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         result_card_layout.addWidget(self.result_output, stretch=1)
 
         content_layout.addWidget(result_card, stretch=1)
 
-        main_layout.addWidget(content, stretch=1)
-
-        # 상태바
+    def _setup_status_bar(self) -> None:
+        """상태바 설정"""
         self.status_bar = QStatusBar()
         self.setStatusBar(self.status_bar)
 
@@ -711,7 +315,8 @@ class MainWindow(QMainWindow):
 
         self.status_bar.showMessage("준비됨")
 
-    def _update_generate_btn_style(self):
+    def _update_generate_btn_style(self) -> None:
+        """생성 버튼 스타일 업데이트"""
         if self.is_generating:
             self.generate_btn.setStyleSheet(f"""
                 QPushButton {{
@@ -744,7 +349,8 @@ class MainWindow(QMainWindow):
                 }}
             """)
 
-    def _update_generate_btn_text(self):
+    def _update_generate_btn_text(self) -> None:
+        """생성 버튼 텍스트 업데이트"""
         count = len(self.keywords)
         if count == 0:
             self.generate_btn.setText("원고 생성")
@@ -757,10 +363,12 @@ class MainWindow(QMainWindow):
             self.generate_btn.setEnabled(True)
         self._update_generate_btn_style()
 
-    def _on_keyword_enter_delayed(self):
+    def _on_keyword_enter_delayed(self) -> None:
+        """한글 IME 조합 대기"""
         QTimer.singleShot(50, self._add_keyword)
 
-    def _add_keyword(self):
+    def _add_keyword(self) -> None:
+        """키워드 추가"""
         keyword = self.keyword_input.text().strip()
         if not keyword:
             return
@@ -780,9 +388,12 @@ class MainWindow(QMainWindow):
         self.keyword_input.clear()
         self._update_generate_btn_text()
 
-        self.status_bar.showMessage(f"'{keyword}' 추가됨 (총 {len(self.keywords)}개)", 2000)
+        self.status_bar.showMessage(
+            f"'{keyword}' 추가됨 (총 {len(self.keywords)}개)", 2000
+        )
 
-    def _remove_keyword(self, keyword: str):
+    def _remove_keyword(self, keyword: str) -> None:
+        """키워드 제거"""
         if keyword in self.keywords:
             self.keywords.remove(keyword)
 
@@ -796,7 +407,8 @@ class MainWindow(QMainWindow):
 
         self._update_generate_btn_text()
 
-    def _toggle_ref_input(self):
+    def _toggle_ref_input(self) -> None:
+        """참조 원고 토글"""
         self.ref_expanded = not self.ref_expanded
         self.ref_container.setVisible(self.ref_expanded)
 
@@ -805,7 +417,8 @@ class MainWindow(QMainWindow):
         else:
             self.ref_toggle_btn.setText("+ 참조 원고 추가 (선택)")
 
-    def _load_history_from_db(self):
+    def _load_history_from_db(self) -> None:
+        """DB에서 히스토리 로드"""
         try:
             import sys
             from pathlib import Path
@@ -831,13 +444,24 @@ class MainWindow(QMainWindow):
                     db_service.set_db_name(db_name)
                     docs = list(
                         db_service.db["manuscripts"]
-                        .find({}, {"content": 1, "keyword": 1, "engine": 1, "category": 1, "createdAt": 1})
+                        .find(
+                            {},
+                            {
+                                "content": 1,
+                                "keyword": 1,
+                                "engine": 1,
+                                "category": 1,
+                                "createdAt": 1,
+                            },
+                        )
                         .sort("createdAt", -1)
                         .limit(5)
                     )
                     all_manuscripts.extend(docs)
 
-                all_manuscripts.sort(key=lambda x: x.get("createdAt", datetime.min), reverse=True)
+                all_manuscripts.sort(
+                    key=lambda x: x.get("createdAt", datetime.min), reverse=True
+                )
 
                 for doc in all_manuscripts[:20]:
                     item = HistoryItem(
@@ -850,8 +474,16 @@ class MainWindow(QMainWindow):
                     self.history.append(item)
 
                     list_item = QListWidgetItem()
-                    keyword_text = item.keyword[:20] + "..." if len(item.keyword) > 20 else item.keyword
-                    time_str = item.created_at.strftime("%m/%d %H:%M") if item.created_at else ""
+                    keyword_text = (
+                        item.keyword[:20] + "..."
+                        if len(item.keyword) > 20
+                        else item.keyword
+                    )
+                    time_str = (
+                        item.created_at.strftime("%m/%d %H:%M")
+                        if item.created_at
+                        else ""
+                    )
                     list_item.setText(f"{keyword_text}\n{item.category}  ·  {time_str}")
                     self.history_list.addItem(list_item)
 
@@ -863,7 +495,8 @@ class MainWindow(QMainWindow):
         except Exception:
             self.status_bar.showMessage("히스토리 로드 실패", 3000)
 
-    def _on_history_clicked(self, item: QListWidgetItem):
+    def _on_history_clicked(self, item: QListWidgetItem) -> None:
+        """히스토리 클릭 핸들러"""
         idx = self.history_list.row(item)
         if 0 <= idx < len(self.history):
             history_item = self.history[idx]
@@ -873,7 +506,8 @@ class MainWindow(QMainWindow):
             self.copy_btn.setEnabled(True)
             self.status_bar.showMessage(f"'{history_item.keyword}' 불러옴", 2000)
 
-    def _on_generate(self):
+    def _on_generate(self) -> None:
+        """생성 시작"""
         if not self.keywords:
             return
 
@@ -900,7 +534,9 @@ class MainWindow(QMainWindow):
         self.queue_title.setText(f"생성 진행 중... (0/{len(self.keywords)})")
         self.results.clear()
 
-        self.status_bar.showMessage(f"{engine}으로 {len(self.keywords)}개 원고 생성 시작...")
+        self.status_bar.showMessage(
+            f"{engine}으로 {len(self.keywords)}개 원고 생성 시작..."
+        )
 
         self.worker = BatchGenerateWorker(engine, self.keywords.copy(), ref)
         self.worker.item_started.connect(self._on_item_started)
@@ -909,24 +545,31 @@ class MainWindow(QMainWindow):
         self.worker.all_finished.connect(self._on_all_finished)
         self.worker.start()
 
-    def _on_stop_generate(self):
+    def _on_stop_generate(self) -> None:
+        """생성 중지"""
         if self.worker:
             self.worker.stop()
             self.status_bar.showMessage("생성 중지 요청됨...", 2000)
 
-    def _on_item_started(self, idx: int):
+    def _on_item_started(self, idx: int) -> None:
+        """아이템 생성 시작"""
         if 0 <= idx < len(self.queue_items):
             self.queue_items[idx].set_status("running")
 
-    def _on_item_finished(self, idx: int, result: str, category: str):
+    def _on_item_finished(self, idx: int, result: str, category: str) -> None:
+        """아이템 생성 완료"""
         if 0 <= idx < len(self.queue_items):
             char_count = len(result.replace(" ", "").replace("\n", ""))
             self.queue_items[idx].set_status("done", f"완료 ({char_count:,}자)")
             self.results[idx] = (result, category)
 
-        completed = sum(1 for item in self.queue_items if item.status in ("done", "error"))
+        completed = sum(
+            1 for item in self.queue_items if item.status in ("done", "error")
+        )
         self.progress_bar.setValue(completed)
-        self.queue_title.setText(f"생성 진행 중... ({completed}/{len(self.keywords)})")
+        self.queue_title.setText(
+            f"생성 진행 중... ({completed}/{len(self.keywords)})"
+        )
 
         # 첫 번째 결과 표시
         if idx == 0:
@@ -935,19 +578,28 @@ class MainWindow(QMainWindow):
             self.category_label.setVisible(True)
             self.copy_btn.setEnabled(True)
 
-    def _on_item_error(self, idx: int, error: str):
+    def _on_item_error(self, idx: int, error: str) -> None:
+        """아이템 생성 에러"""
         if 0 <= idx < len(self.queue_items):
             self.queue_items[idx].set_status("error", error)
 
-        completed = sum(1 for item in self.queue_items if item.status in ("done", "error"))
+        completed = sum(
+            1 for item in self.queue_items if item.status in ("done", "error")
+        )
         self.progress_bar.setValue(completed)
-        self.queue_title.setText(f"생성 진행 중... ({completed}/{len(self.keywords)})")
+        self.queue_title.setText(
+            f"생성 진행 중... ({completed}/{len(self.keywords)})"
+        )
 
-    def _on_all_finished(self):
+    def _on_all_finished(self) -> None:
+        """모든 생성 완료"""
         done_count = sum(1 for item in self.queue_items if item.status == "done")
         error_count = sum(1 for item in self.queue_items if item.status == "error")
 
-        self.queue_title.setText(f"완료 · {done_count}개 성공" + (f", {error_count}개 실패" if error_count else ""))
+        self.queue_title.setText(
+            f"완료 · {done_count}개 성공"
+            + (f", {error_count}개 실패" if error_count else "")
+        )
 
         self._reset_ui()
 
@@ -981,52 +633,30 @@ class MainWindow(QMainWindow):
 
         self.status_bar.showMessage(f"완료 · {done_count}개 생성됨", 3000)
 
-    def _clear_queue(self):
+    def _clear_queue(self) -> None:
+        """큐 초기화"""
         for item in self.queue_items:
             self.queue_list_layout.removeWidget(item)
             item.deleteLater()
         self.queue_items.clear()
 
-    def _reset_ui(self):
+    def _reset_ui(self) -> None:
+        """UI 초기화"""
         self.is_generating = False
         self.generate_btn.setEnabled(len(self.keywords) > 0)
         self._update_generate_btn_text()
         self.progress_bar.hide()
         self.worker = None
 
-    def _on_copy(self):
+    def _on_copy(self) -> None:
+        """결과 복사"""
         text = self.result_output.toPlainText()
         if text:
             QApplication.clipboard().setText(text)
             self.status_bar.showMessage("클립보드에 복사됨", 2000)
 
-    def _update_char_count(self):
+    def _update_char_count(self) -> None:
+        """글자수 업데이트"""
         text = self.result_output.toPlainText()
         char_count = len(text.replace(" ", "").replace("\n", ""))
         self.char_count_label.setText(f"{char_count:,}자")
-
-
-class FlowLayout(QVBoxLayout):
-    """간단한 FlowLayout 구현 (가로로 칩 배치)"""
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self._items: list[QWidget] = []
-        self._row_layout: QHBoxLayout | None = None
-        self._init_row()
-
-    def _init_row(self):
-        self._row_layout = QHBoxLayout()
-        self._row_layout.setSpacing(8)
-        self._row_layout.setContentsMargins(0, 0, 0, 0)
-        self._row_layout.addStretch()
-        super().addLayout(self._row_layout)
-
-    def addWidget(self, widget: QWidget):
-        self._items.append(widget)
-        self._row_layout.insertWidget(self._row_layout.count() - 1, widget)
-
-    def removeWidget(self, widget: QWidget):
-        if widget in self._items:
-            self._items.remove(widget)
-        self._row_layout.removeWidget(widget)
