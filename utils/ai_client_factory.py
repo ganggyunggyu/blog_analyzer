@@ -152,14 +152,30 @@ def call_ai(
         text = getattr(content_blocks[0], "text", "") if content_blocks else ""
 
     elif ai_service_type == "openai":
-        response = client.responses.create(
-            model=model_name,
-            instructions=system_prompt,
-            input=user_prompt,
-            reasoning={"effort": "medium"},  # minimal, low, medium, high
-            text={"verbosity": "medium"},  # low, medium, high
-        )
-        text = getattr(response, "output_text", "") or ""
+        if model_name.startswith("gpt-4"):
+            # GPT-4 시리즈: Chat Completions API
+            response = client.chat.completions.create(
+                model=model_name,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
+                max_tokens=max_tokens,
+            )
+            choices = getattr(response, "choices", []) or []
+            if not choices or not getattr(choices[0], "message", None):
+                raise RuntimeError("GPT-4가 유효한 choices/message를 반환하지 않았습니다.")
+            text = (choices[0].message.content or "").strip()
+        else:
+            # GPT-5 시리즈: Responses API
+            response = client.responses.create(
+                model=model_name,
+                instructions=system_prompt,
+                input=user_prompt,
+                reasoning={"effort": "medium"},
+                text={"verbosity": "medium"},
+            )
+            text = getattr(response, "output_text", "") or ""
 
     elif ai_service_type == "solar":
         response = client.chat.completions.create(
