@@ -1,9 +1,15 @@
 from __future__ import annotations
 import json
 from typing import List, Dict, Any, Optional
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from mongodb_service import MongoDBService
 from utils.select_template import select_template
+
+# ============================================================
+# 🔧 템플릿 모드 설정 (True: 단일 선택 / False: 전체 사용)
+# ============================================================
+USE_SINGLE_TEMPLATE = False
+# ============================================================
 
 
 @dataclass
@@ -13,10 +19,12 @@ class PromptComponents:
     subtitles: List[str]
     expressions: Dict[str, List[str]]
     parameters: Dict[str, List[str]]
-    template: Optional[Dict[str, Any]]
-    template_info: str
+    templates: List[Dict[str, Any]]
     category: str
     keyword: str
+    # 단일 템플릿 모드용
+    selected_template: Optional[Dict[str, Any]] = None
+    template_info: str = ""
 
 
 class GPT5MongoPromptBuilder:
@@ -35,18 +43,23 @@ class GPT5MongoPromptBuilder:
         subtitles = self._clean_list(analysis_data.get("subtitles", []))
         expressions = self._clean_dict(analysis_data.get("expressions", {}))
         parameters = self._clean_dict(analysis_data.get("parameters", {}))
-        template, template_info = self._select_template(
-            analysis_data.get("templates", [])
-        )
+        templates = analysis_data.get("templates", [])
+
+        # 단일 템플릿 모드
+        selected_template = None
+        template_info = ""
+        if USE_SINGLE_TEMPLATE:
+            selected_template, template_info = self._select_template(templates)
 
         return PromptComponents(
             subtitles=subtitles,
             expressions=expressions,
             parameters=parameters,
-            template=template,
-            template_info=template_info,
+            templates=templates,
             category=self.category,
             keyword=self.keyword,
+            selected_template=selected_template,
+            template_info=template_info,
         )
 
     def _clean_list(self, items: List) -> List[str]:
@@ -88,10 +101,7 @@ class GPT5MongoPromptBuilder:
 
     def _build_json_resources(self, components: PromptComponents) -> Dict[str, Any]:
         """리소스를 JSON 형식으로 빌드"""
-        template_content = ""
-        if components.template:
-            template_content = components.template.get("templated_text", "").strip()
-        return {
+        base = {
             "subtitles_pool": components.subtitles[:20],
             "style_variations": {
                 k: v[:10] for k, v in components.expressions.items() if v
@@ -99,11 +109,36 @@ class GPT5MongoPromptBuilder:
             "contextual_values": {
                 k: v[:5] for k, v in components.parameters.items() if v
             },
-            "reference_template": {
+        }
+
+        # ============================================================
+        # 단일 템플릿 모드 (USE_SINGLE_TEMPLATE = True)
+        # ============================================================
+        if USE_SINGLE_TEMPLATE:
+            template_content = ""
+            if components.selected_template:
+                template_content = components.selected_template.get(
+                    "templated_text", ""
+                ).strip()
+            base["reference_template"] = {
                 "source": components.template_info,
                 "content": template_content,
-            },
-        }
+            }
+        # ============================================================
+        # 전체 템플릿 모드 (USE_SINGLE_TEMPLATE = False)
+        # ============================================================
+        else:
+            reference_templates = []
+            for tpl in components.templates:
+                content = tpl.get("templated_text", "").strip()
+                if content:
+                    reference_templates.append({
+                        "file_name": tpl.get("file_name", "unknown"),
+                        "content": content,
+                    })
+            base["reference_templates"] = reference_templates
+
+        return base
 
     def build_gpt5_prompt(self) -> str:
         """GPT-5 최적화 프롬프트 생성"""
@@ -111,11 +146,17 @@ class GPT5MongoPromptBuilder:
         resources = self._build_json_resources(components)
         resources_json = json.dumps(resources, ensure_ascii=False, indent=2)
 
+        # 모드에 따른 안내 문구
+        if USE_SINGLE_TEMPLATE:
+            template_instruction = "- reference_template: 작성 스타일 및 톤 참고"
+        else:
+            template_instruction = "- reference_templates: 전체 템플릿 참고하여 작성 스타일 및 톤 학습"
+
         return f"""
 {resources_json}
 - contextual_values: [변수] 대체해 컨텍스트 맞춤
 - style_variations: [표현] 대체해 다양한 문체 적용
-- reference_template: 작성 스타일 및 톤 참고
+{template_instruction}
 """
 
 
