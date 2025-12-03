@@ -6,7 +6,7 @@ from fastapi.concurrency import run_in_threadpool
 from mongodb_service import MongoDBService
 from utils.get_category_db_name import get_category_db_name
 from schema.generate import GenerateRequest
-from llm.gemini_service import gemini_gen, model_name
+from llm.gemini_service import gemini_gen, MODEL_NAME
 from utils.query_parser import parse_query
 from utils.progress_logger import progress
 
@@ -33,7 +33,7 @@ async def post_gemini(request: GenerateRequest):
     print(f"📌 서비스    : {service.upper()}")
     print(f"🎯 키워드    : {keyword}")
     print(f"📁 카테고리  : {category}")
-    print(f"🤖 모델      : {model_name}")
+    print(f"🤖 모델      : {MODEL_NAME}")
     print(f"📝 참조원고  : {'✅ 있음' if len(ref) != 0 else '❌ 없음'}")
     print(f"⏱️  분류시간  : {c_elapsed:.2f}s")
     print("=" * 60 + "\n")
@@ -44,7 +44,7 @@ async def post_gemini(request: GenerateRequest):
     is_ref = len(ref) != 0
 
     try:
-        with progress(label=f"{service}:{model_name}:{keyword}"):
+        with progress(label=f"{service}:{MODEL_NAME}:{keyword}"):
             generated_manuscript = await run_in_threadpool(
                 gemini_gen, user_instructions=keyword, ref=ref, category=category
             )
@@ -56,7 +56,7 @@ async def post_gemini(request: GenerateRequest):
             document = {
                 "content": generated_manuscript,
                 "createdAt": datetime.now(),
-                "engine": model_name,
+                "engine": MODEL_NAME,
                 "service": f"{service}_grok",
                 "category": category,
                 "keyword": keyword,
