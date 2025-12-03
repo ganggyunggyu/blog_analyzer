@@ -2,93 +2,65 @@ from __future__ import annotations
 import re
 import time
 
-from anthropic import Anthropic
 from anthropic._exceptions import BadRequestError, RateLimitError
+
 from _prompts.service.get_mongo_prompt import get_mongo_prompt
-from _prompts.system.ver1 import V1
-from config import CLAUDE_API_KEY
+from _prompts.system.claude_system import get_claude_system_prompt
+from _prompts.user.claude_user import get_claude_user_prompt
+
 from _constants.Model import Model
 from utils.query_parser import parse_query
 from utils.text_cleaner import comprehensive_text_clean
+from utils.ai_client_factory import call_ai
 
 
-model_name: str = Model.CLAUDE_OPUS_4_5
+MODEL_NAME: str = Model.CLAUDE_OPUS_4_5
 
 
 def claude_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
-    if not CLAUDE_API_KEY:
-        raise ValueError(
-            "ANTHROPIC_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요."
-        )
-
     parsed = parse_query(user_instructions)
-    keyword, note = parsed.get("keyword", ""), parsed.get("note", "")
+    keyword = parsed.get("keyword", "")
+    note = parsed.get("note", "") or ""
 
     if not keyword:
         raise ValueError("키워드가 없습니다.")
 
-    target_chars_min, target_chars_max = 1800, 2000
-
     mongo_data = get_mongo_prompt(category, user_instructions)
 
-    system = f"""
-# 원고 작성 지침
-{V1}
+    system_prompt = get_claude_system_prompt(
+        category=category,
+        mongo_data=mongo_data,
+    )
 
-# 참고할 데이터
-{mongo_data}
-
-# 금지사항
-- 마크다운 문법 금지
-
-# 줄바꿈 지침
-- 25~30자에 한번 줄바꿈 필수
-
-# 글자수
-- 한국어 공백 제거 기준 1800~2300
-
-# 부제 규약
-- 1~5번 넘버링 필수
-
-"""
-
-    user = f"""
-    키워드: {keyword}
-
-    추가 요청: {note}
-
-    참조 원고: {ref}
-    """
-
-    claude_client = Anthropic(api_key=CLAUDE_API_KEY)
+    user_prompt = get_claude_user_prompt(
+        keyword=keyword,
+        note=note,
+        ref=ref,
+    )
 
     try:
-        start_ts = time.time()
+        start_time = time.time()
         print(f"서비스: {category}")
         print(f"키워드: {keyword}")
         print("원고작성 시작")
 
-        response = claude_client.messages.create(
-            model=model_name,
-            system=system,
-            messages=[{"role": "user", "content": user}],
-            max_tokens=4096,
+        generated_text = call_ai(
+            model_name=MODEL_NAME,
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
         )
 
-        content_blocks = getattr(response, "content", [])
-        text: str = getattr(content_blocks[0], "text", "") if content_blocks else ""
+        cleaned_text = comprehensive_text_clean(generated_text)
 
-        text = comprehensive_text_clean(text)
+        char_count_no_space = len(re.sub(r"\s+", "", cleaned_text))
+        elapsed_time = time.time() - start_time
 
-        length_no_space = len(re.sub(r"\s+", "", text))
-        elapsed = time.time() - start_ts
-
-        print(f"원고 길이 체크: {length_no_space}")
-        print(f"원고 소요시간: {elapsed:.2f}s")
+        print(f"원고 길이 체크: {char_count_no_space}")
+        print(f"원고 소요시간: {elapsed_time:.2f}s")
         print("원고작성 완료")
 
-        return text
+        return cleaned_text
 
-    except (BadRequestError, RateLimitError) as e:
-        print(f"Claude API 오류: {e}")
-        raise e
+    except (BadRequestError, RateLimitError) as api_error:
+        print(f"Claude API 오류: {api_error}")
+        raise api_error
