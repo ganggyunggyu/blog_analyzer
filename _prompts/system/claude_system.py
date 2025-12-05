@@ -22,10 +22,6 @@ def get_claude_system_prompt(
 ---
 
 
-## 참조 데이터
-
-{mongo_data}
----
 
 ## 원고 길이 지침
 
