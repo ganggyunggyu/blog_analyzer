@@ -29,7 +29,7 @@ def claude_gen(user_instructions: str, ref: str = "", category: str = "") -> str
 
     system_prompt = get_claude_system_prompt(
         category=category,
-        mongo_data=mongo_data,
+        mongo_data="",
     )
 
     user_prompt = get_claude_user_prompt(
