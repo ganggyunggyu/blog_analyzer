@@ -2,7 +2,7 @@ from fastapi import HTTPException, APIRouter
 from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel
 
-from llm.restaurant_claude_service import restaurant_claude_gen, model_name
+from llm.restaurant_claude_service import restaurant_claude_gen, MODEL_NAME
 from mongodb_service import MongoDBService
 from utils.get_category_db_name import get_category_db_name
 from utils.progress_logger import progress
@@ -35,11 +35,11 @@ async def generate_manuscript_restaurant_claude_api(request: GenerateRequest):
 
     is_ref = bool(ref and ref.strip())
     print(
-        f"[GEN] service={service} | model={model_name} | category={category} | keyword={keyword} | hasRef={is_ref}"
+        f"[GEN] service={service} | model={MODEL_NAME} | category={category} | keyword={keyword} | hasRef={is_ref}"
     )
 
     try:
-        with progress(label=f"{service}:{model_name}:{keyword}"):
+        with progress(label=f"{service}:{MODEL_NAME}:{keyword}"):
             generated_manuscript = await run_in_threadpool(
                 restaurant_claude_gen,
                 user_instructions=keyword,
@@ -53,7 +53,7 @@ async def generate_manuscript_restaurant_claude_api(request: GenerateRequest):
             document = {
                 "content": generated_manuscript,
                 "createdAt": datetime.now(),
-                "engine": model_name,
+                "engine": MODEL_NAME,
                 "service": service,
                 "category": category,
                 "keyword": keyword,

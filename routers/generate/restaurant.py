@@ -6,7 +6,7 @@ from fastapi.concurrency import run_in_threadpool
 from mongodb_service import MongoDBService
 from utils.get_category_db_name import get_category_db_name
 from schema.generate import GenerateRequest
-from llm.restaurant_service import restaurant_gen, MODEL_NAME
+from llm.restaurant_claude_service import restaurant_claude_gen, MODEL_NAME
 from utils.query_parser import parse_query
 from utils.progress_logger import progress
 from ai_lib.parse_food_review import parse_food_review
@@ -53,7 +53,7 @@ async def generator_restaurant(request: GenerateRequest):
     try:
         with progress(label=f"{service}:{MODEL_NAME}:{keyword}"):
             generated_manuscript = await run_in_threadpool(
-                restaurant_gen, user_instructions=keyword, ref=ref, category=category
+                restaurant_claude_gen, user_instructions=keyword, ref=ref, category=category
             )
 
         if generated_manuscript:
