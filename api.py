@@ -13,6 +13,7 @@ from routers.test import test
 from routers.generate import (
     chunk,
     claude,
+    clean_claude,
     gemini,
     gemini_3_pro,
     gpt,
@@ -72,6 +73,7 @@ app.include_router(test.router)
 app.include_router(gemini.router)
 app.include_router(gemini_3_pro.router)
 app.include_router(claude.router)
+app.include_router(clean_claude.router)
 app.include_router(gpt.router)
 app.include_router(gpt_5.router)
 app.include_router(keyword.router)
