@@ -4,8 +4,8 @@ import re
 from _prompts.service.get_mongo_prompt import get_mongo_prompt
 from _prompts.service.get_category_tone_rules import get_category_tone_rules
 from _prompts.rules.output_rule import get_output_rule
-from _prompts.system.grok_system import get_grok_system_prompt
-from _prompts.user.grok_user import get_grok_user_prompt
+from _prompts.system.deepseek_system import get_deepseek_system_prompt
+from _prompts.user.deepseek_user import get_deepseek_user_prompt
 
 from _constants.Model import Model
 from utils.query_parser import parse_query
@@ -27,7 +27,7 @@ def deepseek_gen(user_instructions: str, ref: str = "", category: str = "") -> s
     category_tone_rules = get_category_tone_rules(category)
     output_rule = get_output_rule(category)
 
-    system = get_grok_system_prompt(
+    system = get_deepseek_system_prompt(
         keyword=keyword,
         category=category,
         mongo_data=mongo_data,
@@ -35,7 +35,11 @@ def deepseek_gen(user_instructions: str, ref: str = "", category: str = "") -> s
         output_rule=output_rule,
     )
 
-    user = get_grok_user_prompt(keyword=keyword, note=note, ref=ref)
+    user = get_deepseek_user_prompt(keyword=keyword, note=note, ref=ref)
+
+    print(f"서비스: {category}")
+    print(f"키워드: {keyword}")
+    print("원고작성 시작")
 
     text = call_ai(
         model_name=MODEL_NAME,
@@ -46,5 +50,6 @@ def deepseek_gen(user_instructions: str, ref: str = "", category: str = "") -> s
     text = comprehensive_text_clean(text)
     length_no_space = len(re.sub(r"\s+", "", text))
     print(f"원고 길이 체크: {length_no_space}")
+    print("원고작성 완료")
 
     return text
