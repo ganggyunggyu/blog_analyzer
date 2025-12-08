@@ -23,3 +23,6 @@ class Model:
     GROK_4_1_RES = "grok-4-1-fast-reasoning"
     GROK_4_1_NON_RES = "grok-4-1-fast-non-reasoning"
     GROK_CODE = "grok-code-fast-1-0825"
+
+    DEEPSEEK_CHAT = "deepseek-chat"
+    DEEPSEEK_RES = "deepseek-reasoner"

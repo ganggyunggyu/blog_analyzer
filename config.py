@@ -20,6 +20,13 @@ solar_client = OpenAI(
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 CLAUDE_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 GROK_API_KEY = os.getenv("GROK_API_KEY")
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
+
+deepseek_client = OpenAI(
+    api_key=DEEPSEEK_API_KEY,
+    base_url="https://api.deepseek.com",
+    # base_url="https://api.deepseek.com/v3.2_speciale_expires_on_20251215",
+)
 
 grok_client = Client(
     api_key=GROK_API_KEY,

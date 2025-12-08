@@ -10,10 +10,12 @@ from google.genai import types
 
 from config import (
     CLAUDE_API_KEY,
+    DEEPSEEK_API_KEY,
     GEMINI_API_KEY,
     GROK_API_KEY,
     OPENAI_API_KEY,
     UPSTAGE_API_KEY,
+    deepseek_client,
     grok_client,
     solar_client,
 )
@@ -37,6 +39,8 @@ def get_ai_service_type(model_name: str) -> str:
         return "solar"
     elif model_name.startswith("grok"):
         return "grok"
+    elif model_name.startswith("deepseek"):
+        return "deepseek"
     else:
         return "openai"
 
@@ -61,6 +65,8 @@ def get_ai_client(ai_service_type: str) -> Optional[Any]:
         return solar_client
     elif ai_service_type == "grok":
         return grok_client
+    elif ai_service_type == "deepseek":
+        return deepseek_client
     return None
 
 
@@ -96,6 +102,11 @@ def validate_api_key(ai_service_type: str) -> None:
         if not CLAUDE_API_KEY:
             raise ValueError(
                 "CLAUDE_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요."
+            )
+    elif ai_service_type == "deepseek":
+        if not DEEPSEEK_API_KEY:
+            raise ValueError(
+                "DEEPSEEK_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요."
             )
 
 
@@ -164,7 +175,9 @@ def call_ai(
             )
             choices = getattr(response, "choices", []) or []
             if not choices or not getattr(choices[0], "message", None):
-                raise RuntimeError("GPT-4가 유효한 choices/message를 반환하지 않았습니다.")
+                raise RuntimeError(
+                    "GPT-4가 유효한 choices/message를 반환하지 않았습니다."
+                )
             text = (choices[0].message.content or "").strip()
         else:
             # GPT-5 시리즈: Responses API
@@ -197,6 +210,21 @@ def call_ai(
         chat_session.append(grok_user_message(user_prompt))
         response = chat_session.sample()
         text = getattr(response, "content", "") or ""
+
+    elif ai_service_type == "deepseek":
+        response = client.chat.completions.create(
+            model=model_name,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+        )
+        choices = getattr(response, "choices", []) or []
+        if not choices or not getattr(choices[0], "message", None):
+            raise RuntimeError(
+                "DeepSeek이 유효한 choices/message를 반환하지 않았습니다."
+            )
+        text = (choices[0].message.content or "").strip()
 
     else:
         raise ValueError(f"지원하지 않는 AI 서비스 타입: {ai_service_type}")
