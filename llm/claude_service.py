@@ -25,8 +25,6 @@ def claude_gen(user_instructions: str, ref: str = "", category: str = "") -> str
     if not keyword:
         raise ValueError("키워드가 없습니다.")
 
-    mongo_data = get_mongo_prompt(category, user_instructions)
-
     system_prompt = get_claude_system_prompt(
         category=category,
         mongo_data="",
