@@ -42,8 +42,8 @@ def search_all(keyword: str, limit: int = 20) -> List[Dict[str, Any]]:
                     ]
                 }
 
-                # 검색 실행
-                cursor = collection.find(query).limit(limit)
+                # 검색 실행 (최신순 정렬)
+                cursor = collection.find(query).sort("timestamp", -1).limit(limit)
 
                 for doc in cursor:
                     # _id를 문자열로 변환
