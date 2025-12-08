@@ -30,6 +30,7 @@ from routers.generate import (
     restaurant_claude,
     restaurant_grok,
     restaurant_gpt5,
+    restaurant_deepseek,
     solar,
     gpt_merge,
     my,
@@ -91,6 +92,7 @@ app.include_router(restaurant.router)
 app.include_router(restaurant_claude.router)
 app.include_router(restaurant_grok.router)
 app.include_router(restaurant_gpt5.router)
+app.include_router(restaurant_deepseek.router)
 app.include_router(solar.router)
 app.include_router(upload_text.router)
 app.include_router(get_ref.router)
