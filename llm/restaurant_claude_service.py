@@ -7,6 +7,7 @@ import time
 from anthropic._exceptions import BadRequestError, RateLimitError
 
 from _constants.Model import Model
+from _prompts.category import 맛집
 from utils.query_parser import parse_query
 from utils.text_cleaner import comprehensive_text_clean
 from utils.ai_client_factory import call_ai
@@ -15,7 +16,9 @@ from utils.ai_client_factory import call_ai
 MODEL_NAME: str = Model.CLAUDE_OPUS_4_5
 
 
-def restaurant_claude_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
+def restaurant_claude_gen(
+    user_instructions: str, ref: str = "", category: str = ""
+) -> str:
     """맛집 전용 Claude 생성"""
     parsed = parse_query(user_instructions)
     keyword = parsed.get("keyword", "")
@@ -35,6 +38,9 @@ def restaurant_claude_gen(user_instructions: str, ref: str = "", category: str =
 
 참조 원고: {ref}
 
+{맛집}
+
+
 2000단어 이상 작성
 마크다운 문법 금지
 
@@ -51,7 +57,7 @@ def restaurant_claude_gen(user_instructions: str, ref: str = "", category: str =
 ### 두줄 줄바꿈 예시:
 안녕하세요 이건
 두줄 줄바꿈 예시입니다.
-(공백)
+(공백)  
 이렇게 한 문단별로 줄바꿈을
 이행하시면 됩니다.
 
@@ -70,24 +76,6 @@ def restaurant_claude_gen(user_instructions: str, ref: str = "", category: str =
 식순은 1부 포멀 예식으로 시작해
 샌드 세레머니를 넣었는데,
 하객분들 '새롭다' 하시며 박수 쳐주셨어요.
-
----
-
-## 사용 방법
-
-### 입력 형식
-```
-키워드: [작성할 키워드]
-카테고리: [맛집/일반/건강 등]
-추가 요청: [특별 요청사항이 있다면 기재]
-참조 원고: [참조할 원고가 있다면 첨부]
-```
-
-### 참조 원고가 있는 경우
-참조 원고의 내용 흐름을 따라 그대로 작성
-
-### 키워드가 3단어 이상인 경우
-유저가 지정한 제목으로 간주하여 해당 제목 사용
 """.strip()
 
     try:
