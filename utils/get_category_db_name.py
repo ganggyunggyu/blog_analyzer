@@ -47,6 +47,10 @@ def build_category_prompt(keyword: str, categories: list[str]) -> str:
     위 키워드가 어느 카테고리에 해당하는지 분석하고,
     카테고리 이름만 정확하게 반환하세요.
   </instruction>
+
+  <if>
+  키워드에 마운자로가 있다면 "위고비" 카테고리 반환
+  </if>
 </task>
 """
 
