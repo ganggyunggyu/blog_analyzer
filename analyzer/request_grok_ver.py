@@ -3,11 +3,8 @@ import json
 from textwrap import dedent
 from typing import Optional
 
-from _constants.Model import Model
 from utils.ai_client_factory import call_ai
-
-
-model_name: str = Model.GROK_4_1_RES
+from analyzer.config import ANALYZER_MODEL
 
 
 def get_문장해체(ref: str, model_name_override: Optional[str] = None):
@@ -24,7 +21,7 @@ def get_문장해체(ref: str, model_name_override: Optional[str] = None):
     if not ref:
         return "{}"
 
-    model = model_name_override or model_name
+    model = model_name_override or ANALYZER_MODEL
 
     system = """
 You are an expert in text analysis for blog content. Analyze the manuscript to extract metadata for style, structure, and key themes (product/service details, exposure reasons like episodes/benefits). Output ONLY JSON, no extra text.

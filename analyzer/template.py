@@ -4,12 +4,9 @@ from typing import List, Dict, Any, Optional
 import time
 import json
 
-from _constants.Model import Model
 from mongodb_service import MongoDBService
 from utils.ai_client_factory import call_ai
-
-
-model_name: str = Model.GROK_4_1_RES
+from analyzer.config import ANALYZER_MODEL
 
 
 def template_gen(
@@ -20,7 +17,7 @@ def template_gen(
     model_name_override: Optional[str] = None,
 ) -> str:
     db_service = MongoDBService()
-    model = model_name_override or model_name
+    model = model_name_override or ANALYZER_MODEL
     db_service.set_db_name(category)
 
     # 파일명 중복 체크 (파일명이 있는 경우에만) - AI 요청 전에 체크!

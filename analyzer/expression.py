@@ -5,12 +5,9 @@ import time
 import json
 import re
 
-from _constants.Model import Model
 from mongodb_service import MongoDBService
 from utils.ai_client_factory import call_ai
-
-
-model_name: str = Model.GROK_4_1_RES
+from analyzer.config import ANALYZER_MODEL
 
 
 def gen_expressions(
@@ -20,7 +17,7 @@ def gen_expressions(
     model_name_override: Optional[str] = None,
 ) -> Dict[str, List[str]]:
     db_service = MongoDBService()
-    model = model_name_override or model_name
+    model = model_name_override or ANALYZER_MODEL
     if category:
         db_service.set_db_name(category)
 
