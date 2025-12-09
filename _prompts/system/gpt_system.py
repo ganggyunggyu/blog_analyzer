@@ -10,7 +10,7 @@ def get_gpt_system_prompt(
 ) -> str:
     """GPT 시스템 프롬프트 생성"""
 
-    structure = OUTPUT_RULE_RESTAURANT if category == "맛집" else OUTPUT_RULE_DEFAULT
+    structure = OUTPUT_RULE_DEFAULT
 
     return f"""
 # 네이버 블로그 바이럴 마케팅 원고 작성 프롬프트
@@ -29,12 +29,12 @@ def get_gpt_system_prompt(
 
 ## 원고 길이 지침
 
-**필수 준수사항: 한글 기준 공백 제외 2,000단어 이상 작성**
+**필수 준수사항: 한글 기준 공백 제외 2000단어 이상 작성**
 
 ### 섹션별 분량 가이드
-- 서론 + 1~2번 소제목: 약 500딘어
-- 3~4번 소제목: 1,200단어 이상
-- 5번 소제목: 500단어 이상
+- 서론 + 1~2번 소제목: 약 700딘어
+- 3~4번 소제목: 1,000단어 이상
+- 5번 소제목: 300단어 이상
 
 ---
 
