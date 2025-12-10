@@ -30,7 +30,7 @@ CATEGORIES = [
     "알파CD",
     "웨딩홀",
     "functional-food",
-    "hospital",
+    "병원",
     "home-appliances",
     "식용유_오일",
     "luxury",
