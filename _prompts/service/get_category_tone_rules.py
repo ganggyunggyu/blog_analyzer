@@ -24,7 +24,7 @@ from _prompts.category.위고비 import 위고비
 from _prompts.category.질분비물 import 질분비물
 from _prompts.category.정기청소 import 정기청소
 
-from _prompts.category.anime import anime
+from _prompts.category.애니메이션 import 애니메이션
 from _prompts.category.movie import movie
 from _prompts.category.wedding import wedding
 from _prompts.category.캐리어 import 캐리어
@@ -57,7 +57,7 @@ BASE_TONE = """
 """
 
 TONE_RULES_MAP = {
-    "anime": anime,
+    "애니메이션": 애니메이션,
     "beauty-treatment": beauty_treatment,
     "movie": movie,
     "functional-food": 영양제,
