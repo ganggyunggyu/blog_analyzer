@@ -1,7 +1,7 @@
 """GPT 시스템 프롬프트 템플릿"""
 
 from _prompts.rules.taboo_rules import TABOO_RULES
-from _prompts.rules.output_rule import OUTPUT_RULE_DEFAULT, OUTPUT_RULE_RESTAURANT
+from _prompts.rules.output_rule import OUTPUT_RULE_DEFAULT
 
 
 def get_gpt_system_prompt(
