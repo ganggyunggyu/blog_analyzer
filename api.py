@@ -16,8 +16,10 @@ from routers.generate import (
     clean_claude,
     clean_deepseek,
     deepseek,
+    deepseek_new,
     gemini,
     gemini_3_pro,
+    gemini_new,
     gpt,
     gpt_5,
     gpt_4_v2,
@@ -26,7 +28,9 @@ from routers.generate import (
     gpt_5_2,
     kkk,
     grok,
+    grok_new,
     mdx_post,
+    openai_new,
     restaurant,
     restaurant_claude,
     restaurant_grok,
@@ -89,7 +93,11 @@ app.include_router(gpt_5_2.router)
 app.include_router(kkk.router)
 app.include_router(grok.router)
 app.include_router(deepseek.router)
+app.include_router(deepseek_new.router)
 app.include_router(clean_deepseek.router)
+app.include_router(openai_new.router)
+app.include_router(gemini_new.router)
+app.include_router(grok_new.router)
 app.include_router(restaurant.router)
 app.include_router(restaurant_claude.router)
 app.include_router(restaurant_grok.router)
