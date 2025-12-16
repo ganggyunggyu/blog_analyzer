@@ -60,6 +60,12 @@ from routers.search import (
     keyword as search_keyword,
     manuscript as search_manuscript,
     all as search_all,
+    autocomplete as search_autocomplete,
+    manage as search_manage,
+    popular as search_popular,
+    stats as search_stats,
+    history as search_history,
+    bookmark as search_bookmark,
 )
 
 LLM_CONCURRENCY = int(os.getenv("LLM_CONCURRENCY", "3"))
@@ -127,3 +133,9 @@ app.include_router(requirement_analysis.router)
 app.include_router(search_keyword.router)
 app.include_router(search_manuscript.router)
 app.include_router(search_all.router)
+app.include_router(search_autocomplete.router)
+app.include_router(search_manage.router)
+app.include_router(search_popular.router)
+app.include_router(search_stats.router)
+app.include_router(search_history.router)
+app.include_router(search_bookmark.router)
