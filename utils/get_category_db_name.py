@@ -66,7 +66,7 @@ async def get_category_db_name(keyword: str) -> str:
     """
     try:
         category = call_ai(
-            model_name=Model.GROK_4_1_RES,
+            model_name=Model.GROK_4_NON_RES,
             system_prompt=CATEGORY_SYSTEM_PROMPT,
             user_prompt=build_category_prompt(keyword, CATEGORIES),
         )
