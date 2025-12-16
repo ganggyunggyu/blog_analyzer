@@ -3,17 +3,20 @@
 from _prompts.rules.line_break_rules import line_break_rules
 from _prompts.rules.human_writing_style import human_writing_rule
 from _prompts.rules.length_rule import LENGTH_RULE
+from _prompts.rules.output_rule import get_output_rule
 from _prompts.rules.taboo_rules import TABOO_RULES
 from _prompts.rules.write_rule import WRITE_RULE
+from _prompts.service import get_category_tone_rules, get_mongo_prompt
 
 
 def get_grok_system_prompt(
     keyword: str,
     category: str,
-    mongo_data: str,
-    category_tone_rules: str,
-    output_rule: str,
 ) -> str:
+
+    mongo_data = get_mongo_prompt.get_mongo_prompt(category, keyword)
+    category_tone_rules = get_category_tone_rules.get_category_tone_rules(category)
+    output_rule = get_output_rule(category)
     """Grok 시스템 프롬프트 생성"""
     return f"""
 

@@ -23,16 +23,9 @@ def grok_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     if not keyword:
         raise ValueError("키워드가 없습니다.")
 
-    mongo_data = get_mongo_prompt(category, user_instructions)
-    category_tone_rules = get_category_tone_rules(category)
-    output_rule = get_output_rule(category)
-
     system = get_grok_system_prompt(
         keyword=keyword,
         category=category,
-        mongo_data=mongo_data,
-        category_tone_rules=category_tone_rules,
-        output_rule=output_rule,
     )
 
     user = get_grok_user_prompt(keyword=keyword, note=note, ref=ref)
