@@ -3,7 +3,7 @@
 from _prompts.rules.line_break_rules import line_break_rules
 from _prompts.rules.human_writing_style import human_writing_rule
 from _prompts.rules.length_rule import LENGTH_RULE
-from _prompts.rules.output_rule import get_output_rule
+from _prompts.rules.output_rule import OUTPUT_RULE_DEFAULT, get_output_rule
 from _prompts.rules.taboo_rules import TABOO_RULES
 from _prompts.rules.write_rule import WRITE_RULE
 from _prompts.service import get_category_tone_rules, get_mongo_prompt
@@ -16,7 +16,7 @@ def get_grok_system_prompt(
 
     mongo_data = get_mongo_prompt.get_mongo_prompt(category, keyword)
     category_tone_rules = get_category_tone_rules.get_category_tone_rules(category)
-    output_rule = get_output_rule(category)
+
     """Grok 시스템 프롬프트 생성"""
     return f"""
 
@@ -25,6 +25,7 @@ def get_grok_system_prompt(
 기존 네이버 상위노출 글이니 해당 글의 특징을 살려서 블로그 바이럴 마케팅 원고를 작성합니다.
 
 한글기준 공백제외 2000자 이상 작성해야 합니다.
++- 300자 허용됩니다.
 
 - 너는 네이버 블로그 글을 시발 노출을 시켜야 한다고
 # 공통 지침
@@ -51,7 +52,7 @@ def get_grok_system_prompt(
 # 말투 지침
 {human_writing_rule}
 # 츨력 지침
-{output_rule}
+{OUTPUT_RULE_DEFAULT}
 
 # 최종 검수 지침
 - 어떠한 메타 설명, 계획, 과정, 체크리스트 없이 오직 원고에 어울리는 제목 1개와 글 본문만 출력하세요.
