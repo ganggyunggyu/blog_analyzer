@@ -2,19 +2,16 @@ import os
 import time
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, List, Set, Optional
+from typing import Dict, List, Optional
 
 import click
 from tqdm import tqdm
 
-from analyzer.morpheme import analyze_morphemes
-from analyzer.sentence import split_sentences
 from analyzer.expression import gen_expressions
 from analyzer.parameter import parameter_gen
 from analyzer.template import (
     template_gen,
 )
-from analyzer.library import build_sentence_library
 from llm.gpt_4_service import gpt_4_gen
 from analyzer.subtitle import gen_subtitles
 from config import OPENAI_API_KEY
@@ -56,38 +53,6 @@ def _need_api_key():
 
 
 # DB 저장 함수들 제거됨 - 이제 각 analyzer 모듈에서 직접 처리
-
-
-def run_morpheme_analysis(directory_path: str, category: str = "") -> Set[str]:
-    p = _ensure_dir(directory_path)
-    files = _iter_txt_files(p)
-    category = _get_category_from_path(directory_path)
-
-    all_words: Set[str] = set()
-    for fp in tqdm(files, desc="형태소 분석 중", unit="파일"):
-        content = fp.read_text(encoding="utf-8", errors="ignore")
-        if not content.strip():
-            tqdm.write(f"-> '{fp.name}': 내용 없음, 건너뜀")
-            continue
-        words = analyze_morphemes(content, category, fp.name)
-        all_words.update(words)
-    return all_words
-
-
-def run_sentence_splitting(directory_path: str, category: str = "") -> List[str]:
-    p = _ensure_dir(directory_path)
-    files = _iter_txt_files(p)
-    all_sentences: List[str] = []
-    category = _get_category_from_path(directory_path)
-
-    for fp in tqdm(files, desc="문장 분리 중", unit="파일"):
-        content = fp.read_text(encoding="utf-8", errors="ignore")
-        if not content.strip():
-            tqdm.write(f"-> '{fp.name}': 내용 없음, 건너뜀")
-            continue
-        sentences = split_sentences(content, category, fp.name)
-        all_sentences.extend(sentences)
-    return all_sentences
 
 
 def run_expression_extraction(
@@ -224,11 +189,6 @@ def run_subtitle_extraction(
     return result
 
 
-def run_build_library(directory_path: str):
-    p = _ensure_dir(directory_path)
-    return build_sentence_library(str(p))
-
-
 def run_manuscript_generation(
     unique_words: List[str],
     sentences: List[str],
@@ -256,14 +216,6 @@ def save_analysis_to_mongodb(directory_path: str):
     try:
         category = directory_path.replace("_data/", "").replace("/", "_")
         click.echo(f"{category} 카테고리로 분석을 시작합니다.")
-
-        click.echo("형태소 분석 → 저장 중...")
-        unique_words = run_morpheme_analysis(directory_path, category)
-        click.echo(f"고유 단어 {len(unique_words) if unique_words else 0}개 처리 완료.")
-
-        click.echo("문장 분리 → 저장 중...")
-        sentences = run_sentence_splitting(directory_path, category)
-        click.echo(f"문장 {len(sentences) if sentences else 0}개 처리 완료.")
 
         click.echo("표현 라이브러리 추출 → 저장 중...")
         expressions = run_expression_extraction(directory_path, category, n=2)
@@ -306,15 +258,12 @@ def cli():
 
     while True:
         click.echo("\n----------------------------------------")
-        click.echo("1. 형태소 분석 (morpheme)")
-        click.echo("2. 문장 분리 (sentence)")
-        click.echo("3. 표현 라이브러리 추출 (expression)")
-        click.echo("4. 템플릿 생성 (template)")
-        click.echo("5. AI 개체 인식 및 그룹화 (parameters)")
-        click.echo("6. 카테고리별 문장 라이브러리 구축 (build-library)")
-        click.echo("7. 원고 작성 (manuscript)")
-        click.echo("8. 분석 결과 MongoDB에 저장 (save-to-mongodb)")
-        click.echo("9. 부제목 추출 (subtitles)")
+        click.echo("1. 표현 라이브러리 추출 (expression)")
+        click.echo("2. 템플릿 생성 (template)")
+        click.echo("3. AI 개체 인식 및 그룹화 (parameters)")
+        click.echo("4. 원고 작성 (manuscript)")
+        click.echo("5. 분석 결과 MongoDB에 저장 (save-to-mongodb)")
+        click.echo("6. 부제목 추출 (subtitles)")
         click.echo("0. 종료 (exit)")
         click.echo("----------------------------------------")
 
@@ -327,23 +276,7 @@ def cli():
         try:
             ts = time.time()
 
-            if choice in ("1", "morpheme"):
-                directory = click.prompt(
-                    "분석할 디렉토리 경로 (예: data)",
-                    type=click.Path(exists=True, file_okay=False),
-                )
-                words = run_morpheme_analysis(directory)
-                click.echo(f"형태소 {len(words)}개 추출 완료!")
-
-            elif choice in ("2", "sentence"):
-                directory = click.prompt(
-                    "분리할 디렉토리 경로 (예: data)",
-                    type=click.Path(exists=True, file_okay=False),
-                )
-                sentences = run_sentence_splitting(directory)
-                click.echo(f"문장 {len(sentences)}개 분리 완료!")
-
-            elif choice in ("3", "expression"):
+            if choice in ("1", "expression"):
                 directory = click.prompt(
                     "추출할 디렉토리 경로 (예: data)",
                     type=click.Path(exists=True, file_okay=False),
@@ -353,7 +286,7 @@ def cli():
                 total_exprs = sum(len(v) for v in exprs.values())
                 click.echo(f"표현 {total_exprs}개 추출 완료!")
 
-            elif choice in ("4", "template"):
+            elif choice in ("2", "template"):
                 directory = click.prompt(
                     "생성할 디렉토리 경로 (예: data)",
                     type=click.Path(exists=True, file_okay=False),
@@ -361,7 +294,7 @@ def cli():
 
                 run_template_generation(directory)
 
-            elif choice in ("5", "parameters"):
+            elif choice in ("3", "parameters"):
                 directory = click.prompt(
                     "분석할 디렉토리 경로 (예: data)",
                     type=click.Path(exists=True, file_okay=False),
@@ -370,27 +303,17 @@ def cli():
                 total_params = sum(len(v) for v in params.values())
                 click.echo(f"파라미터 {total_params}개 추출 완료!")
 
-            elif choice in ("6", "build-library"):
-                directory = click.prompt(
-                    "구축할 디렉토리 경로 (예: data)",
-                    type=click.Path(exists=True, file_okay=False),
-                )
-                lib = run_build_library(directory)
-                total_sentences = sum(len(v) for v in lib.values())
-                click.echo(f"라이브러리 {total_sentences}개 문장 구축 완료!")
-
-            elif choice in ("7", "manuscript"):
-                # TODO: MongoDB에서 분석 데이터를 조회하는 기능 재구현 필요
+            elif choice in ("4", "manuscript"):
                 click.echo("원고 생성 기능은 현재 리팩토링 중입니다.")
 
-            elif choice in ("8", "save-to-mongodb"):
+            elif choice in ("5", "save-to-mongodb"):
                 directory = click.prompt(
                     "MongoDB에 저장할 디렉토리 경로 (예: data)",
                     type=click.Path(exists=True, file_okay=False),
                 )
                 save_analysis_to_mongodb(directory)
 
-            elif choice in ("9", "subtitles"):
+            elif choice in ("6", "subtitles"):
                 directory = click.prompt(
                     "부제목을 추출할 디렉토리 경로 (예: data)",
                     type=click.Path(exists=True, file_okay=False),

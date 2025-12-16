@@ -12,8 +12,6 @@ import json
 from typing import Dict, List
 
 # analyzer 모듈 import
-from analyzer.sentence import split_sentences
-from analyzer.morpheme import analyze_morphemes
 from analyzer.subtitle import gen_subtitles
 from analyzer.expression import gen_expressions
 from analyzer.template import template_gen
@@ -62,72 +60,14 @@ def main():
         """)
 
     # 메인 영역 - 탭 구성
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
-        "📝 문장 분리",
-        "🔤 형태소 분석",
+    tab1, tab2, tab3 = st.tabs([
         "📑 소제목 추출",
         "💬 표현 추출",
         "📄 템플릿 생성",
     ])
 
-    # 탭 1: 문장 분리
+    # 탭 1: 소제목 추출
     with tab1:
-        st.header("📝 문장 분리")
-        st.markdown("텍스트를 문장 단위로 분리합니다. (AI 미사용)")
-
-        text_sentence = st.text_area(
-            "분석할 텍스트",
-            height=200,
-            key="text_sentence",
-            placeholder="여기에 텍스트를 입력하세요...",
-        )
-
-        if st.button("문장 분리 실행", key="btn_sentence"):
-            if text_sentence.strip():
-                with st.spinner("문장 분리 중..."):
-                    cat = category if save_to_db else ""
-                    fname = file_name if save_to_db else ""
-                    sentences = split_sentences(text_sentence, cat, fname)
-
-                st.success(f"✅ 분리된 문장: {len(sentences)}개")
-
-                for i, sentence in enumerate(sentences, 1):
-                    st.markdown(f"**{i}.** {sentence}")
-            else:
-                st.warning("텍스트를 입력해주세요.")
-
-    # 탭 2: 형태소 분석
-    with tab2:
-        st.header("🔤 형태소 분석")
-        st.markdown("텍스트에서 2글자 이상 한글 단어를 추출합니다. (AI 미사용)")
-
-        text_morpheme = st.text_area(
-            "분석할 텍스트",
-            height=200,
-            key="text_morpheme",
-            placeholder="여기에 텍스트를 입력하세요...",
-        )
-
-        if st.button("형태소 분석 실행", key="btn_morpheme"):
-            if text_morpheme.strip():
-                with st.spinner("형태소 분석 중..."):
-                    cat = category if save_to_db else ""
-                    fname = file_name if save_to_db else ""
-                    morphemes = analyze_morphemes(text_morpheme, cat, fname)
-
-                st.success(f"✅ 추출된 형태소: {len(morphemes)}개")
-
-                # 태그 형태로 표시
-                morpheme_html = " ".join(
-                    [f'<span style="background-color:#e8f4ea;padding:4px 8px;margin:2px;border-radius:4px;display:inline-block;">{m}</span>'
-                     for m in sorted(morphemes)]
-                )
-                st.markdown(morpheme_html, unsafe_allow_html=True)
-            else:
-                st.warning("텍스트를 입력해주세요.")
-
-    # 탭 3: 소제목 추출
-    with tab3:
         st.header("📑 소제목 추출")
         st.markdown("AI를 사용하여 블로그 원고에서 소제목을 추출합니다.")
 
@@ -163,8 +103,8 @@ def main():
             else:
                 st.warning("텍스트를 입력해주세요.")
 
-    # 탭 4: 표현 추출
-    with tab4:
+    # 탭 2: 표현 추출
+    with tab2:
         st.header("💬 표현 추출")
         st.markdown("AI를 사용하여 마케팅/콘텐츠 제작에 유용한 표현을 추출합니다.")
 
@@ -194,8 +134,8 @@ def main():
             else:
                 st.warning("텍스트를 입력해주세요.")
 
-    # 탭 5: 템플릿 생성
-    with tab5:
+    # 탭 3: 템플릿 생성
+    with tab3:
         st.header("📄 템플릿 생성")
         st.markdown("AI를 사용하여 텍스트를 템플릿화합니다. (변수 치환)")
 

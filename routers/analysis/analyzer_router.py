@@ -4,13 +4,10 @@ from fastapi import APIRouter, HTTPException, UploadFile, File
 from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel
 
-from analyzer.morpheme import analyze_morphemes
-from analyzer.sentence import split_sentences
 from analyzer.expression import gen_expressions
 from analyzer.parameter import parameter_gen
 from analyzer.subtitle import gen_subtitles
 from analyzer.template import template_gen
-from analyzer.library import build_sentence_library
 from utils.txt_file_parser import parse_txt_file
 
 
@@ -21,16 +18,6 @@ class AnalyzeRequest(BaseModel):
     text: str
     category: str = ""
     file_name: str = ""
-
-
-class MorphemeResponse(BaseModel):
-    morphemes: List[str]
-    count: int
-
-
-class SentenceResponse(BaseModel):
-    sentences: List[str]
-    count: int
 
 
 class ExpressionResponse(BaseModel):
@@ -61,36 +48,10 @@ class TemplateResponse(BaseModel):
 
 class TxtFileAnalysisResponse(BaseModel):
     parsed_data: Dict[str, str]
-    morphemes: List[str]
-    sentences: List[str]
     expressions: Dict[str, List[str]]
     parameters: Dict[str, List[str]]
     subtitles: List[str]
     templated_text: str
-
-
-@router.post("/morpheme", response_model=MorphemeResponse)
-async def analyze_morpheme_endpoint(request: AnalyzeRequest):
-    """형태소 분석 API"""
-    try:
-        morphemes = await run_in_threadpool(
-            analyze_morphemes, request.text, request.category, request.file_name
-        )
-        return MorphemeResponse(morphemes=morphemes, count=len(morphemes))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"형태소 분석 오류: {e}")
-
-
-@router.post("/sentence", response_model=SentenceResponse)
-async def split_sentence_endpoint(request: AnalyzeRequest):
-    """문장 분리 API"""
-    try:
-        sentences = await run_in_threadpool(
-            split_sentences, request.text, request.category, request.file_name
-        )
-        return SentenceResponse(sentences=sentences, count=len(sentences))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"문장 분리 오류: {e}")
 
 
 @router.post("/expression", response_model=ExpressionResponse)
@@ -147,29 +108,6 @@ async def generate_template_endpoint(request: TemplateRequest):
         raise HTTPException(status_code=500, detail=f"템플릿 생성 오류: {e}")
 
 
-class LibraryRequest(BaseModel):
-    directory_path: str
-    category: str = ""
-
-
-class LibraryResponse(BaseModel):
-    library: Dict[str, List[str]]
-    total_sentences: int
-
-
-@router.post("/library", response_model=LibraryResponse)
-async def build_library_endpoint(request: LibraryRequest):
-    """문장 라이브러리 구축 API"""
-    try:
-        library = await run_in_threadpool(
-            build_sentence_library, request.directory_path, request.category
-        )
-        total_sentences = sum(len(sentences) for sentences in library.values())
-        return LibraryResponse(library=library, total_sentences=total_sentences)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"라이브러리 구축 오류: {e}")
-
-
 class AllAnalysisRequest(BaseModel):
     text: str
     category: str
@@ -177,8 +115,6 @@ class AllAnalysisRequest(BaseModel):
 
 
 class AllAnalysisResponse(BaseModel):
-    morphemes: List[str]
-    sentences: List[str]
     expressions: Dict[str, List[str]]
     parameters: Dict[str, List[str]]
     subtitles: List[str]
@@ -189,15 +125,6 @@ class AllAnalysisResponse(BaseModel):
 async def analyze_all_endpoint(request: AllAnalysisRequest):
     """모든 분석을 한 번에 수행하는 API"""
     try:
-
-        morphemes = await run_in_threadpool(
-            analyze_morphemes, request.text, request.category, request.file_name
-        )
-
-        sentences = await run_in_threadpool(
-            split_sentences, request.text, request.category, request.file_name
-        )
-
         expressions = await run_in_threadpool(
             gen_expressions, request.text, request.category, request.file_name
         )
@@ -214,8 +141,6 @@ async def analyze_all_endpoint(request: AllAnalysisRequest):
         )
 
         return AllAnalysisResponse(
-            morphemes=morphemes,
-            sentences=sentences,
             expressions=expressions,
             parameters=parameters,
             subtitles=subtitles,
@@ -245,12 +170,6 @@ async def analyze_txt_file_endpoint(file: UploadFile = File(...)):
         category = parsed_data["category"]
         file_name = parsed_data["file_name"]
 
-        morphemes = await run_in_threadpool(
-            analyze_morphemes, text, category, file_name
-        )
-
-        sentences = await run_in_threadpool(split_sentences, text, category, file_name)
-
         expressions = await run_in_threadpool(
             gen_expressions, text, category, file_name
         )
@@ -265,8 +184,6 @@ async def analyze_txt_file_endpoint(file: UploadFile = File(...)):
 
         return TxtFileAnalysisResponse(
             parsed_data=parsed_data,
-            morphemes=morphemes,
-            sentences=sentences,
             expressions=expressions,
             parameters=parameters,
             subtitles=subtitles,
