@@ -1,10 +1,12 @@
 from typing import List, Dict, Any, Optional
 from fastapi import APIRouter, HTTPException
 from fastapi.concurrency import run_in_threadpool
+from pymongo import MongoClient
 
 from mongodb_service import MongoDBService
 from schema.search import KeywordSearchRequest
-from config import MONGO_DB_NAME
+from config import MONGO_URI
+from _constants.categories import CATEGORIES
 
 router = APIRouter()
 
@@ -32,53 +34,91 @@ def search_manuscripts_by_keyword(
             "limit": 페이지당 결과 수
         }
     """
-    db_service = MongoDBService()
+    search_query = {
+        "$or": [
+            {"content": {"$regex": query, "$options": "i"}},
+            {"keyword": {"$regex": query, "$options": "i"}},
+        ],
+        "deleted": {"$ne": True}
+    }
 
-    try:
-        if category:
+    if category:
+        db_service = MongoDBService()
+        try:
             db_service.set_db_name(db_name=category)
-        else:
-            db_service.set_db_name(db_name=MONGO_DB_NAME)
 
-        # 검색 쿼리: content 또는 keyword 필드에서 검색
-        search_query = {
-            "$or": [
-                {"content": {"$regex": query, "$options": "i"}},
-                {"keyword": {"$regex": query, "$options": "i"}},
-            ]
-        }
+            total = db_service.db["manuscripts"].count_documents(search_query)
 
-        # 전체 결과 수 계산
-        total = db_service.db["manuscripts"].count_documents(search_query)
+            documents = list(
+                db_service.db["manuscripts"]
+                .find(search_query)
+                .sort("createdAt", -1)
+                .skip(skip)
+                .limit(limit)
+            )
 
-        # 페이지네이션 적용하여 문서 조회
-        documents = list(
-            db_service.db["manuscripts"]
-            .find(search_query)
-            .sort("timestamp", -1)  # 최신순 정렬
-            .skip(skip)
-            .limit(limit)
-        )
+            for doc in documents:
+                if "_id" in doc:
+                    doc["_id"] = str(doc["_id"])
+                doc["__category"] = category
 
-        # _id를 문자열로 변환
-        for doc in documents:
-            if "_id" in doc:
-                doc["_id"] = str(doc["_id"])
+            return {
+                "documents": documents,
+                "total": total,
+                "skip": skip,
+                "limit": limit,
+            }
+        finally:
+            db_service.close_connection()
+    else:
+        client = MongoClient(MONGO_URI)
+        all_documents = []
+        total = 0
 
-        return {
-            "documents": documents,
-            "total": total,
-            "skip": skip,
-            "limit": limit,
-        }
+        try:
+            for cat in CATEGORIES:
+                try:
+                    db = client[cat]
+                    collection = db["manuscripts"]
 
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"원고 검색 중 오류 발생: {str(e)}"
-        )
-    finally:
-        db_service.close_connection()
+                    cat_total = collection.count_documents(search_query)
+                    total += cat_total
+
+                    docs = list(
+                        collection.find(search_query)
+                        .sort("createdAt", -1)
+                        .limit(limit * 2)
+                    )
+
+                    for doc in docs:
+                        if "_id" in doc:
+                            doc["_id"] = str(doc["_id"])
+                        doc["__category"] = cat
+                        all_documents.append(doc)
+
+                except Exception:
+                    continue
+
+            from datetime import datetime
+            all_documents.sort(
+                key=lambda d: d.get("createdAt") or datetime.min,
+                reverse=True
+            )
+
+            paginated = all_documents[skip:skip + limit]
+
+            return {
+                "documents": paginated,
+                "total": total,
+                "skip": skip,
+                "limit": limit,
+            }
+
+        finally:
+            client.close()
+
+
+MAX_QUERY_LENGTH = 100
 
 
 @router.post("/search/keyword")
@@ -95,6 +135,12 @@ async def search_keyword(request: KeywordSearchRequest):
 
     if not query:
         raise HTTPException(status_code=400, detail="검색 키워드를 입력해주세요.")
+
+    if len(query) > MAX_QUERY_LENGTH:
+        raise HTTPException(
+            status_code=400,
+            detail=f"검색어가 너무 깁니다. (최대 {MAX_QUERY_LENGTH}자)"
+        )
 
     skip = (request.page - 1) * request.limit
 

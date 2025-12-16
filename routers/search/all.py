@@ -39,11 +39,12 @@ def search_all(keyword: str, limit: int = 20) -> List[Dict[str, Any]]:
                     "$or": [
                         {"content": {"$regex": keyword, "$options": "i"}},
                         {"keyword": {"$regex": keyword, "$options": "i"}},
-                    ]
+                    ],
+                    "deleted": {"$ne": True}
                 }
 
                 # 검색 실행 (최신순 정렬)
-                cursor = collection.find(query).sort("timestamp", -1).limit(limit)
+                cursor = collection.find(query).sort("createdAt", -1).limit(limit)
 
                 for doc in cursor:
                     # _id를 문자열로 변환
@@ -80,6 +81,9 @@ def search_all(keyword: str, limit: int = 20) -> List[Dict[str, Any]]:
         client.close()
 
 
+MAX_QUERY_LENGTH = 100
+
+
 @router.post("/search/all")
 async def search_all_endpoint(body: SearchRequest):
     """
@@ -105,6 +109,12 @@ async def search_all_endpoint(body: SearchRequest):
 
     if not query:
         raise HTTPException(status_code=400, detail="검색 키워드를 입력해주세요.")
+
+    if len(query) > MAX_QUERY_LENGTH:
+        raise HTTPException(
+            status_code=400,
+            detail=f"검색어가 너무 깁니다. (최대 {MAX_QUERY_LENGTH}자)"
+        )
 
     print(f"\n{'='*70}")
     print(f"🔍 통합 검색 시작".center(70))
