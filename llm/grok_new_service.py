@@ -4,7 +4,7 @@ from __future__ import annotations
 import re
 import time
 
-from _prompts.system.universal_info_system import get_universal_info_system_prompt
+from _prompts.system.grok_info_system import get_grok_info_system_prompt
 from _constants.Model import Model
 from utils.query_parser import parse_query
 from utils.text_cleaner import comprehensive_text_clean
@@ -24,26 +24,51 @@ def grok_new_gen(user_instructions: str, ref: str = "", category: str = "") -> s
     if not keyword:
         raise ValueError("키워드가 없습니다.")
 
-    system = get_universal_info_system_prompt()
+    system = get_grok_info_system_prompt()
 
     user = f"""
-주제: {keyword}
+<topic>{keyword}</topic>
+<category>{category if category else "기타"}</category>
+<additional_request>{note if note else "없음"}</additional_request>
+<reference>{ref if ref else "없음"}</reference>
 
-카테고리: {category if category else "기타"}
+<task>
+위 주제에 대해 전문적이고 신뢰도 높은 정보성 블로그 원고를 작성하세요.
+</task>
 
-추가 요청사항: {note if note else "없음"}
+<requirements>
+1. 분량: 최소 2,500단어 이상
+2. 톤앤매너: 공신력 있고 전문적인 정보 전달 (면책조항, 광고성 문구 금지)
+3. SEO 최적화: 키워드 자연스럽게 배치
+</requirements>
 
-참조 문서: {ref if ref else "없음"}
+<structure>
+1. 부제(소제목) 개수: 5~7개
+2. 부제 형식: "1. 제목", "2. 제목" (숫자+마침표+공백+제목)
+3. 금지 형식: "4-1", "4-2" 같은 하위 번호 사용 금지
+</structure>
 
-글자수 2500단어 이상
-키워드에 맞춰 신뢰도 높고, 질의에 적합하게, 공신력, 공식성, 전문성 높은 정보성 원고를 만들어줘 면책사항 이런거 넣지마 가독성 좋게 
-쉽게 SEO 최적화 한다고 생각하고 부제 이런것도 앞에 1. 2.3. 이런거넣고 자연스럽게 문단정리 잘해줘야함 무조건!
-한줄로 길게 적지말고
-한줄당 20~30자 정도로 끊어서 문단정리 예쁘게
-모바일로 봤을때 보기좋게
-부제 4-1 4-2 이런건 넣지마
-마크다운 문법 사용 금지
-부제는 내용에 맞게 5~7개 사이로 제한해줘
+<formatting>
+1. 한 줄당 20~30자로 끊어서 작성
+2. 긴 문장은 여러 줄로 나누어 가독성 확보
+3. 모바일 화면에서 읽기 편하게 문단 정리
+4. 마크다운 문법(#, *, **, ```) 사용 금지
+5. 순수 텍스트로만 작성
+</formatting>
+
+<output_example>
+1. 첫 번째 부제 예시
+
+본문 내용을 이렇게
+20~30자 단위로 끊어서
+가독성 좋게 작성합니다.
+
+2. 두 번째 부제 예시
+
+정보를 명확하게 전달하되
+전문성을 유지하면서
+쉽게 읽히도록 작성합니다.
+</output_example>
 """.strip()
 
     print(f"서비스: {category}")
