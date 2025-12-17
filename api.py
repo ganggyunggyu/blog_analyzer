@@ -31,6 +31,7 @@ from routers.generate import (
     kkk,
     grok,
     grok_new,
+    grok_ver3_clean,
     mdx_post,
     openai_new,
     restaurant,
@@ -59,6 +60,7 @@ from routers.generate import (
 from routers.category import keyword
 from routers.analysis import get_sub_title, upload_text, analyzer_router
 from routers.ref import get_ref
+from routers.manuscript import visibility as manuscript_visibility
 from routers.search import (
     keyword as search_keyword,
     manuscript as search_manuscript,
@@ -109,6 +111,7 @@ app.include_router(clean_deepseek.router)
 app.include_router(openai_new.router)
 app.include_router(gemini_new.router)
 app.include_router(grok_new.router)
+app.include_router(grok_ver3_clean.router)
 app.include_router(restaurant.router)
 app.include_router(restaurant_claude.router)
 app.include_router(restaurant_grok.router)
@@ -145,3 +148,4 @@ app.include_router(search_popular.router)
 app.include_router(search_stats.router)
 app.include_router(search_history.router)
 app.include_router(search_bookmark.router)
+app.include_router(manuscript_visibility.router)
