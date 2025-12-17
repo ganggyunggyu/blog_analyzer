@@ -10,9 +10,14 @@ from utils.text_cleaner import comprehensive_text_clean
 model_name: str = Model.SOLAR_PRO2
 
 
-SYSTEM_PROMPT = """마크다운 금지 피드백 금지 순수 원고만 출력 줄바꿈 필수"""
+SYSTEM_PROMPT = """"""
 
-USER_PROMPT_TEMPLATE = """{keyword}"""
+USER_PROMPT_TEMPLATE = """
+마크다운 금지
+피드백 금지 순수
+원고만 출력 줄바꿈 필수
+{keyword}
+"""
 
 
 def solar_ver3_clean_gen(
