@@ -5,7 +5,7 @@ class Model:
     GPT5_MINI = "gpt-5-mini-2025-08-07"
     GPT5_NANO = "gpt-5-nano-2025-08-07"
     GPT5_CHAT = "gpt-5-chat-latest"
-    GPT4O = "gpt-4o-2024-11-20"
+    GPT4O = "chatgpt-4o-latest"
     GPT4_1 = "gpt-4.1-2025-04-14"
     GPT4_1_MINI = "gpt-4.1-mini-2025-04-14"
 
@@ -17,7 +17,7 @@ class Model:
     CLAUDE_OPUS_4_5 = "claude-opus-4-5-20251101"
 
     SOLAR_PRO = "solar-pro"
-    SOLAR_PRO2 = "solar-pro2-250909"
+    SOLAR_PRO2 = "solar-pro2"
 
     GROK_4_RES = "grok-4-fast-reasoning"
     GROK_4_NON_RES = "grok-4-fast-non-reasoning"
