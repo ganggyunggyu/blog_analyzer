@@ -61,7 +61,6 @@ async def generator_openai_prompt_engineer(request: GenerateRequest):
                 "category": category,
                 "keyword": keyword,
                 "ref": ref if ref else "",
-                "work_start_date": "2025-01-15",
             }
 
             try:

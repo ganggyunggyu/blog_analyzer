@@ -54,7 +54,6 @@ async def merge(request: GenerateRequest):
                 "service": f"{service}_chunk",
                 "category": category,
                 "keyword": keyword,
-                "test_mode": True,
             }
 
             try:

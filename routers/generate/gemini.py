@@ -61,8 +61,6 @@ async def post_gemini(request: GenerateRequest):
                 "category": category,
                 "keyword": keyword,
                 "ref": ref if ref else "",
-                "work_start_date": "2025-01-15",
-                "test_mode": False,
             }
 
             try:

@@ -58,7 +58,6 @@ async def generator_requirement_analysis(request: GenerateRequest):
                 "service": f"{service}_requirement_analysis",
                 "category": category,
                 "ref": ref if ref else "",
-                "work_start_date": "2025-01-15",
             }
 
             try:

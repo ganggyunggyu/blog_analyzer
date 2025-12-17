@@ -60,7 +60,6 @@ async def generator_gpt_ver3_clean(request: GenerateRequest):
                 "category": category,
                 "keyword": keyword,
                 "ref": ref if ref else "",
-                "work_start_date": "2025-01-15",
             }
 
             try:
