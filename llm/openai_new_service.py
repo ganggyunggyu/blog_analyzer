@@ -1,23 +1,21 @@
-"""OpenAI New - 범용 정보성 원고 생성 서비스 (GPT-5.2 Responses API)"""
+"""OpenAI New - 범용 정보성 원고 생성 서비스 (GPT-4o)"""
 
 from __future__ import annotations
 import re
 import time
 
-from openai import OpenAI
-
 from _prompts.system.universal_info_system import get_universal_info_system_prompt
 from _constants.Model import Model
-from config import OPENAI_API_KEY
 from utils.query_parser import parse_query
 from utils.text_cleaner import comprehensive_text_clean
+from utils.ai_client_factory import call_ai
 
 
 MODEL_NAME: str = Model.GPT5_2
 
 
 def openai_new_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
-    """GPT-5.2 Responses API를 사용한 범용 정보성 원고 생성"""
+    """GPT-4o를 사용한 범용 정보성 원고 생성"""
 
     parsed = parse_query(user_instructions)
     keyword = parsed.get("keyword", "")
@@ -29,27 +27,32 @@ def openai_new_gen(user_instructions: str, ref: str = "", category: str = "") ->
     system = get_universal_info_system_prompt()
 
     user = f"""
-주제: {keyword}
+[INPUT]
+topic: {keyword}
+category: {category}
+additional_request: {note if note else "없음"}
+reference: {ref if ref else "없음"}
 
-추가 요청사항: {note if note else "없음"}
+[TASK]
+위 주제에 대해 신뢰도 높은 정보성 블로그 원고를 작성하세요.
+공신력, 공식성, 전문성을 갖춘 콘텐츠로, SEO 최적화를 고려해 작성합니다.
 
-카테고리: {category}
+[STRUCTURE]
+- 부제 개수: 정확히 5개
+- 부제 형식: "1. 제목", "2. 제목" (숫자+마침표+공백+제목)
+- 금지 형식: "4-1", "4-2" 같은 하위 번호 사용 금지
 
-참조 문서: {ref if ref else "없음"}
+[FORMAT]
+- 한 줄당 40~50자로 끊어서 작성
+- 모바일 화면에서 읽기 편하게 문단 정리
+- 마크다운 문법 사용 금지
+- 순수 텍스트로만 출력
 
-키워드에 맞춰 신뢰도 높은 원고 작성
-질의에 적합하게, 공신력, 공식성, 전문성 높은 정보성 원고를 만들어줘 면책사항 이런거 넣지마
-가독성 좋게 정보를 설명할땐 키:밸류 이런식으로 한눈에 다양한 정보를 알아보기 쉽게
-SEO 최적화 한다고 생각하고
-부제 이런것도 앞에 1. 2. 3. 이런거넣고 자연스럽게 문단정리 잘해줘야함 무조건!
-한줄로 길게 적지말고
-한줄당 40~50자 정도로 끊어서 문단정리 예쁘게 모바일로 봤을때 보기좋게
-부제 4-1 4-2 이런건 넣지마
-마크다운 문법 사용 금지
-부제는 7개로 제한해줘
+[CONSTRAINTS]
+- 글자수: 한글 기준 공백 제외 2000자 이상 2200자 이하
+- 면책조항, 광고성 문구 삽입 금지
+- 정보 나열 시 자연스러운 문장으로 서술 (키:밸류 형식 사용 가능하되 남발 금지)
 """.strip()
-
-    client = OpenAI(api_key=OPENAI_API_KEY)
 
     print(f"서비스: {category}")
     print(f"키워드: {keyword}")
@@ -57,15 +60,12 @@ SEO 최적화 한다고 생각하고
 
     start_ts = time.time()
 
-    response = client.responses.create(
-        model=MODEL_NAME,
-        instructions=system,
-        input=user,
-        reasoning={"effort": "medium"},
-        text={"verbosity": "high"},
+    text = call_ai(
+        model_name=MODEL_NAME,
+        system_prompt=system,
+        user_prompt=user,
     )
 
-    text: str = getattr(response, "output_text", "") or ""
     if not text:
         raise RuntimeError("모델이 빈 응답을 반환했습니다.")
 
