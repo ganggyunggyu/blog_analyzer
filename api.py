@@ -24,6 +24,8 @@ from routers.generate import (
     gpt_5,
     gpt_4_v2,
     gpt_4_v3,
+    gpt_ver3,
+    gpt_ver3_clean,
     gpt_5_v2,
     gpt_5_2,
     kkk,
@@ -37,6 +39,7 @@ from routers.generate import (
     restaurant_gpt5,
     restaurant_deepseek,
     solar,
+    solar_ver3_clean,
     gpt_merge,
     my,
     song,
@@ -94,6 +97,8 @@ app.include_router(keyword.router)
 app.include_router(get_sub_title.router)
 app.include_router(gpt_4_v2.router)
 app.include_router(gpt_4_v3.router)
+app.include_router(gpt_ver3.router)
+app.include_router(gpt_ver3_clean.router)
 app.include_router(gpt_5_v2.router)
 app.include_router(gpt_5_2.router)
 app.include_router(kkk.router)
@@ -110,6 +115,7 @@ app.include_router(restaurant_grok.router)
 app.include_router(restaurant_gpt5.router)
 app.include_router(restaurant_deepseek.router)
 app.include_router(solar.router)
+app.include_router(solar_ver3_clean.router)
 app.include_router(upload_text.router)
 app.include_router(get_ref.router)
 app.include_router(chunk.router)
