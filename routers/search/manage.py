@@ -213,3 +213,102 @@ async def update_manuscript(
     print(f"✅ 원고 수정 완료: {manuscript_id}")
 
     return result
+
+
+def toggle_visibility_by_id(
+    manuscript_id: str,
+    category: str,
+) -> Dict[str, Any]:
+    """
+    원고 노출여부 토글
+
+    Args:
+        manuscript_id: MongoDB Document ID
+        category: 카테고리 (DB명)
+
+    Returns:
+        {"ok": True, "visible": bool, "manuscriptId": "..."}
+    """
+    db_service = MongoDBService()
+
+    try:
+        try:
+            object_id = ObjectId(manuscript_id)
+        except Exception:
+            raise ValueError(f"잘못된 ID 형식: {manuscript_id}")
+
+        db_service.set_db_name(db_name=category)
+
+        document = db_service.db["manuscripts"].find_one({"_id": object_id})
+        if not document:
+            raise HTTPException(
+                status_code=404,
+                detail=f"원고를 찾을 수 없습니다. (ID: {manuscript_id})"
+            )
+
+        current_visible = document.get("visible", True)
+        new_visible = not current_visible
+
+        result = db_service.db["manuscripts"].update_one(
+            {"_id": object_id},
+            {
+                "$set": {
+                    "visible": new_visible,
+                    "visibilityUpdatedAt": datetime.now()
+                }
+            }
+        )
+
+        if result.modified_count == 0:
+            raise HTTPException(status_code=500, detail="노출여부 변경 실패")
+
+        return {
+            "ok": True,
+            "visible": new_visible,
+            "manuscriptId": manuscript_id
+        }
+
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"노출여부 변경 중 오류 발생: {str(e)}"
+        )
+    finally:
+        db_service.close_connection()
+
+
+@router.patch("/search/manuscript/{manuscript_id}/visibility")
+async def toggle_visibility(
+    manuscript_id: str = Path(..., description="원고 ID"),
+    category: str = Query(..., description="카테고리 (DB명)")
+):
+    """
+    원고 노출여부 토글 API
+
+    - **manuscript_id**: MongoDB Document ID (필수)
+    - **category**: 카테고리/DB명 (필수)
+
+    Returns:
+        {"ok": true, "visible": true/false, "manuscriptId": "..."}
+    """
+    print(f"\n{'='*60}")
+    print(f"👁️ 노출여부 토글 시작")
+    print(f"{'='*60}")
+    print(f"🆔 ID         : {manuscript_id}")
+    print(f"📁 카테고리   : {category}")
+    print(f"{'='*60}\n")
+
+    result = await run_in_threadpool(
+        toggle_visibility_by_id,
+        manuscript_id=manuscript_id,
+        category=category,
+    )
+
+    status = "노출" if result["visible"] else "숨김"
+    print(f"✅ 노출여부 변경 완료: {manuscript_id} → {status}")
+
+    return result
