@@ -4,8 +4,8 @@ from __future__ import annotations
 import re
 import time
 
-from _prompts.system.gemini_flash_system import get_gemini_flash_system_prompt
-from _prompts.user.gemini_flash_user import get_gemini_flash_user_prompt
+from _prompts.gemini.flash_system import get_gemini_flash_system_prompt
+from _prompts.gemini.flash_user import get_gemini_flash_user_prompt
 from _constants.Model import Model
 from utils.query_parser import parse_query
 from utils.text_cleaner import comprehensive_text_clean

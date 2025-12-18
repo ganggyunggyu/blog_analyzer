@@ -12,7 +12,7 @@ from mongodb_service import MongoDBService
 from schema.generate import GenerateRequest
 from utils.get_category_db_name import get_category_db_name
 from utils.query_parser import parse_query
-from _prompts.system.solar_system import get_solar_system_prompt, get_solar_user_prompt
+from _prompts.solar.system import get_solar_system_prompt, get_solar_user_prompt
 from utils.text_cleaner import comprehensive_text_clean
 from utils.format_paragraphs import format_paragraphs
 from utils.progress_logger import progress

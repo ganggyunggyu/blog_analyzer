@@ -7,8 +7,8 @@ import time
 from _prompts.service.get_mongo_prompt import get_mongo_prompt
 from _prompts.service.get_category_tone_rules import get_category_tone_rules
 from _prompts.rules.output_rule import get_output_rule
-from _prompts.system.deepseek_system import get_deepseek_system_prompt
-from _prompts.user.deepseek_user import get_deepseek_user_prompt
+from _prompts.deepseek.system import get_deepseek_system_prompt
+from _prompts.deepseek.user import get_deepseek_user_prompt
 
 from _constants.Model import Model
 from utils.query_parser import parse_query

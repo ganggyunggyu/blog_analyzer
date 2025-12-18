@@ -3,8 +3,8 @@ import re
 import time
 
 from _prompts.service.get_mongo_prompt import get_mongo_prompt
-from _prompts.system.gpt_system import get_gpt_system_prompt
-from _prompts.user.gpt_user import get_gpt_user_prompt
+from _prompts.gpt.system import get_gpt_system_prompt
+from _prompts.gpt.user import get_gpt_user_prompt
 
 from _constants.Model import Model
 from utils.query_parser import parse_query

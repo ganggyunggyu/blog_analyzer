@@ -2,7 +2,7 @@
 
 from _prompts.rules.line_break_rules import line_break_rules
 from _prompts.rules.emphasis_rules import NO_FOREIGN_LANGUAGE, DIVERSE_ENDING
-from _prompts.system.ver1 import V1
+from _prompts.common.ver1 import V1
 
 
 def get_gemini_flash_user_prompt(keyword: str, note: str, ref: str) -> str:

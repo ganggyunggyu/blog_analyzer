@@ -3,8 +3,8 @@ import re
 
 from _prompts.service.get_mongo_prompt import get_mongo_prompt
 from _prompts.service.get_category_tone_rules import get_category_tone_rules
-from _prompts.system.gemini_system import get_gemini_system_prompt
-from _prompts.user.gemini_user import get_gemini_user_prompt
+from _prompts.gemini.system import get_gemini_system_prompt
+from _prompts.gemini.user import get_gemini_user_prompt
 
 from _constants.Model import Model
 from utils import natural_break_text

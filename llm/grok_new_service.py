@@ -4,7 +4,7 @@ from __future__ import annotations
 import re
 import time
 
-from _prompts.system.grok_info_system import get_grok_info_system_prompt
+from _prompts.grok.info_system import get_grok_info_system_prompt
 from _constants.Model import Model
 from utils.query_parser import parse_query
 from utils.text_cleaner import comprehensive_text_clean

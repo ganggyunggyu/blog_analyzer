@@ -4,8 +4,8 @@ import re
 from _prompts.service.get_mongo_prompt import get_mongo_prompt
 from _prompts.service.get_category_tone_rules import get_category_tone_rules
 from _prompts.rules.output_rule import get_output_rule
-from _prompts.system.grok_system import get_grok_system_prompt
-from _prompts.user.grok_user import get_grok_user_prompt
+from _prompts.grok.system import get_grok_system_prompt
+from _prompts.grok.user import get_grok_user_prompt
 
 from _constants.Model import Model
 from utils.query_parser import parse_query

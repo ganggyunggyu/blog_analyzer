@@ -5,7 +5,7 @@ from xai_sdk.chat import system as grok_system_message
 from xai_sdk.chat import user as grok_user_message
 
 from _prompts.service.get_mongo_prompt import get_mongo_prompt
-from _prompts.system.ver1 import V1
+from _prompts.common.ver1 import V1
 from config import GROK_API_KEY, grok_client
 from _constants.Model import Model
 from utils.query_parser import parse_query

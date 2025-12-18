@@ -5,8 +5,8 @@ import re
 import time
 
 from _prompts.service.get_mongo_prompt import get_mongo_prompt
-from _prompts.system.grok_system import get_grok_system_prompt
-from _prompts.system.ver1 import V1
+from _prompts.grok.system import get_grok_system_prompt
+from _prompts.common.ver1 import V1
 from _constants.Model import Model
 from utils.query_parser import parse_query
 from utils.text_cleaner import comprehensive_text_clean

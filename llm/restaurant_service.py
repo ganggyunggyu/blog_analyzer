@@ -2,8 +2,8 @@ from __future__ import annotations
 import re
 
 from _prompts.service.get_mongo_prompt import get_mongo_prompt
-from _prompts.system.restaurant_system import get_restaurant_system_prompt
-from _prompts.user.restaurant_user import get_restaurant_user_prompt
+from _prompts.common.restaurant_system import get_restaurant_system_prompt
+from _prompts.common.restaurant_user import get_restaurant_user_prompt
 
 from _constants.Model import Model
 from utils.query_parser import parse_query

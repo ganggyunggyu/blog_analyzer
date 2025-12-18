@@ -1,7 +1,7 @@
 """Solar Pro 2 전용 프롬프트 (Grok 프롬프트 재사용)"""
 
-from _prompts.system.grok_system import get_grok_system_prompt
-from _prompts.user.grok_user import get_grok_user_prompt
+from _prompts.grok.system import get_grok_system_prompt
+from _prompts.grok.user import get_grok_user_prompt
 
 
 def get_solar_system_prompt(keyword: str, category: str) -> str:
