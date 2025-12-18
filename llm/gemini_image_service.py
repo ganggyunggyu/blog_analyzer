@@ -65,20 +65,26 @@ DOG_POSES = [
 ]
 
 
-def build_image_prompt(keyword: str) -> str:
-    """이미지 생성용 프롬프트 생성 (다양한 포즈 포함)"""
-    pose = random.choice(DOG_POSES)
+def build_image_prompt(keyword: str, count: int = 4) -> str:
+    """이미지 생성용 프롬프트 생성 (각 이미지마다 다른 포즈)"""
+    poses = random.sample(DOG_POSES, min(count, len(DOG_POSES)))
 
-    return f"""Professional blog thumbnail image for: '{keyword}'
+    pose_list = "\n".join([f"- Image {i+1}: {pose}" for i, pose in enumerate(poses)])
 
-Pose/Action: {pose}
+    return f"""Generate {count} COMPLETELY DIFFERENT images for: '{keyword}'
 
-Style: Clean, modern, high quality photography
+CRITICAL: Each image MUST have a unique pose, angle, and composition. NO similar images.
+
+Assigned poses for each image:
+{pose_list}
+
+Style requirements:
+- Professional blog thumbnail quality
+- Clean, modern, high quality photography
 - Visually appealing and eye-catching
-- Related to the keyword theme
 - No text, watermarks, or logos
 - Bright, warm color palette
-- Suitable for Naver blog"""
+- Different backgrounds and lighting for each image"""
 
 
 def gemini_image_gen(keyword: str) -> Tuple[List[dict], int]:
@@ -102,7 +108,7 @@ def gemini_image_gen(keyword: str) -> Tuple[List[dict], int]:
 
     client = genai.Client(api_key=GEMINI_API_KEY)
 
-    prompt = build_image_prompt(keyword)
+    prompt = build_image_prompt(keyword, IMAGE_COUNT)
 
     print(f"이미지 생성 키워드: {keyword}")
     print(f"이미지 {IMAGE_COUNT}장 동시 생성 시작")
