@@ -21,6 +21,7 @@ from routers.generate import (
     gemini_3_pro,
     gemini_3_flash,
     gemini_3_flash_clean,
+    gemini_image,
     gemini_new,
     gpt,
     gpt_5,
@@ -95,6 +96,7 @@ app.include_router(gemini.router)
 app.include_router(gemini_3_pro.router)
 app.include_router(gemini_3_flash.router)
 app.include_router(gemini_3_flash_clean.router)
+app.include_router(gemini_image.router)
 app.include_router(claude.router)
 app.include_router(clean_claude.router)
 app.include_router(gpt.router)

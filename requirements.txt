@@ -30,6 +30,8 @@ uvicorn
 anthropic
 openai
 google-genai
+Pillow
+boto3
 python-multipart
 xai-sdk
 PySide6

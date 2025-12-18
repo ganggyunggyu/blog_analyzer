@@ -10,6 +10,7 @@ class Model:
     GPT4_1_MINI = "gpt-4.1-mini-2025-04-14"
 
     GEMINI_2_5_PRO = "gemini-2.5-pro"
+    IMAGEN_4 = "imagen-4.0-generate-001"
     GEMINI_3_PRO = "gemini-3-pro-preview"
     GEMINI_3_FLASH = "gemini-3.0-flash"
     GEMINI_3_FLASH_PREVIEW = "gemini-3-flash-preview"
