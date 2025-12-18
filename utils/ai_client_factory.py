@@ -350,8 +350,6 @@ def _generate_single_grok_image(
     import requests
     from utils.s3_uploader import upload_image_to_s3
 
-    print(f"[{index}] Grok 생성 시작")
-
     try:
         response = client.image.sample(
             model=model_name,
@@ -361,12 +359,10 @@ def _generate_single_grok_image(
 
         grok_url = getattr(response, "url", None)
         if not grok_url:
-            print(f"[{index}] URL 없음")
             return None
 
         img_response = requests.get(grok_url, timeout=30)
         if img_response.status_code != 200:
-            print(f"[{index}] 다운로드 실패: {img_response.status_code}")
             return None
 
         content_type = img_response.headers.get("Content-Type", "image/png")
@@ -376,14 +372,10 @@ def _generate_single_grok_image(
             content_type=content_type,
         )
 
-        if s3_url:
-            print(f"[{index}] 완료")
-            return s3_url
-
-        return None
+        return s3_url
 
     except Exception as e:
-        print(f"[{index}] 실패: {e}")
+        print(f"[Grok] 실패: {e}")
         return None
 
 
@@ -398,8 +390,6 @@ def _generate_single_imagen_image(
     from io import BytesIO
     from utils.s3_uploader import upload_image_to_s3
 
-    print(f"[{index}] Imagen 생성 시작")
-
     try:
         response = client.models.generate_images(
             model=model_name,
@@ -408,7 +398,6 @@ def _generate_single_imagen_image(
         )
 
         if not response.generated_images:
-            print(f"[{index}] 빈 응답")
             return None
 
         img = response.generated_images[0].image
@@ -427,7 +416,6 @@ def _generate_single_imagen_image(
             image_bytes = bytes(img) if isinstance(img, (bytes, bytearray)) else None
 
         if not image_bytes:
-            print(f"[{index}] bytes 추출 실패")
             return None
 
         s3_url = upload_image_to_s3(
@@ -436,14 +424,10 @@ def _generate_single_imagen_image(
             content_type="image/png",
         )
 
-        if s3_url:
-            print(f"[{index}] 완료")
-            return s3_url
-
-        return None
+        return s3_url
 
     except Exception as e:
-        print(f"[{index}] 실패: {e}")
+        print(f"[Imagen] 실패: {e}")
         return None
 
 
@@ -457,8 +441,6 @@ def _generate_single_gemini_flash_image(
     """Gemini Flash 단일 이미지 생성 (병렬 처리용)"""
     from io import BytesIO
     from utils.s3_uploader import upload_image_to_s3
-
-    print(f"[{index}] Gemini Flash 생성 시작")
 
     try:
         response = client.models.generate_content(
@@ -477,13 +459,7 @@ def _generate_single_gemini_flash_image(
             parts = response.candidates[0].content.parts
 
         if not parts:
-            print(f"[{index}] parts 없음")
             return None
-
-        # 디버깅: parts 구조 출력
-        print(f"[{index}] parts 개수: {len(parts)}")
-        for i, part in enumerate(parts):
-            print(f"[{index}] part[{i}] type: {type(part).__name__}, attrs: {[a for a in dir(part) if not a.startswith('_')]}")
 
         for part in parts:
             # inline_data 체크
@@ -509,14 +485,12 @@ def _generate_single_gemini_flash_image(
                 )
 
                 if s3_url:
-                    print(f"[{index}] 완료")
                     return s3_url
 
-        print(f"[{index}] 이미지 없음")
         return None
 
     except Exception as e:
-        print(f"[{index}] 실패: {e}")
+        print(f"[Gemini Flash] 실패: {e}")
         return None
 
 
