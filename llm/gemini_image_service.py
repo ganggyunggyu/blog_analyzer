@@ -71,11 +71,14 @@ def build_image_prompt(keyword: str, count: int = 4) -> str:
 
     pose_list = "\n".join([f"- Image {i+1}: {pose}" for i, pose in enumerate(poses)])
 
-    return f"""Generate {count} COMPLETELY DIFFERENT images for: '{keyword}'
+    return f"""Generate {count} SEPARATE single images for: '{keyword}'
 
-CRITICAL: Each image MUST have a unique pose, angle, and composition. NO similar images.
+CRITICAL RULES:
+- Each output MUST be a SINGLE standalone image (NOT a collage, NOT split screens, NOT 4-panel grid)
+- NO combining multiple photos into one frame
+- Each image shows ONE scene only
 
-Assigned poses for each image:
+Assigned pose for each separate image:
 {pose_list}
 
 Style requirements:
