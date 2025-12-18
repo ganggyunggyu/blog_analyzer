@@ -14,7 +14,10 @@ MODEL_NAME: str = Model.GEMINI_3_PRO
 
 
 def gemini_new_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
-    """Gemini 3 Pro를 사용한 범용 정보성 원고 생성"""
+    """Gemini 3 Pro를 사용한 범용 정보성 원고 생성
+
+    ₩18.6K
+    """
 
     parsed = parse_query(user_instructions)
     keyword = parsed.get("keyword", "")
@@ -26,20 +29,32 @@ def gemini_new_gen(user_instructions: str, ref: str = "", category: str = "") ->
     system = get_universal_info_system_prompt()
 
     user = f"""
-주제: {keyword}
+[INPUT]
+topic: {keyword}
+category: {category}
+additional_request: {note if note else "없음"}
+reference: {ref if ref else "없음"}
 
-카테고리: {category if category else "기타"}
+[TASK]
+위 주제에 대해 신뢰도 높은 정보성 블로그 원고를 작성하세요.
+공신력, 공식성, 전문성을 갖춘 콘텐츠로, SEO 최적화를 고려해 작성합니다.
 
-추가 요청사항: {note if note else "없음"}
+[STRUCTURE]
+- 부제 개수: 정확히 5개
+- 부제 형식: "1. 제목", "2. 제목" (숫자+마침표+공백+제목)
+- 금지 형식: "4-1", "4-2" 같은 하위 번호 사용 금지
 
-참조 문서: {ref if ref else "없음"}
+[FORMAT]
+- 한 줄당 40~50자로 끊어서 작성
+- 모바일 화면에서 읽기 편하게 문단 정리
+- 마크다운 문법 사용 금지
+- 순수 텍스트로만 출력
 
-글자수 2000자 키워드에 맞춰 신뢰도 높고, 질의에 적합하게, 공신력, 공식성, 전문성 높은 정보성 원고를 만들어줘 면책사항 이런거 넣지마 가독성 좋게 정보:OOOO 이런식으로 정보를 알아보기 쉽게 SEO 최적화 한다고 생각하고 부제 이런것도 앞에 1. 2.3. 이런거넣고 자연스럽게 문단정리 잘해줘야함 무조건!
-한줄로 길게 적지말고
-한줄당 20~30자 정도로 끊어서 문단정리 예쁘게
-모바일로 봤을때 보기좋게
-부제 4-1 4-2 이런건 넣지마
-마크다운 문법 사용 금지
+[CONSTRAINTS]
+- 글자수: 한글 기준 공백 제외 1700자 이상 2000자 이하
+- 면책조항, 광고성 문구 삽입 금지
+- 정보 나열 시 자연스러운 문장으로 서술 (키:밸류 형식 사용 가능하되 남발 금지)
+
 """.strip()
 
     print(f"서비스: {category}")
