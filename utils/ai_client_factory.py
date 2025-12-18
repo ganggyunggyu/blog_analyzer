@@ -480,6 +480,11 @@ def _generate_single_gemini_flash_image(
             print(f"[{index}] parts 없음")
             return None
 
+        # 디버깅: parts 구조 출력
+        print(f"[{index}] parts 개수: {len(parts)}")
+        for i, part in enumerate(parts):
+            print(f"[{index}] part[{i}] type: {type(part).__name__}, attrs: {[a for a in dir(part) if not a.startswith('_')]}")
+
         for part in parts:
             # inline_data 체크
             if hasattr(part, 'inline_data') and part.inline_data is not None:
