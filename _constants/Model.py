@@ -12,6 +12,7 @@ class Model:
     GEMINI_2_5_PRO = "gemini-2.5-pro"
     GEMINI_3_PRO = "gemini-3-pro-preview"
     GEMINI_3_FLASH = "gemini-3.0-flash"
+    GEMINI_3_FLASH_PREVIEW = "gemini-3-flash-preview"
 
     CLAUDE_SONNET_4_5 = "claude-sonnet-4-5-20250929"
     CLAUDE_OPUS_4_5 = "claude-opus-4-5-20251101"
