@@ -1,12 +1,15 @@
-"""원고 삭제/수정 API"""
-from typing import Dict, Any, Optional
+"""원고 삭제/수정/노출 관리 API"""
+from typing import Dict, Any, Optional, List
 from datetime import datetime
 from fastapi import APIRouter, HTTPException, Path, Query
 from fastapi.concurrency import run_in_threadpool
 from bson import ObjectId
+from pymongo import MongoClient
 
 from mongodb_service import MongoDBService
 from schema.search import ManuscriptUpdateRequest
+from config import MONGO_URI
+from _constants.categories import CATEGORIES
 
 router = APIRouter()
 
@@ -310,5 +313,144 @@ async def toggle_visibility(
 
     status = "노출" if result["visible"] else "숨김"
     print(f"✅ 노출여부 변경 완료: {manuscript_id} → {status}")
+
+    return result
+
+
+def get_visible_manuscripts(
+    category: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 20,
+) -> Dict[str, Any]:
+    """
+    노출 원고 목록 조회 (visible=True 또는 visible 필드 없음)
+
+    Args:
+        category: 카테고리 필터 (None이면 전체)
+        skip: 건너뛸 문서 수
+        limit: 반환할 문서 수
+
+    Returns:
+        {"documents": [...], "total": int, "skip": int, "limit": int}
+    """
+    query = {
+        "deleted": {"$ne": True},
+        "$or": [
+            {"visible": True},
+            {"visible": {"$exists": False}}
+        ]
+    }
+
+    if category:
+        db_service = MongoDBService()
+        try:
+            db_service.set_db_name(db_name=category)
+
+            total = db_service.db["manuscripts"].count_documents(query)
+
+            documents = list(
+                db_service.db["manuscripts"]
+                .find(query)
+                .sort("createdAt", -1)
+                .skip(skip)
+                .limit(limit)
+            )
+
+            for doc in documents:
+                if "_id" in doc:
+                    doc["_id"] = str(doc["_id"])
+                doc["__category"] = category
+
+            return {
+                "documents": documents,
+                "total": total,
+                "skip": skip,
+                "limit": limit,
+            }
+        finally:
+            db_service.close_connection()
+    else:
+        client = MongoClient(MONGO_URI)
+        all_documents: List[Dict[str, Any]] = []
+        total = 0
+
+        try:
+            for cat in CATEGORIES:
+                try:
+                    db = client[cat]
+                    collection = db["manuscripts"]
+
+                    cat_total = collection.count_documents(query)
+                    total += cat_total
+
+                    docs = list(
+                        collection.find(query)
+                        .sort("createdAt", -1)
+                        .limit(limit * 2)
+                    )
+
+                    for doc in docs:
+                        if "_id" in doc:
+                            doc["_id"] = str(doc["_id"])
+                        doc["__category"] = cat
+                        all_documents.append(doc)
+
+                except Exception:
+                    continue
+
+            all_documents.sort(
+                key=lambda d: d.get("createdAt") or datetime.min,
+                reverse=True
+            )
+
+            paginated = all_documents[skip:skip + limit]
+
+            return {
+                "documents": paginated,
+                "total": total,
+                "skip": skip,
+                "limit": limit,
+            }
+
+        finally:
+            client.close()
+
+
+@router.get("/search/manuscripts/visible")
+async def get_visible_manuscripts_api(
+    category: Optional[str] = Query(None, description="카테고리 필터 (없으면 전체)"),
+    page: int = Query(1, ge=1, description="페이지 번호"),
+    limit: int = Query(20, ge=1, le=100, description="페이지당 결과 수"),
+):
+    """
+    노출 원고 목록 조회 API
+
+    visible=True 또는 visible 필드가 없는 원고만 반환
+
+    - **category**: 카테고리 필터 (선택, 없으면 전체 카테고리)
+    - **page**: 페이지 번호 (기본값: 1)
+    - **limit**: 페이지당 결과 수 (기본값: 20, 최대: 100)
+
+    Returns:
+        {"documents": [...], "total": int, "skip": int, "limit": int}
+    """
+    skip = (page - 1) * limit
+
+    print(f"\n{'='*60}")
+    print(f"👁️ 노출 원고 목록 조회")
+    print(f"{'='*60}")
+    print(f"📁 카테고리   : {category or '전체'}")
+    print(f"📄 페이지     : {page}")
+    print(f"📊 결과 수    : {limit}개")
+    print(f"{'='*60}\n")
+
+    result = await run_in_threadpool(
+        get_visible_manuscripts,
+        category=category,
+        skip=skip,
+        limit=limit,
+    )
+
+    print(f"✅ 조회 완료: {len(result['documents'])}개 / 전체 {result['total']}개")
 
     return result
