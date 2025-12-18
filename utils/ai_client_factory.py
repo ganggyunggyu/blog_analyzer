@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List, Tuple
 
 from anthropic import Anthropic
 from openai import OpenAI
@@ -325,3 +325,250 @@ def call_ai(
         print_token_cost(model_name, input_tokens, output_tokens)
 
     return text
+
+
+def get_image_service_type(model_name: str) -> str:
+    """이미지 생성 모델명으로 서비스 타입 결정"""
+    if model_name.startswith("grok"):
+        return "grok"
+    elif model_name.startswith("imagen"):
+        return "imagen"
+    elif "flash" in model_name and "image" in model_name:
+        return "gemini-flash"
+    else:
+        raise ValueError(f"지원하지 않는 이미지 생성 모델: {model_name}")
+
+
+def _generate_single_grok_image(
+    client,
+    model_name: str,
+    prompt: str,
+    keyword: str,
+    index: int,
+) -> Optional[str]:
+    """Grok 단일 이미지 생성 (병렬 처리용)"""
+    import requests
+    from utils.s3_uploader import upload_image_to_s3
+
+    print(f"[{index}] Grok 생성 시작")
+
+    try:
+        response = client.image.sample(
+            model=model_name,
+            prompt=prompt,
+            image_format="url",
+        )
+
+        grok_url = getattr(response, "url", None)
+        if not grok_url:
+            print(f"[{index}] URL 없음")
+            return None
+
+        img_response = requests.get(grok_url, timeout=30)
+        if img_response.status_code != 200:
+            print(f"[{index}] 다운로드 실패: {img_response.status_code}")
+            return None
+
+        content_type = img_response.headers.get("Content-Type", "image/png")
+        s3_url = upload_image_to_s3(
+            image_bytes=img_response.content,
+            keyword=keyword,
+            content_type=content_type,
+        )
+
+        if s3_url:
+            print(f"[{index}] 완료")
+            return s3_url
+
+        return None
+
+    except Exception as e:
+        print(f"[{index}] 실패: {e}")
+        return None
+
+
+def _generate_single_imagen_image(
+    client,
+    model_name: str,
+    prompt: str,
+    keyword: str,
+    index: int,
+) -> Optional[str]:
+    """Imagen 단일 이미지 생성 (병렬 처리용)"""
+    from io import BytesIO
+    from utils.s3_uploader import upload_image_to_s3
+
+    print(f"[{index}] Imagen 생성 시작")
+
+    try:
+        response = client.models.generate_images(
+            model=model_name,
+            prompt=prompt,
+            config=types.GenerateImagesConfig(number_of_images=1),
+        )
+
+        if not response.generated_images:
+            print(f"[{index}] 빈 응답")
+            return None
+
+        img = response.generated_images[0].image
+
+        if hasattr(img, '_pil_image') and img._pil_image:
+            buffer = BytesIO()
+            img._pil_image.save(buffer, format="PNG")
+            image_bytes = buffer.getvalue()
+        elif hasattr(img, 'image_bytes'):
+            image_bytes = img.image_bytes
+        elif hasattr(img, '_image_bytes'):
+            image_bytes = img._image_bytes
+        elif hasattr(img, 'data'):
+            image_bytes = img.data
+        else:
+            image_bytes = bytes(img) if isinstance(img, (bytes, bytearray)) else None
+
+        if not image_bytes:
+            print(f"[{index}] bytes 추출 실패")
+            return None
+
+        s3_url = upload_image_to_s3(
+            image_bytes=image_bytes,
+            keyword=keyword,
+            content_type="image/png",
+        )
+
+        if s3_url:
+            print(f"[{index}] 완료")
+            return s3_url
+
+        return None
+
+    except Exception as e:
+        print(f"[{index}] 실패: {e}")
+        return None
+
+
+def _generate_single_gemini_flash_image(
+    client,
+    model_name: str,
+    prompt: str,
+    keyword: str,
+    index: int,
+) -> Optional[str]:
+    """Gemini Flash 단일 이미지 생성 (병렬 처리용)"""
+    from io import BytesIO
+    from utils.s3_uploader import upload_image_to_s3
+
+    print(f"[{index}] Gemini Flash 생성 시작")
+
+    try:
+        response = client.models.generate_content(
+            model=model_name,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_modalities=["IMAGE", "TEXT"],
+            ),
+        )
+
+        # 공식 문서 방식: response.parts 직접 접근
+        parts = getattr(response, 'parts', None)
+
+        # fallback: candidates 구조
+        if not parts and hasattr(response, 'candidates') and response.candidates:
+            parts = response.candidates[0].content.parts
+
+        if not parts:
+            print(f"[{index}] parts 없음")
+            return None
+
+        for part in parts:
+            # inline_data 체크
+            if hasattr(part, 'inline_data') and part.inline_data is not None:
+                # as_image() 메서드로 PIL Image 변환
+                if hasattr(part, 'as_image'):
+                    image = part.as_image()
+                    buffer = BytesIO()
+                    image.save(buffer, format="PNG")
+                    image_bytes = buffer.getvalue()
+                else:
+                    # 직접 데이터 추출
+                    image_data = part.inline_data
+                    if hasattr(image_data, 'data'):
+                        image_bytes = image_data.data
+                    else:
+                        continue
+
+                s3_url = upload_image_to_s3(
+                    image_bytes=image_bytes,
+                    keyword=keyword,
+                    content_type="image/png",
+                )
+
+                if s3_url:
+                    print(f"[{index}] 완료")
+                    return s3_url
+
+        print(f"[{index}] 이미지 없음")
+        return None
+
+    except Exception as e:
+        print(f"[{index}] 실패: {e}")
+        return None
+
+
+def call_image_ai(
+    model_name: str,
+    prompt: str,
+    keyword: str = "generated",
+) -> Optional[dict]:
+    """
+    단일 이미지 생성 AI 호출 함수
+
+    Args:
+        model_name: 모델 이름 (예: "grok-2-image", "imagen-4.0-generate-001")
+        prompt: 이미지 생성 프롬프트
+        keyword: S3 저장 폴더명
+
+    Returns:
+        {"url": "..."} 또는 None (실패 시)
+    """
+    service_type = get_image_service_type(model_name)
+
+    if service_type == "grok":
+        if not GROK_API_KEY:
+            raise ValueError("GROK_API_KEY가 설정되어 있지 않습니다.")
+
+        from xai_sdk import Client
+        client = Client(api_key=GROK_API_KEY)
+
+        s3_url = _generate_single_grok_image(client, model_name, prompt, keyword, 1)
+        if s3_url:
+            print(f"[비용] $0.07 (약 98원)")
+            return {"url": s3_url}
+        return None
+
+    elif service_type == "imagen":
+        if not GEMINI_API_KEY:
+            raise ValueError("GEMINI_API_KEY가 설정되어 있지 않습니다.")
+
+        client = genai.Client(api_key=GEMINI_API_KEY)
+
+        s3_url = _generate_single_imagen_image(client, model_name, prompt, keyword, 1)
+        if s3_url:
+            print(f"[비용] $0.04 (약 56원)")
+            return {"url": s3_url}
+        return None
+
+    elif service_type == "gemini-flash":
+        if not GEMINI_API_KEY:
+            raise ValueError("GEMINI_API_KEY가 설정되어 있지 않습니다.")
+
+        client = genai.Client(api_key=GEMINI_API_KEY)
+
+        s3_url = _generate_single_gemini_flash_image(client, model_name, prompt, keyword, 1)
+        if s3_url:
+            print(f"[비용] $0.039 (약 55원)")
+            return {"url": s3_url}
+        return None
+
+    else:
+        raise ValueError(f"지원하지 않는 이미지 서비스: {service_type}")

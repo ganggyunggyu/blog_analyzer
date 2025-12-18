@@ -10,6 +10,7 @@ class Model:
     GPT4_1_MINI = "gpt-4.1-mini-2025-04-14"
 
     GEMINI_2_5_PRO = "gemini-2.5-pro"
+    GEMINI_2_5_FLASH_IMAGE = "gemini-2.5-flash-image"
     IMAGEN_4 = "imagen-4.0-generate-001"
     GEMINI_3_PRO = "gemini-3-pro-preview"
     GEMINI_3_FLASH = "gemini-3.0-flash"
@@ -26,6 +27,7 @@ class Model:
     GROK_4_1_RES = "grok-4-1-fast-reasoning"
     GROK_4_1_NON_RES = "grok-4-1-fast-non-reasoning"
     GROK_CODE = "grok-code-fast-1-0825"
+    GROK_IMAGE = "grok-2-image"
 
     DEEPSEEK_CHAT = "deepseek-chat"
     DEEPSEEK_RES = "deepseek-reasoner"

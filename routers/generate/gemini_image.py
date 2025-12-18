@@ -1,21 +1,45 @@
-"""Gemini 2.5 Flash - 이미지 5장 생성 라우터"""
+"""이미지 생성 라우터"""
 
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from fastapi import HTTPException, APIRouter
 from fastapi.concurrency import run_in_threadpool
 
 from schema.generate import ImageGenerateRequest, ImageGenerateResponse, ImageItem
-from llm.gemini_image_service import gemini_image_gen, MODEL_NAME, IMAGE_COUNT
+from llm.image_service import image_gen_single, get_random_poses, MODEL_NAME
 from utils.progress_logger import progress
 
 
 router = APIRouter()
 
+IMAGE_COUNT: int = 5
+
+
+def _generate_images_parallel(keyword: str, poses: list) -> tuple:
+    """이미지 병렬 생성"""
+    images = []
+    failed_count = 0
+
+    with ThreadPoolExecutor(max_workers=len(poses)) as executor:
+        futures = {
+            executor.submit(image_gen_single, keyword, pose): pose
+            for pose in poses
+        }
+
+        for future in as_completed(futures):
+            result = future.result()
+            if result and result.get("url"):
+                images.append(result)
+            else:
+                failed_count += 1
+
+    return images, failed_count
+
 
 @router.post("/generate/image", response_model=ImageGenerateResponse)
 async def generate_image(request: ImageGenerateRequest):
     """
-    Gemini 2.5 Flash - 이미지 5장 동시 생성
+    이미지 5장 동시 생성
 
     - keyword: 이미지 주제 키워드
     """
@@ -25,19 +49,25 @@ async def generate_image(request: ImageGenerateRequest):
     if not keyword:
         raise HTTPException(status_code=400, detail="keyword가 필요합니다.")
 
+    poses = get_random_poses(IMAGE_COUNT)
+
     print("\n" + "=" * 60)
     print(f"IMAGE {IMAGE_COUNT}장 생성 시작")
     print("=" * 60)
     print(f"키워드    : {keyword}")
     print(f"모델      : {MODEL_NAME}")
     print(f"생성 개수 : {IMAGE_COUNT}장")
+    print("선택된 포즈:")
+    for i, pose in enumerate(poses):
+        print(f"  [{i+1}] {pose}")
     print("=" * 60 + "\n")
 
     try:
         with progress(label=f"image:{keyword}"):
             images, failed_count = await run_in_threadpool(
-                gemini_image_gen,
-                keyword=keyword,
+                _generate_images_parallel,
+                keyword,
+                poses,
             )
 
         elapsed = time.time() - start_ts
