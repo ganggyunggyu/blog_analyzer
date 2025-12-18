@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 import random
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 from io import BytesIO
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from google import genai
 from google.genai import types
@@ -14,7 +15,7 @@ from utils.s3_uploader import upload_image_to_s3
 
 
 MODEL_NAME: str = Model.IMAGEN_4
-IMAGE_COUNT: int = 4
+IMAGE_COUNT: int = 5
 
 # 애견 관련 포즈/동작
 DOG_POSES = [
@@ -65,43 +66,85 @@ DOG_POSES = [
 ]
 
 
-def build_image_prompt(keyword: str, count: int = 4) -> str:
-    """이미지 생성용 프롬프트 생성 (각 이미지마다 다른 포즈)"""
-    poses = random.sample(DOG_POSES, min(count, len(DOG_POSES)))
+def build_image_prompt(keyword: str, pose: str) -> str:
+    """이미지 생성용 프롬프트 생성 (단일 포즈)"""
+    return f"""A single photo of '{keyword}' {pose}
 
-    pose_list = "\n".join([f"- Image {i+1}: {pose}" for i, pose in enumerate(poses)])
-
-    return f"""Generate {count} SEPARATE single images for: '{keyword}'
-
-CRITICAL RULES:
-- Each output MUST be a SINGLE standalone image (NOT a collage, NOT split screens, NOT 4-panel grid)
-- NO combining multiple photos into one frame
-- Each image shows ONE scene only
-
-Assigned pose for each separate image:
-{pose_list}
-
-Style requirements:
+Style:
 - Professional blog thumbnail quality
 - Clean, modern, high quality photography
 - Visually appealing and eye-catching
 - No text, watermarks, or logos
-- Bright, warm color palette
-- Different backgrounds and lighting for each image"""
+- Bright, warm color palette"""
+
+
+def _generate_single_image(
+    client: genai.Client,
+    keyword: str,
+    pose: str,
+    index: int,
+) -> Optional[str]:
+    """단일 이미지 생성 및 S3 업로드 (병렬 처리용)"""
+    prompt = build_image_prompt(keyword, pose)
+    print(f"[{index}] 생성 시작: {pose}")
+
+    try:
+        response = client.models.generate_images(
+            model=MODEL_NAME,
+            prompt=prompt,
+            config=types.GenerateImagesConfig(number_of_images=1),
+        )
+
+        if not response.generated_images:
+            print(f"[{index}] 빈 응답")
+            return None
+
+        img = response.generated_images[0].image
+
+        # bytes 추출
+        if hasattr(img, '_pil_image') and img._pil_image:
+            buffer = BytesIO()
+            img._pil_image.save(buffer, format="PNG")
+            image_bytes = buffer.getvalue()
+        elif hasattr(img, 'image_bytes'):
+            image_bytes = img.image_bytes
+        elif hasattr(img, '_image_bytes'):
+            image_bytes = img._image_bytes
+        elif hasattr(img, 'data'):
+            image_bytes = img.data
+        else:
+            image_bytes = bytes(img) if isinstance(img, (bytes, bytearray)) else None
+
+        if not image_bytes:
+            print(f"[{index}] bytes 추출 실패")
+            return None
+
+        s3_url = upload_image_to_s3(
+            image_bytes=image_bytes,
+            keyword=keyword,
+            content_type="image/png",
+        )
+
+        if s3_url:
+            print(f"[{index}] 완료")
+            return s3_url
+
+        return None
+
+    except Exception as e:
+        print(f"[{index}] 실패: {e}")
+        return None
 
 
 def gemini_image_gen(keyword: str) -> Tuple[List[dict], int]:
     """
-    Imagen 4로 이미지 4장 동시 생성
+    Imagen 4로 이미지 5장 병렬 생성
 
     Args:
         keyword: 키워드
 
     Returns:
         Tuple[이미지 리스트, 실패 개수]
-
-    Raises:
-        ValueError: API 키 또는 키워드 없음
     """
     if not GEMINI_API_KEY:
         raise ValueError("GEMINI_API_KEY가 설정되어 있지 않습니다.")
@@ -110,64 +153,28 @@ def gemini_image_gen(keyword: str) -> Tuple[List[dict], int]:
         raise ValueError("키워드가 없습니다.")
 
     client = genai.Client(api_key=GEMINI_API_KEY)
-
-    prompt = build_image_prompt(keyword, IMAGE_COUNT)
+    poses = random.sample(DOG_POSES, IMAGE_COUNT)
 
     print(f"이미지 생성 키워드: {keyword}")
-    print(f"이미지 {IMAGE_COUNT}장 동시 생성 시작")
+    print(f"이미지 {IMAGE_COUNT}장 병렬 생성 시작")
 
     images: List[dict] = []
     failed_count = 0
 
-    try:
-        response = client.models.generate_images(
-            model=MODEL_NAME,
-            prompt=prompt,
-            config=types.GenerateImagesConfig(
-                number_of_images=IMAGE_COUNT,
-            ),
-        )
+    with ThreadPoolExecutor(max_workers=IMAGE_COUNT) as executor:
+        futures = {
+            executor.submit(
+                _generate_single_image, client, keyword, pose, i + 1
+            ): i
+            for i, pose in enumerate(poses)
+        }
 
-        for generated_image in response.generated_images:
-            try:
-                img = generated_image.image
-
-                # Google Image 객체에서 PIL 이미지 추출
-                if hasattr(img, '_pil_image') and img._pil_image:
-                    pil_img = img._pil_image
-                    buffer = BytesIO()
-                    pil_img.save(buffer, format="PNG")
-                    image_bytes = buffer.getvalue()
-                elif hasattr(img, 'image_bytes'):
-                    image_bytes = img.image_bytes
-                elif hasattr(img, '_image_bytes'):
-                    image_bytes = img._image_bytes
-                elif hasattr(img, 'data'):
-                    image_bytes = img.data
-                else:
-                    # 마지막 시도: 객체 자체가 bytes인지 확인
-                    image_bytes = bytes(img) if isinstance(img, (bytes, bytearray)) else None
-
-                if image_bytes:
-                    s3_url = upload_image_to_s3(
-                        image_bytes=image_bytes,
-                        keyword=keyword,
-                        content_type="image/png",
-                    )
-
-                    if s3_url:
-                        images.append({"url": s3_url})
-                else:
-                    print(f"이미지 bytes 추출 실패. 객체 타입: {type(img)}, 속성: {dir(img)}")
-                    failed_count += 1
-
-            except Exception as e:
-                print(f"이미지 변환 실패: {e}")
+        for future in as_completed(futures):
+            result = future.result()
+            if result:
+                images.append({"url": result})
+            else:
                 failed_count += 1
-
-    except Exception as e:
-        print(f"이미지 생성 API 호출 실패: {e}")
-        failed_count = IMAGE_COUNT
 
     # 비용 계산 (Imagen 4: $0.04/image - 2025년 12월 기준)
     cost_per_image = 0.04
