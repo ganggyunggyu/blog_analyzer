@@ -54,9 +54,9 @@ reference: {ref if ref else "없음"}
 - 정보 나열 시 자연스러운 문장으로 서술 (키:밸류 형식 사용 가능하되 남발 금지)
 """.strip()
 
-    print(f"서비스: {category}")
-    print(f"키워드: {keyword}")
-    print("원고작성 시작")
+
+
+
 
     start_ts = time.time()
 
@@ -74,8 +74,8 @@ reference: {ref if ref else "없음"}
     length_no_space = len(re.sub(r"\s+", "", text))
     elapsed = time.time() - start_ts
 
-    print(f"원고 길이 체크: {length_no_space}")
-    print(f"원고 소요시간: {elapsed:.2f}s")
-    print("원고작성 완료")
+
+
+
 
     return text

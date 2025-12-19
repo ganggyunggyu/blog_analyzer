@@ -9,6 +9,7 @@ from schema.generate import GenerateRequest
 from llm.grok_service import grok_gen, MODEL_NAME
 from utils.query_parser import parse_query
 from utils.progress_logger import progress
+from utils.logger import log
 
 
 router = APIRouter()
@@ -27,16 +28,13 @@ async def generator_grok(request: GenerateRequest):
     category = await get_category_db_name(keyword=keyword + ref)
     c_elapsed = time.time() - start_ts
 
-    print("\n" + "=" * 60)
-    print(f"🚀 Grok 원고 생성 시작")
-    print("=" * 60)
-    print(f"📌 서비스    : {service.upper()}")
-    print(f"🎯 키워드    : {keyword}")
-    print(f"📁 카테고리  : {category}")
-    print(f"🤖 모델      : {MODEL_NAME}")
-    print(f"📝 참조원고  : {'✅ 있음' if len(ref) != 0 else '❌ 없음'}")
-    print(f"⏱️  분류시간  : {c_elapsed:.2f}s")
-    print("=" * 60 + "\n")
+    log.header("Grok 원고 생성", "🚀")
+    log.kv("서비스", service.upper())
+    log.kv("키워드", keyword)
+    log.kv("카테고리", category)
+    log.kv("모델", MODEL_NAME)
+    log.kv("참조원고", "있음" if ref else "없음")
+    log.kv("분류시간", f"{c_elapsed:.2f}s")
 
     db_service = MongoDBService()
     db_service.set_db_name(db_name=category)
@@ -73,18 +71,12 @@ async def generator_grok(request: GenerateRequest):
                 document["_id"] = str(document["_id"])
                 elapsed = time.time() - start_ts
 
-                print("\n" + "=" * 60)
-                print(f"✅ Grok 원고 생성 완료")
-                print("=" * 60)
-                print(f"🎯 키워드       : {keyword}")
-                print(f"📁 카테고리     : {category}")
-                print(f"⏱️  총 소요시간  : {elapsed:.2f}s")
-                print(f"💾 DB 저장      : ✅ 성공")
-                print("=" * 60 + "\n")
+                log.divider()
+                log.success("Grok 완료", 키워드=keyword, 카테고리=category, 시간=f"{elapsed:.1f}s")
 
                 return document
             except Exception as e:
-                print(f"Grok 데이터베이스에 저장 실패: {e}")
+                log.error(f"DB 저장 실패: {e}")
         else:
             raise HTTPException(
                 status_code=500,

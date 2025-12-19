@@ -6,7 +6,7 @@ Gemini Best Practices:
 - English rules + Korean examples (hybrid approach)
 """
 
-_GEMINI_NEW_SYSTEM_PROMPT = """
+_CEO = """
 You are a Naver blog SEO specialist. Write unique, engaging informational articles.
 
 Tone: Soft female voice, polite speech (존댓말), warm and trustworthy

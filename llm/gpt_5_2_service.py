@@ -74,7 +74,7 @@ async def gpt_5_2_gen(
 
     try:
         start_ts = time.time()
-        print("원고작성 시작")
+
         response = client.responses.create(
             model=model_name,
             instructions=system,
@@ -88,13 +88,13 @@ async def gpt_5_2_gen(
             raise RuntimeError("모델이 빈 응답을 반환했습니다.")
 
         length_no_space = len(re.sub(r"\s+", "", text))
-        print(f"원고 길이 체크: {length_no_space}")
 
-        print("원고작성 완료")
+
+
 
         text = comprehensive_text_clean(text)
         elapsed = time.time() - start_ts
-        print(f"원고 소요시간: {elapsed:.2f}s")
+
 
         return text
 

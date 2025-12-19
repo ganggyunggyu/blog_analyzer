@@ -37,9 +37,9 @@ def deepseek_gen(user_instructions: str, ref: str = "", category: str = "") -> s
 
     user = get_deepseek_user_prompt(keyword=keyword, note=note, ref=ref)
 
-    print(f"서비스: {category}")
-    print(f"키워드: {keyword}")
-    print("원고작성 시작")
+
+
+
 
     text = call_ai(
         model_name=MODEL_NAME,
@@ -49,7 +49,7 @@ def deepseek_gen(user_instructions: str, ref: str = "", category: str = "") -> s
 
     text = comprehensive_text_clean(text)
     length_no_space = len(re.sub(r"\s+", "", text))
-    print(f"원고 길이 체크: {length_no_space}")
-    print("원고작성 완료")
+
+
 
     return text

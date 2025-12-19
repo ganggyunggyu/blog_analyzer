@@ -38,9 +38,9 @@ def clean_claude_gen(user_instructions: str, ref: str = "", category: str = "") 
 
     try:
         start_time = time.time()
-        print(f"[Clean Claude] 서비스: {category}")
-        print(f"[Clean Claude] 키워드: {keyword}")
-        print("[Clean Claude] 원고작성 시작")
+
+
+
 
         generated_text = call_ai(
             model_name=MODEL_NAME,
@@ -53,9 +53,9 @@ def clean_claude_gen(user_instructions: str, ref: str = "", category: str = "") 
         char_count_no_space = len(re.sub(r"\s+", "", cleaned_text))
         elapsed_time = time.time() - start_time
 
-        print(f"[Clean Claude] 원고 길이: {char_count_no_space}")
-        print(f"[Clean Claude] 소요시간: {elapsed_time:.2f}s")
-        print("[Clean Claude] 완료")
+
+
+
 
         return cleaned_text
 

@@ -45,6 +45,6 @@ def solar_ver3_clean_gen(
     text = comprehensive_text_clean(text)
 
     length_no_space = len(re.sub(r"\s+", "", text))
-    print(f"원고 길이 체크: {length_no_space}")
+
 
     return text

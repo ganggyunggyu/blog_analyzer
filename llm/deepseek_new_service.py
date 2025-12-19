@@ -42,9 +42,9 @@ def deepseek_new_gen(user_instructions: str, ref: str = "", category: str = "") 
 마크다운 문법 사용 금지
 """.strip()
 
-    print(f"서비스: {category}")
-    print(f"키워드: {keyword}")
-    print("원고작성 시작")
+
+
+
 
     start_ts = time.time()
 
@@ -62,8 +62,8 @@ def deepseek_new_gen(user_instructions: str, ref: str = "", category: str = "") 
     length_no_space = len(re.sub(r"\s+", "", text))
     elapsed = time.time() - start_ts
 
-    print(f"원고 길이 체크: {length_no_space}")
-    print(f"원고 소요시간: {elapsed:.2f}s")
-    print("원고작성 완료")
+
+
+
 
     return text

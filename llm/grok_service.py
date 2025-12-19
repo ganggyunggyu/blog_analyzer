@@ -1,5 +1,4 @@
 from __future__ import annotations
-import re
 
 from _prompts.service.get_mongo_prompt import get_mongo_prompt
 from _prompts.service.get_category_tone_rules import get_category_tone_rules
@@ -37,8 +36,5 @@ def grok_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     )
 
     text = comprehensive_text_clean(text)
-
-    length_no_space = len(re.sub(r"\s+", "", text))
-    print(f"원고 길이 체크: {length_no_space}")
 
     return text

@@ -19,7 +19,7 @@ from config import (
     grok_client,
     solar_client,
 )
-from utils.logger import log
+from utils.logger import log, console
 
 def get_ai_service_type(model_name: str) -> str:
     """
@@ -186,128 +186,116 @@ def call_ai(
             f"AI 클라이언트를 찾을 수 없습니다. (service_type: {ai_service_type})"
         )
 
-    # AI 서비스별 호출
-    if ai_service_type == "gemini":
-        response = client.models.generate_content(
-            model=model_name,
-            config=types.GenerateContentConfig(
-                system_instruction=system_prompt,
-            ),
-            contents=user_prompt,
-        )
-        text = getattr(response, "text", "") or ""
-        # Gemini 토큰
-        usage = getattr(response, "usage_metadata", None)
-        if usage:
-            input_tokens = getattr(usage, "prompt_token_count", 0) or 0
-            output_tokens = getattr(usage, "candidates_token_count", 0) or 0
-
-    elif ai_service_type == "claude":
-        response = client.messages.create(
-            model=model_name,
-            system=system_prompt,
-            messages=[{"role": "user", "content": user_prompt}],
-            max_tokens=max_tokens,
-        )
-        content_blocks = getattr(response, "content", [])
-        text = getattr(content_blocks[0], "text", "") if content_blocks else ""
-        # Claude 토큰
-        usage = getattr(response, "usage", None)
-        if usage:
-            input_tokens = getattr(usage, "input_tokens", 0) or 0
-            output_tokens = getattr(usage, "output_tokens", 0) or 0
-
-    elif ai_service_type == "openai":
-        if model_name.startswith("gpt-5"):
-            # GPT-5 시리즈: Responses API
-            response = client.responses.create(
+    # AI 서비스별 호출 (spinner 표시)
+    with console.status("[bold cyan]원고 생성 중...[/bold cyan]", spinner="dots"):
+        if ai_service_type == "gemini":
+            response = client.models.generate_content(
                 model=model_name,
-                instructions=system_prompt,
-                input=user_prompt,
-                reasoning={"effort": "medium"},
-                text={"verbosity": "medium"},
+                config=types.GenerateContentConfig(
+                    system_instruction=system_prompt,
+                ),
+                contents=user_prompt,
             )
-            text = getattr(response, "output_text", "") or ""
-            # GPT-5 토큰
+            text = getattr(response, "text", "") or ""
+            usage = getattr(response, "usage_metadata", None)
+            if usage:
+                input_tokens = getattr(usage, "prompt_token_count", 0) or 0
+                output_tokens = getattr(usage, "candidates_token_count", 0) or 0
+
+        elif ai_service_type == "claude":
+            response = client.messages.create(
+                model=model_name,
+                system=system_prompt,
+                messages=[{"role": "user", "content": user_prompt}],
+                max_tokens=max_tokens,
+            )
+            content_blocks = getattr(response, "content", [])
+            text = getattr(content_blocks[0], "text", "") if content_blocks else ""
             usage = getattr(response, "usage", None)
             if usage:
                 input_tokens = getattr(usage, "input_tokens", 0) or 0
                 output_tokens = getattr(usage, "output_tokens", 0) or 0
-        else:
-            # GPT-4 시리즈: Chat Completions API
+
+        elif ai_service_type == "openai":
+            if model_name.startswith("gpt-5"):
+                response = client.responses.create(
+                    model=model_name,
+                    instructions=system_prompt,
+                    input=user_prompt,
+                    reasoning={"effort": "medium"},
+                    text={"verbosity": "medium"},
+                )
+                text = getattr(response, "output_text", "") or ""
+                usage = getattr(response, "usage", None)
+                if usage:
+                    input_tokens = getattr(usage, "input_tokens", 0) or 0
+                    output_tokens = getattr(usage, "output_tokens", 0) or 0
+            else:
+                response = client.chat.completions.create(
+                    model=model_name,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt},
+                    ],
+                    max_tokens=max_tokens,
+                )
+                choices = getattr(response, "choices", []) or []
+                if not choices or not getattr(choices[0], "message", None):
+                    raise RuntimeError("GPT-4가 유효한 choices/message를 반환하지 않았습니다.")
+                text = (choices[0].message.content or "").strip()
+                usage = getattr(response, "usage", None)
+                if usage:
+                    input_tokens = getattr(usage, "prompt_tokens", 0) or 0
+                    output_tokens = getattr(usage, "completion_tokens", 0) or 0
+
+        elif ai_service_type == "solar":
+            response = client.chat.completions.create(
+                model=model_name,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt + system_prompt},
+                ],
+                reasoning_effort="high",
+            )
+            choices = getattr(response, "choices", []) or []
+            if not choices or not getattr(choices[0], "message", None):
+                raise RuntimeError("SOLAR가 유효한 choices/message를 반환하지 않았습니다.")
+            text = (choices[0].message.content or "").strip()
+            usage = getattr(response, "usage", None)
+            if usage:
+                input_tokens = getattr(usage, "prompt_tokens", 0) or 0
+                output_tokens = getattr(usage, "completion_tokens", 0) or 0
+
+        elif ai_service_type == "grok":
+            chat_session = client.chat.create(model=model_name)
+            chat_session.append(grok_system_message(system_prompt))
+            chat_session.append(grok_user_message(user_prompt))
+            response = chat_session.sample()
+            text = getattr(response, "content", "") or ""
+            usage = getattr(response, "usage", None)
+            if usage:
+                input_tokens = getattr(usage, "prompt_tokens", 0) or 0
+                output_tokens = getattr(usage, "completion_tokens", 0) or 0
+
+        elif ai_service_type == "deepseek":
             response = client.chat.completions.create(
                 model=model_name,
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt},
                 ],
-                max_tokens=max_tokens,
             )
             choices = getattr(response, "choices", []) or []
             if not choices or not getattr(choices[0], "message", None):
-                raise RuntimeError(
-                    "GPT-4가 유효한 choices/message를 반환하지 않았습니다."
-                )
+                raise RuntimeError("DeepSeek이 유효한 choices/message를 반환하지 않았습니다.")
             text = (choices[0].message.content or "").strip()
-            # GPT-4 토큰
             usage = getattr(response, "usage", None)
             if usage:
                 input_tokens = getattr(usage, "prompt_tokens", 0) or 0
                 output_tokens = getattr(usage, "completion_tokens", 0) or 0
 
-    elif ai_service_type == "solar":
-        response = client.chat.completions.create(
-            model=model_name,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt + system_prompt},
-            ],
-            reasoning_effort="high",
-        )
-        choices = getattr(response, "choices", []) or []
-        if not choices or not getattr(choices[0], "message", None):
-            raise RuntimeError("SOLAR가 유효한 choices/message를 반환하지 않았습니다.")
-        text = (choices[0].message.content or "").strip()
-        # Solar 토큰
-        usage = getattr(response, "usage", None)
-        if usage:
-            input_tokens = getattr(usage, "prompt_tokens", 0) or 0
-            output_tokens = getattr(usage, "completion_tokens", 0) or 0
-
-    elif ai_service_type == "grok":
-        chat_session = client.chat.create(model=model_name)
-        chat_session.append(grok_system_message(system_prompt))
-        chat_session.append(grok_user_message(user_prompt))
-        response = chat_session.sample()
-        text = getattr(response, "content", "") or ""
-        # Grok 토큰 (SDK에서 지원 시)
-        usage = getattr(response, "usage", None)
-        if usage:
-            input_tokens = getattr(usage, "prompt_tokens", 0) or 0
-            output_tokens = getattr(usage, "completion_tokens", 0) or 0
-
-    elif ai_service_type == "deepseek":
-        response = client.chat.completions.create(
-            model=model_name,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
-        )
-        choices = getattr(response, "choices", []) or []
-        if not choices or not getattr(choices[0], "message", None):
-            raise RuntimeError(
-                "DeepSeek이 유효한 choices/message를 반환하지 않았습니다."
-            )
-        text = (choices[0].message.content or "").strip()
-        # DeepSeek 토큰
-        usage = getattr(response, "usage", None)
-        if usage:
-            input_tokens = getattr(usage, "prompt_tokens", 0) or 0
-            output_tokens = getattr(usage, "completion_tokens", 0) or 0
-
-    else:
-        raise ValueError(f"지원하지 않는 AI 서비스 타입: {ai_service_type}")
+        else:
+            raise ValueError(f"지원하지 않는 AI 서비스 타입: {ai_service_type}")
 
     text = text.strip()
     if not text:
@@ -341,6 +329,8 @@ def _generate_single_grok_image(
     import requests
     from utils.s3_uploader import upload_image_to_s3
 
+    console.print(f"  [dim]#{index}[/dim] 생성 중...", end="\r")
+
     try:
         response = client.image.sample(
             model=model_name,
@@ -350,10 +340,12 @@ def _generate_single_grok_image(
 
         grok_url = getattr(response, "url", None)
         if not grok_url:
+            console.print(f"  [yellow]#{index}[/yellow] URL 없음")
             return None
 
         img_response = requests.get(grok_url, timeout=30)
         if img_response.status_code != 200:
+            console.print(f"  [yellow]#{index}[/yellow] 다운로드 실패")
             return None
 
         content_type = img_response.headers.get("Content-Type", "image/png")
@@ -363,10 +355,12 @@ def _generate_single_grok_image(
             content_type=content_type,
         )
 
+        if s3_url:
+            console.print(f"  [green]#{index}[/green] ✓ 완료           ")
         return s3_url
 
     except Exception as e:
-        print(f"[Grok] 실패: {e}")
+        console.print(f"  [red]#{index}[/red] 실패: {e}")
         return None
 
 def _generate_single_imagen_image(
@@ -380,6 +374,8 @@ def _generate_single_imagen_image(
     from io import BytesIO
     from utils.s3_uploader import upload_image_to_s3
 
+    console.print(f"  [dim]#{index}[/dim] 생성 중...", end="\r")
+
     try:
         response = client.models.generate_images(
             model=model_name,
@@ -388,6 +384,7 @@ def _generate_single_imagen_image(
         )
 
         if not response.generated_images:
+            console.print(f"  [yellow]#{index}[/yellow] 생성 실패")
             return None
 
         img = response.generated_images[0].image
@@ -406,6 +403,7 @@ def _generate_single_imagen_image(
             image_bytes = bytes(img) if isinstance(img, (bytes, bytearray)) else None
 
         if not image_bytes:
+            console.print(f"  [yellow]#{index}[/yellow] 바이트 추출 실패")
             return None
 
         s3_url = upload_image_to_s3(
@@ -414,10 +412,12 @@ def _generate_single_imagen_image(
             content_type="image/png",
         )
 
+        if s3_url:
+            console.print(f"  [green]#{index}[/green] ✓ 완료           ")
         return s3_url
 
     except Exception as e:
-        print(f"[Imagen] 실패: {e}")
+        console.print(f"  [red]#{index}[/red] 실패: {e}")
         return None
 
 def _generate_single_gemini_flash_image(
@@ -430,6 +430,8 @@ def _generate_single_gemini_flash_image(
     """Gemini Flash 단일 이미지 생성 (병렬 처리용)"""
     from io import BytesIO
     from utils.s3_uploader import upload_image_to_s3
+
+    console.print(f"  [dim]#{index}[/dim] 생성 중...", end="\r")
 
     try:
         response = client.models.generate_content(
@@ -453,19 +455,29 @@ def _generate_single_gemini_flash_image(
         for part in parts:
             # inline_data 체크
             if hasattr(part, 'inline_data') and part.inline_data is not None:
-                # as_image() 메서드로 PIL Image 변환
-                if hasattr(part, 'as_image'):
-                    image = part.as_image()
-                    buffer = BytesIO()
-                    image.save(buffer, format="PNG")
-                    image_bytes = buffer.getvalue()
-                else:
-                    # 직접 데이터 추출
-                    image_data = part.inline_data
-                    if hasattr(image_data, 'data'):
-                        image_bytes = image_data.data
-                    else:
-                        continue
+                image_bytes = None
+
+                # 직접 데이터 추출 시도
+                image_data = part.inline_data
+                if hasattr(image_data, 'data'):
+                    image_bytes = image_data.data
+                elif hasattr(image_data, '_pb') and hasattr(image_data._pb, 'data'):
+                    image_bytes = image_data._pb.data
+
+                # PIL Image 변환 시도
+                if not image_bytes and hasattr(part, 'as_image'):
+                    try:
+                        from PIL import Image
+                        image = part.as_image()
+                        if isinstance(image, Image.Image):
+                            buffer = BytesIO()
+                            image.save(buffer, "PNG")
+                            image_bytes = buffer.getvalue()
+                    except Exception:
+                        pass
+
+                if not image_bytes:
+                    continue
 
                 s3_url = upload_image_to_s3(
                     image_bytes=image_bytes,
@@ -474,12 +486,14 @@ def _generate_single_gemini_flash_image(
                 )
 
                 if s3_url:
+                    console.print(f"  [green]#{index}[/green] ✓ 완료           ")
                     return s3_url
 
+        console.print(f"  [yellow]#{index}[/yellow] 이미지 없음")
         return None
 
     except Exception as e:
-        print(f"[Gemini Flash] 실패: {e}")
+        console.print(f"  [red]#{index}[/red] 실패: {e}")
         return None
 
 def call_image_ai(

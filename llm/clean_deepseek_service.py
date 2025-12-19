@@ -76,9 +76,9 @@ def clean_deepseek_gen(
 
     try:
         start_time = time.time()
-        print(f"[Clean DeepSeek] 서비스: {category}")
-        print(f"[Clean DeepSeek] 키워드: {keyword}")
-        print("[Clean DeepSeek] 원고작성 시작")
+
+
+
 
         generated_text = call_ai(
             model_name=MODEL_NAME,
@@ -91,9 +91,9 @@ def clean_deepseek_gen(
         char_count_no_space = len(re.sub(r"\s+", "", cleaned_text))
         elapsed_time = time.time() - start_time
 
-        print(f"[Clean DeepSeek] 원고 길이: {char_count_no_space}")
-        print(f"[Clean DeepSeek] 소요시간: {elapsed_time:.2f}s")
-        print("[Clean DeepSeek] 완료")
+
+
+
 
         return cleaned_text
 
