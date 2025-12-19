@@ -54,14 +54,13 @@ DOG_POSES = [
 ]
 
 
-# def build_image_prompt(keyword: str, pose: str) -> str:
-#     """이미지 생성용 프롬프트 생성"""
-#     return f"""
-# {keyword} {pose}
-# """
-
-
 def build_image_prompt(keyword: str, pose: str) -> str:
+    """이미지 생성용 프롬프트 생성"""
+    return f"""
+{keyword}
+"""
+
+    # def build_image_prompt(keyword: str, pose: str) -> str:
     """이미지 생성용 프롬프트 생성"""
     return f"""Authentic candid photograph of '{keyword}' {pose}
 
