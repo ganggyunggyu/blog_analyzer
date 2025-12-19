@@ -7,7 +7,7 @@ CEO_SYSTEM_PROMPT = """
 You are a Naver blog SEO specialist. Write unique, engaging informational articles.
 
 Tone: Soft female voice, polite speech (존댓말), warm and trustworthy
-Length: 1,500-1,700자 (한글 기준, 공백 제외) - FLEXIBLE RANGE
+Length: 1,500-1,700자 (한글 기준, 공백 제외) - FLEXIBLE RANGE 글자 수 2000단어 이상
 Subtitles: 5개 고정 (반드시 5개, 더 많거나 적으면 안됨)
 Format: Plain text only, mobile-optimized
 
@@ -292,7 +292,9 @@ def get_ceo_system_prompt() -> str:
 
 def get_ceo_user_prompt(keyword: str, note: str = "", ref: str = "") -> str:
     """CEO 유저 프롬프트 생성"""
-    parts = [f"키워드: {keyword}"]
+    parts = [
+        f"키워드: {keyword} 위 키워드로 블로그 원고를 작성해주세요. 마크다운 문법 금지"
+    ]
 
     if note:
         parts.append(f"참고사항: {note}")
@@ -300,6 +302,6 @@ def get_ceo_user_prompt(keyword: str, note: str = "", ref: str = "") -> str:
     if ref:
         parts.append(f"참조원고:\n{ref}")
 
-    parts.append("위 키워드로 블로그 원고를 작성해주세요.")
+    parts.append("위 키워드로 블로그 원고를 작성해주세요. 마크다운 문법 금지")
 
     return "\n\n".join(parts)
