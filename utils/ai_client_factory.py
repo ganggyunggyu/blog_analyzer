@@ -186,116 +186,115 @@ def call_ai(
             f"AI 클라이언트를 찾을 수 없습니다. (service_type: {ai_service_type})"
         )
 
-    # AI 서비스별 호출 (spinner 표시)
-    with console.status("[bold cyan]원고 생성 중...[/bold cyan]", spinner="dots"):
-        if ai_service_type == "gemini":
-            response = client.models.generate_content(
-                model=model_name,
-                config=types.GenerateContentConfig(
-                    system_instruction=system_prompt,
-                ),
-                contents=user_prompt,
-            )
-            text = getattr(response, "text", "") or ""
-            usage = getattr(response, "usage_metadata", None)
-            if usage:
-                input_tokens = getattr(usage, "prompt_token_count", 0) or 0
-                output_tokens = getattr(usage, "candidates_token_count", 0) or 0
+    # AI 서비스별 호출
+    if ai_service_type == "gemini":
+        response = client.models.generate_content(
+            model=model_name,
+            config=types.GenerateContentConfig(
+                system_instruction=system_prompt,
+            ),
+            contents=user_prompt,
+        )
+        text = getattr(response, "text", "") or ""
+        usage = getattr(response, "usage_metadata", None)
+        if usage:
+            input_tokens = getattr(usage, "prompt_token_count", 0) or 0
+            output_tokens = getattr(usage, "candidates_token_count", 0) or 0
 
-        elif ai_service_type == "claude":
-            response = client.messages.create(
+    elif ai_service_type == "claude":
+        response = client.messages.create(
+            model=model_name,
+            system=system_prompt,
+            messages=[{"role": "user", "content": user_prompt}],
+            max_tokens=max_tokens,
+        )
+        content_blocks = getattr(response, "content", [])
+        text = getattr(content_blocks[0], "text", "") if content_blocks else ""
+        usage = getattr(response, "usage", None)
+        if usage:
+            input_tokens = getattr(usage, "input_tokens", 0) or 0
+            output_tokens = getattr(usage, "output_tokens", 0) or 0
+
+    elif ai_service_type == "openai":
+        if model_name.startswith("gpt-5"):
+            response = client.responses.create(
                 model=model_name,
-                system=system_prompt,
-                messages=[{"role": "user", "content": user_prompt}],
-                max_tokens=max_tokens,
+                instructions=system_prompt,
+                input=user_prompt,
+                reasoning={"effort": "medium"},
+                text={"verbosity": "medium"},
             )
-            content_blocks = getattr(response, "content", [])
-            text = getattr(content_blocks[0], "text", "") if content_blocks else ""
+            text = getattr(response, "output_text", "") or ""
             usage = getattr(response, "usage", None)
             if usage:
                 input_tokens = getattr(usage, "input_tokens", 0) or 0
                 output_tokens = getattr(usage, "output_tokens", 0) or 0
-
-        elif ai_service_type == "openai":
-            if model_name.startswith("gpt-5"):
-                response = client.responses.create(
-                    model=model_name,
-                    instructions=system_prompt,
-                    input=user_prompt,
-                    reasoning={"effort": "medium"},
-                    text={"verbosity": "medium"},
-                )
-                text = getattr(response, "output_text", "") or ""
-                usage = getattr(response, "usage", None)
-                if usage:
-                    input_tokens = getattr(usage, "input_tokens", 0) or 0
-                    output_tokens = getattr(usage, "output_tokens", 0) or 0
-            else:
-                response = client.chat.completions.create(
-                    model=model_name,
-                    messages=[
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_prompt},
-                    ],
-                    max_tokens=max_tokens,
-                )
-                choices = getattr(response, "choices", []) or []
-                if not choices or not getattr(choices[0], "message", None):
-                    raise RuntimeError("GPT-4가 유효한 choices/message를 반환하지 않았습니다.")
-                text = (choices[0].message.content or "").strip()
-                usage = getattr(response, "usage", None)
-                if usage:
-                    input_tokens = getattr(usage, "prompt_tokens", 0) or 0
-                    output_tokens = getattr(usage, "completion_tokens", 0) or 0
-
-        elif ai_service_type == "solar":
-            response = client.chat.completions.create(
-                model=model_name,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt + system_prompt},
-                ],
-                reasoning_effort="high",
-            )
-            choices = getattr(response, "choices", []) or []
-            if not choices or not getattr(choices[0], "message", None):
-                raise RuntimeError("SOLAR가 유효한 choices/message를 반환하지 않았습니다.")
-            text = (choices[0].message.content or "").strip()
-            usage = getattr(response, "usage", None)
-            if usage:
-                input_tokens = getattr(usage, "prompt_tokens", 0) or 0
-                output_tokens = getattr(usage, "completion_tokens", 0) or 0
-
-        elif ai_service_type == "grok":
-            chat_session = client.chat.create(model=model_name)
-            chat_session.append(grok_system_message(system_prompt))
-            chat_session.append(grok_user_message(user_prompt))
-            response = chat_session.sample()
-            text = getattr(response, "content", "") or ""
-            usage = getattr(response, "usage", None)
-            if usage:
-                input_tokens = getattr(usage, "prompt_tokens", 0) or 0
-                output_tokens = getattr(usage, "completion_tokens", 0) or 0
-
-        elif ai_service_type == "deepseek":
+        else:
             response = client.chat.completions.create(
                 model=model_name,
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt},
                 ],
+                max_tokens=max_tokens,
             )
             choices = getattr(response, "choices", []) or []
             if not choices or not getattr(choices[0], "message", None):
-                raise RuntimeError("DeepSeek이 유효한 choices/message를 반환하지 않았습니다.")
+                raise RuntimeError("GPT-4가 유효한 choices/message를 반환하지 않았습니다.")
             text = (choices[0].message.content or "").strip()
             usage = getattr(response, "usage", None)
             if usage:
                 input_tokens = getattr(usage, "prompt_tokens", 0) or 0
                 output_tokens = getattr(usage, "completion_tokens", 0) or 0
 
-        else:
-            raise ValueError(f"지원하지 않는 AI 서비스 타입: {ai_service_type}")
+    elif ai_service_type == "solar":
+        response = client.chat.completions.create(
+            model=model_name,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt + system_prompt},
+            ],
+            reasoning_effort="high",
+        )
+        choices = getattr(response, "choices", []) or []
+        if not choices or not getattr(choices[0], "message", None):
+            raise RuntimeError("SOLAR가 유효한 choices/message를 반환하지 않았습니다.")
+        text = (choices[0].message.content or "").strip()
+        usage = getattr(response, "usage", None)
+        if usage:
+            input_tokens = getattr(usage, "prompt_tokens", 0) or 0
+            output_tokens = getattr(usage, "completion_tokens", 0) or 0
+
+    elif ai_service_type == "grok":
+        chat_session = client.chat.create(model=model_name)
+        chat_session.append(grok_system_message(system_prompt))
+        chat_session.append(grok_user_message(user_prompt))
+        response = chat_session.sample()
+        text = getattr(response, "content", "") or ""
+        usage = getattr(response, "usage", None)
+        if usage:
+            input_tokens = getattr(usage, "prompt_tokens", 0) or 0
+            output_tokens = getattr(usage, "completion_tokens", 0) or 0
+
+    elif ai_service_type == "deepseek":
+        response = client.chat.completions.create(
+            model=model_name,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+        )
+        choices = getattr(response, "choices", []) or []
+        if not choices or not getattr(choices[0], "message", None):
+            raise RuntimeError("DeepSeek이 유효한 choices/message를 반환하지 않았습니다.")
+        text = (choices[0].message.content or "").strip()
+        usage = getattr(response, "usage", None)
+        if usage:
+            input_tokens = getattr(usage, "prompt_tokens", 0) or 0
+            output_tokens = getattr(usage, "completion_tokens", 0) or 0
+
+    else:
+        raise ValueError(f"지원하지 않는 AI 서비스 타입: {ai_service_type}")
 
     text = text.strip()
     if not text:
