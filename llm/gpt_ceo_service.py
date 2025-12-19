@@ -20,7 +20,7 @@ def gpt_ceo_gen(user_instructions: str, ref: str = "", category: str = "") -> st
         raise ValueError("키워드가 없습니다.")
 
     system = get_ceo_system_prompt()
-    user = get_ceo_user_prompt(keyword=keyword, note=note, ref=ref)
+    user = get_ceo_user_prompt(keyword=keyword, note=note, ref=ref, category=category)
 
     text = call_ai(
         model_name=MODEL_NAME,

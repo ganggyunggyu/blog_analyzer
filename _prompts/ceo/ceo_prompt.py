@@ -290,11 +290,12 @@ def get_ceo_system_prompt() -> str:
     return CEO_SYSTEM_PROMPT
 
 
-def get_ceo_user_prompt(keyword: str, note: str = "", ref: str = "") -> str:
+def get_ceo_user_prompt(keyword: str, note: str = "", ref: str = "", category: str = "") -> str:
     """CEO 유저 프롬프트 생성"""
-    parts = [
-        f"키워드: {keyword} 위 키워드로 블로그 원고를 작성해주세요. 마크다운 문법 금지"
-    ]
+    parts = [f"키워드: {keyword}"]
+
+    if category:
+        parts.append(f"카테고리: {category}")
 
     if note:
         parts.append(f"참고사항: {note}")
