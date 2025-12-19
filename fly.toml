@@ -1,14 +1,18 @@
+# Blog Analyzer - Fly.io 배포 설정
+# 마지막 업데이트: 2025-12-19
+
 app = "blog-analyzer"
-primary_region = "nrt"
+primary_region = "nrt"  # 도쿄 리전 (한국에서 가장 빠름)
 
 [build]
+# Dockerfile 자동 감지
 
 [http_service]
   internal_port = 8080
   force_https = true
-  auto_stop_machines = "stop"
-  auto_start_machines = true
-  min_machines_running = 1
+  auto_stop_machines = "stop"   # 트래픽 없으면 자동 중지 (비용 절감)
+  auto_start_machines = true    # 요청 들어오면 자동 시작
+  min_machines_running = 1      # 최소 1대 항상 가동
 
 [env]
   PORT = "8080"
