@@ -68,11 +68,12 @@ async def generator_gpt_ceo(request: GenerateRequest):
                 document["_id"] = str(document["_id"])
                 elapsed = time.time() - start_ts
 
-                print(f"[GPT-CEO] 완료 | {elapsed:.2f}s | DB 저장 성공")
+                log.divider()
+                log.success("GPT CEO 완료", 키워드=keyword, 카테고리=category, 시간=f"{elapsed:.1f}s")
 
                 return document
             except Exception as e:
-                print(f"[GPT-CEO] DB 저장 실패: {e}")
+                log.error(f"DB 저장 실패: {e}")
         else:
             raise HTTPException(
                 status_code=500,
