@@ -67,9 +67,10 @@ async def generator_gpt_ceo(request: GenerateRequest):
 
                 document["_id"] = str(document["_id"])
                 elapsed = time.time() - start_ts
+                char_count = len(generated_manuscript.replace(" ", ""))
 
                 log.divider()
-                log.success("GPT CEO 완료", 키워드=keyword, 카테고리=category, 시간=f"{elapsed:.1f}s")
+                log.success("GPT CEO 완료", 키워드=keyword, 길이=f"{char_count}자", 시간=f"{elapsed:.1f}s")
 
                 return document
             except Exception as e:

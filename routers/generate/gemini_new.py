@@ -8,7 +8,9 @@ from mongodb_service import MongoDBService
 from utils.get_category_db_name import get_category_db_name
 from schema.generate import GenerateRequest
 from llm.gemini_new_service import gemini_new_gen, MODEL_NAME
+from utils.query_parser import parse_query
 from utils.progress_logger import progress
+from utils.logger import log
 
 
 router = APIRouter()
@@ -23,16 +25,15 @@ async def generator_gemini_new(request: GenerateRequest):
     ref = request.ref
 
     category = await get_category_db_name(keyword=keyword + ref)
+    c_elapsed = time.time() - start_ts
 
-    print("\n" + "=" * 60)
-    print(f"Gemini New 원고 생성 시작")
-    print("=" * 60)
-    print(f"서비스: {service.upper()}")
-    print(f"키워드: {keyword}")
-    print(f"카테고리: {category}")
-    print(f"모델: {MODEL_NAME}")
-    print(f"참조원고: {'있음' if ref else '없음'}")
-    print("=" * 60 + "\n")
+    log.header("Gemini New 원고 생성", "🚀")
+    log.kv("서비스", service.upper())
+    log.kv("키워드", keyword)
+    log.kv("카테고리", category)
+    log.kv("모델", MODEL_NAME)
+    log.kv("참조원고", "있음" if ref else "없음")
+    log.kv("분류시간", f"{c_elapsed:.2f}s")
 
     db_service = MongoDBService()
     db_service.set_db_name(db_name=category)
@@ -44,6 +45,8 @@ async def generator_gemini_new(request: GenerateRequest):
             )
 
         if generated_manuscript:
+            parsed = parse_query(keyword)
+
             document = {
                 "content": generated_manuscript,
                 "createdAt": datetime.now(),
@@ -55,17 +58,21 @@ async def generator_gemini_new(request: GenerateRequest):
 
             try:
                 db_service.insert_document("manuscripts", document)
+
+                if ref:
+                    ref_document = {"content": ref, "keyword": parsed["keyword"]}
+                    db_service.insert_document("ref", ref_document)
+
                 document["_id"] = str(document["_id"])
                 elapsed = time.time() - start_ts
+                char_count = len(generated_manuscript.replace(" ", ""))
 
-                print("\n" + "=" * 60)
-                print(f"Gemini New 원고 생성 완료")
-                print(f"총 소요시간: {elapsed:.2f}s")
-                print("=" * 60 + "\n")
+                log.divider()
+                log.success("Gemini New 완료", 키워드=keyword, 길이=f"{char_count}자", 시간=f"{elapsed:.1f}s")
 
                 return document
             except Exception as e:
-                print(f"데이터베이스에 저장 실패: {e}")
+                log.error(f"DB 저장 실패: {e}")
         else:
             raise HTTPException(status_code=500, detail="원고 생성에 실패했습니다.")
     except Exception as e:
