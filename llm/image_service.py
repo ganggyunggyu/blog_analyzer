@@ -54,13 +54,14 @@ DOG_POSES = [
 ]
 
 
-def build_image_prompt(keyword: str, pose: str) -> str:
-    """이미지 생성용 프롬프트 생성"""
-    return f"""
-{keyword}
-"""
+# def build_image_prompt(keyword: str, pose: str) -> str:
+#     """이미지 생성용 프롬프트 생성"""
+#     return f"""
+# {keyword}
+# """
 
-    # def build_image_prompt(keyword: str, pose: str) -> str:
+
+def build_image_prompt(keyword: str, pose: str) -> str:
     """이미지 생성용 프롬프트 생성"""
     return f"""Authentic candid photograph of '{keyword}' {pose}
 
@@ -90,8 +91,12 @@ Technical Style:
 
 Output Rules:
 - Single subject only, NO collage or grid
-- NO text, watermarks, or logos
 - Photorealistic documentary style
+
+CRITICAL - NO TEXT IN IMAGE:
+- NEVER include any text, letters, words, or typography in the image
+- NO watermarks, logos, signs, labels, or captions
+- NO written content of any kind - pure visual only
 """
 
 

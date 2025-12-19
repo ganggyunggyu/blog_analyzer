@@ -16,26 +16,44 @@ router = APIRouter()
 IMAGE_COUNT: int = 5
 
 
-def _generate_images_parallel(keyword: str, poses: list) -> tuple:
-    """이미지 병렬 생성"""
+MAX_RETRIES: int = 3
+
+
+def _generate_images_parallel(keyword: str, poses: list, target_count: int = IMAGE_COUNT) -> tuple:
+    """이미지 병렬 생성 (실패 시 재시도)"""
     images = []
-    failed_count = 0
     total_cost = 0.0
+    retry_count = 0
 
-    with ThreadPoolExecutor(max_workers=len(poses)) as executor:
-        futures = {
-            executor.submit(image_gen_single, keyword, pose): pose
-            for pose in poses
-        }
+    remaining_poses = list(poses)
 
-        for future in as_completed(futures):
-            result = future.result()
-            if result and result.get("url"):
-                images.append(result)
-                total_cost += result.get("cost", 0)
-            else:
-                failed_count += 1
+    while len(images) < target_count and retry_count < MAX_RETRIES:
+        with ThreadPoolExecutor(max_workers=len(remaining_poses)) as executor:
+            futures = {
+                executor.submit(image_gen_single, keyword, pose): pose
+                for pose in remaining_poses
+            }
 
+            failed_poses = []
+            for future in as_completed(futures):
+                pose = futures[future]
+                result = future.result()
+                if result and result.get("url"):
+                    images.append(result)
+                    total_cost += result.get("cost", 0)
+                else:
+                    failed_poses.append(pose)
+
+        if len(images) >= target_count:
+            break
+
+        if failed_poses:
+            retry_count += 1
+            remaining_poses = failed_poses[:target_count - len(images)]
+            from utils.logger import console
+            console.print(f"  [yellow]재시도 {retry_count}/{MAX_RETRIES}[/yellow] ({len(remaining_poses)}개 남음)")
+
+    failed_count = target_count - len(images)
     return images, failed_count, total_cost
 
 
