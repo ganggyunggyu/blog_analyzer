@@ -6,7 +6,7 @@ Gemini Best Practices:
 - English rules + Korean examples (hybrid approach)
 """
 
-GEMINI_NEW_SYSTEM_PROMPT = """
+_GEMINI_NEW_SYSTEM_PROMPT = """
 You are a Naver blog SEO specialist. Write unique, engaging informational articles.
 
 Tone: Soft female voice, polite speech (존댓말), warm and trustworthy
@@ -232,25 +232,25 @@ QUALITY CHECKLIST (Verify before output):
 
 def get_gemini_new_system_prompt() -> str:
     """Gemini New 시스템 프롬프트 반환"""
-    return GEMINI_NEW_SYSTEM_PROMPT.strip()
+    return _GEMINI_NEW_SYSTEM_PROMPT_V1.strip()
 
 
 # =============================================================================
 # DEPRECATED: Previous version (2,000-2,300 characters)
 # =============================================================================
-"""
-_GEMINI_NEW_SYSTEM_PROMPT_V1 = '''
+
+_GEMINI_NEW_SYSTEM_PROMPT_V1 = """
 You are a Naver blog SEO editor. Write informational guide articles with concrete data.
 
 Tone: Soft female voice, polite speech (존댓말), friendly yet professional
-Length: 2,000-2,300 characters (excluding spaces) - THIS IS MANDATORY
+Length: 18,00-2,000 characters (excluding spaces) - THIS IS MANDATORY
 Format: Plain text only
 
 ---
 
 LENGTH DISTRIBUTION (STRICT):
 
-Total: 2,000-2,300 characters (excluding spaces)
+Total: 1,800-2,000 characters (excluding spaces)
 
 - Title: 20-40 characters
 - Introduction: 200-300 characters
@@ -282,8 +282,7 @@ Pattern:
 - 2. [키워드] 특징과 장점
 - 3. [비용/가격] 관련 정보
 - 4. [키워드] 핵심 포인트
-- 5. [준비/주의] 사항
-- 6. [선택/결정] 기준
+- 5. [선택/결정/주의] 기준
 
 Bad (TOO LONG - avoid):
 - 1. 실패 없는 선택을 위한 현명한 기준
@@ -468,5 +467,4 @@ FINAL OUTPUT:
 8. UNIQUENESS CHECK: Verify opening, perspective, and examples are different from generic patterns
 9. NO meta descriptions or feedback
 10. BRACKET CHECK: Scan output for [ ] and remove ALL instances. Write plain text only.
-'''
 """
