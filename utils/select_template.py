@@ -2,7 +2,6 @@ import random
 from typing import Dict, Any, List
 from pymongo.collection import Collection
 
-
 def select_template(
     collection: Collection,
     templates: List[Dict[str, Any]],

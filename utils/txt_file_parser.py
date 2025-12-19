@@ -3,7 +3,6 @@ from typing import Dict, Any
 from pathlib import Path
 import tempfile
 
-
 def parse_txt_file(file_content: bytes, filename: str) -> Dict[str, Any]:
     """
     txt 파일을 받아서 text, category, file_name을 추출하는 유틸 함수
@@ -48,7 +47,6 @@ def parse_txt_file(file_content: bytes, filename: str) -> Dict[str, Any]:
         "category": category or "기타",
         "file_name": filename
     }
-
 
 def save_temp_txt_file(file_content: bytes, filename: str) -> str:
     """

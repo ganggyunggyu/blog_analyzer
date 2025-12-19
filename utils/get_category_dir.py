@@ -7,7 +7,6 @@ from openai import OpenAI
 from _constants.Model import Model
 from config import OPENAI_API_KEY
 
-
 def get_data_folder_categories() -> list[str]:
     """
     _data 폴더에서 실제 카테고리 폴더명들을 동적으로 가져오기
@@ -26,13 +25,11 @@ def get_data_folder_categories() -> list[str]:
             categories.append(item)
     return sorted(categories)
 
-
 def get_category_dict() -> dict[str, str]:
     """
     실제 폴더명 목록 반환 (더 이상 사용하지 않음)
     """
     return {}
-
 
 def categorize_keyword_with_ai_fixed(keyword: str) -> str:
     """
@@ -92,7 +89,6 @@ def categorize_keyword_with_ai_fixed(keyword: str) -> str:
 
     except Exception:
         return folder_categories[0] if folder_categories else "영양제_건강보조식품"
-
 
 def get_category_by_keyword(keyword: str) -> str:
     """

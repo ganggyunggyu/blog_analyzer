@@ -6,74 +6,33 @@ import asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-# 라우터
+# 라우터 - 기본
 from routers import ingest
-
 from routers.test import test
+
+# 라우터 - 원고 생성
 from routers.generate import (
-    chunk,
-    claude,
-    clean_claude,
-    clean_deepseek,
-    deepseek,
-    deepseek_new,
-    gemini,
-    gemini_3_pro,
-    gemini_3_flash,
-    gemini_3_flash_clean,
-    gemini_image,
-    gemini_new,
-    gpt,
-    gpt_5,
-    gpt_4_v2,
-    gpt_4_v3,
-    gpt_ver3,
-    gpt_ver3_clean,
-    gpt_5_v2,
-    gpt_5_2,
-    kkk,
-    grok,
-    grok_new,
-    grok_ver3_clean,
-    mdx_post,
-    openai_new,
-    restaurant,
-    restaurant_claude,
-    restaurant_grok,
-    restaurant_gpt5,
-    restaurant_deepseek,
-    solar,
-    solar_ver3_clean,
-    gpt_merge,
-    my,
-    song,
-    gang,
-    step_by_step,
-    clean,
-    synonym,
-    review,
-    news,
-    deep_search,
-    translation_compare,
-    xai_prompt_engineer,
-    openai_prompt_engineer,
-    story_analysis,
-    requirement_analysis,
+    claude, clean_claude, clean_deepseek, deepseek, deepseek_new,
+    gemini_3_pro, gemini_3_flash, gemini_3_flash_clean, gemini_image, gemini_new,
+    gpt_ver3, gpt_ver3_clean, gpt_5_2, kkk,
+    grok, grok_new, grok_ver3_clean,
+    openai_new, solar, solar_ver3_clean,
 )
+
+# 라우터 - 분석
 from routers.category import keyword
 from routers.analysis import get_sub_title, upload_text, analyzer_router
 from routers.ref import get_ref
+
+# 라우터 - 원고 관리
 from routers.manuscript import visibility as manuscript_visibility
+
+# 라우터 - 검색
 from routers.search import (
-    keyword as search_keyword,
-    manuscript as search_manuscript,
-    all as search_all,
-    autocomplete as search_autocomplete,
-    manage as search_manage,
-    popular as search_popular,
-    stats as search_stats,
-    history as search_history,
-    bookmark as search_bookmark,
+    keyword as search_keyword, manuscript as search_manuscript,
+    all as search_all, autocomplete as search_autocomplete,
+    manage as search_manage, popular as search_popular,
+    stats as search_stats, history as search_history, bookmark as search_bookmark,
 )
 
 LLM_CONCURRENCY = int(os.getenv("LLM_CONCURRENCY", "3"))
@@ -90,61 +49,43 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# 기본
 app.include_router(ingest.router)
 app.include_router(test.router)
-app.include_router(gemini.router)
+
+# 원고 생성
+app.include_router(claude.router)
+app.include_router(clean_claude.router)
+app.include_router(deepseek.router)
+app.include_router(deepseek_new.router)
+app.include_router(clean_deepseek.router)
 app.include_router(gemini_3_pro.router)
 app.include_router(gemini_3_flash.router)
 app.include_router(gemini_3_flash_clean.router)
 app.include_router(gemini_image.router)
-app.include_router(claude.router)
-app.include_router(clean_claude.router)
-app.include_router(gpt.router)
-app.include_router(gpt_5.router)
-app.include_router(keyword.router)
-app.include_router(get_sub_title.router)
-app.include_router(gpt_4_v2.router)
-app.include_router(gpt_4_v3.router)
+app.include_router(gemini_new.router)
 app.include_router(gpt_ver3.router)
 app.include_router(gpt_ver3_clean.router)
-app.include_router(gpt_5_v2.router)
 app.include_router(gpt_5_2.router)
 app.include_router(kkk.router)
 app.include_router(grok.router)
-app.include_router(deepseek.router)
-app.include_router(deepseek_new.router)
-app.include_router(clean_deepseek.router)
-app.include_router(openai_new.router)
-app.include_router(gemini_new.router)
 app.include_router(grok_new.router)
 app.include_router(grok_ver3_clean.router)
-app.include_router(restaurant.router)
-app.include_router(restaurant_claude.router)
-app.include_router(restaurant_grok.router)
-app.include_router(restaurant_gpt5.router)
-app.include_router(restaurant_deepseek.router)
+app.include_router(openai_new.router)
 app.include_router(solar.router)
 app.include_router(solar_ver3_clean.router)
+
+# 분석
+app.include_router(keyword.router)
+app.include_router(get_sub_title.router)
 app.include_router(upload_text.router)
 app.include_router(get_ref.router)
-app.include_router(chunk.router)
-app.include_router(gpt_merge.router)
-app.include_router(my.router)
-app.include_router(song.router)
-app.include_router(gang.router)
-app.include_router(step_by_step.router)
-app.include_router(clean.router)
-app.include_router(mdx_post.router)
-app.include_router(synonym.router)
-app.include_router(review.router)
-app.include_router(news.router)
-app.include_router(deep_search.router)
-app.include_router(translation_compare.router)
 app.include_router(analyzer_router.router)
-app.include_router(xai_prompt_engineer.router)
-app.include_router(openai_prompt_engineer.router)
-app.include_router(story_analysis.router)
-app.include_router(requirement_analysis.router)
+
+# 원고 관리
+app.include_router(manuscript_visibility.router)
+
+# 검색
 app.include_router(search_keyword.router)
 app.include_router(search_manuscript.router)
 app.include_router(search_all.router)
@@ -154,4 +95,3 @@ app.include_router(search_popular.router)
 app.include_router(search_stats.router)
 app.include_router(search_history.router)
 app.include_router(search_bookmark.router)
-app.include_router(manuscript_visibility.router)

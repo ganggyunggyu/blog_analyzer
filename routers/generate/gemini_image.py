@@ -8,6 +8,7 @@ from fastapi.concurrency import run_in_threadpool
 from schema.generate import ImageGenerateRequest, ImageGenerateResponse, ImageItem
 from llm.image_service import image_gen_single, get_random_poses, MODEL_NAME
 from utils.progress_logger import progress
+from utils.logger import log
 
 
 router = APIRouter()
@@ -19,6 +20,7 @@ def _generate_images_parallel(keyword: str, poses: list) -> tuple:
     """이미지 병렬 생성"""
     images = []
     failed_count = 0
+    total_cost = 0.0
 
     with ThreadPoolExecutor(max_workers=len(poses)) as executor:
         futures = {
@@ -30,10 +32,11 @@ def _generate_images_parallel(keyword: str, poses: list) -> tuple:
             result = future.result()
             if result and result.get("url"):
                 images.append(result)
+                total_cost += result.get("cost", 0)
             else:
                 failed_count += 1
 
-    return images, failed_count
+    return images, failed_count, total_cost
 
 
 @router.post("/generate/image", response_model=ImageGenerateResponse)
@@ -51,35 +54,30 @@ async def generate_image(request: ImageGenerateRequest):
 
     poses = get_random_poses(IMAGE_COUNT)
 
-    print("\n" + "=" * 60)
-    print(f"IMAGE {IMAGE_COUNT}장 생성 시작")
-    print("=" * 60)
-    print(f"키워드    : {keyword}")
-    print(f"모델      : {MODEL_NAME}")
-    print(f"생성 개수 : {IMAGE_COUNT}장")
-    print("선택된 포즈:")
-    for i, pose in enumerate(poses):
-        print(f"  [{i+1}] {pose}")
-    print("=" * 60 + "\n")
+    log.header(f"IMAGE {IMAGE_COUNT}장 생성", "🎨")
+    log.kv("키워드", keyword)
+    log.kv("모델", MODEL_NAME)
+    log.kv("포즈", f"{len(poses)}개 선택")
 
     try:
         with progress(label=f"image:{keyword}"):
-            images, failed_count = await run_in_threadpool(
+            images, failed_count, total_cost = await run_in_threadpool(
                 _generate_images_parallel,
                 keyword,
                 poses,
             )
 
         elapsed = time.time() - start_ts
+        total_krw = total_cost * 1400
 
-        print("\n" + "=" * 60)
-        print(f"IMAGE 생성 완료")
-        print("=" * 60)
-        print(f"키워드       : {keyword}")
-        print(f"성공         : {len(images)}장")
-        print(f"실패         : {failed_count}장")
-        print(f"소요시간     : {elapsed:.2f}s")
-        print("=" * 60 + "\n")
+        log.divider()
+        log.success(
+            f"IMAGE 완료",
+            성공=f"{len(images)}장",
+            실패=f"{failed_count}장",
+            시간=f"{elapsed:.1f}s",
+            비용=f"${total_cost:.2f} ({total_krw:.0f}원)"
+        )
 
         image_items = [
             ImageItem(url=img["url"])

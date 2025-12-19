@@ -19,7 +19,6 @@ from _constants.text_processing import (
     TITLE_SEARCH_LENGTH,
 )
 
-
 def _remove_markdown(text: str) -> str:
     """마크다운 문법 제거"""
     text = re.sub(MARKDOWN_BOLD_PATTERN, r"\1", text)
@@ -27,7 +26,6 @@ def _remove_markdown(text: str) -> str:
     text = re.sub(MARKDOWN_LINK_PATTERN, r"\1", text)
     text = re.sub(MARKDOWN_CODE_PATTERN, r"\1", text)
     return text
-
 
 def _add_title_lines(text: str) -> list[str]:
     """특정 타이틀이 있으면 반복 추가"""
@@ -38,7 +36,6 @@ def _add_title_lines(text: str) -> list[str]:
         for _ in range(TITLE_REPEAT_COUNT):
             lines.append("당산 고기집 추천")
     return lines
-
 
 def _merge_emoji_chunks(chunks: list[str]) -> list[str]:
     """이모티콘이 어미 뒤에 붙으면 병합"""
@@ -55,11 +52,9 @@ def _merge_emoji_chunks(chunks: list[str]) -> list[str]:
             i += 1
     return chunks
 
-
 def _split_long_chunk(chunk: str) -> list[str]:
     """긴 청크를 적절한 길이로 분할"""
     return re.findall(rf"[^!;\s]{{1,{SUB_CHUNK_LENGTH}}}(?=[!;\s]|$)", chunk)
-
 
 def _clean_consecutive_empty_lines(result: list[str]) -> list[str]:
     """연속된 빈 줄 제한"""
@@ -78,7 +73,6 @@ def _clean_consecutive_empty_lines(result: list[str]) -> list[str]:
         cleaned.pop()
 
     return cleaned
-
 
 def natural_break_text(text: str) -> str:
     """

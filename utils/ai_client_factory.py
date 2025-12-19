@@ -19,7 +19,7 @@ from config import (
     grok_client,
     solar_client,
 )
-
+from utils.logger import log
 
 def get_ai_service_type(model_name: str) -> str:
     """
@@ -44,7 +44,6 @@ def get_ai_service_type(model_name: str) -> str:
     else:
         return "openai"
 
-
 def get_ai_client(ai_service_type: str) -> Optional[Any]:
     """
     AI 서비스 타입에 맞는 클라이언트 반환
@@ -68,7 +67,6 @@ def get_ai_client(ai_service_type: str) -> Optional[Any]:
     elif ai_service_type == "deepseek":
         return deepseek_client
     return None
-
 
 def validate_api_key(ai_service_type: str) -> None:
     """
@@ -109,7 +107,6 @@ def validate_api_key(ai_service_type: str) -> None:
                 "DEEPSEEK_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요."
             )
 
-
 # 모델별 가격 (USD per 1M tokens) - input/output
 # 2025년 12월 기준 최신 가격
 MODEL_PRICING = {
@@ -136,14 +133,12 @@ MODEL_PRICING = {
     "solar": (0.15, 0.60),               # Solar Pro
 }
 
-
 def get_model_pricing(model_name: str) -> tuple:
     """모델명에서 가격 정보 가져오기"""
     for key, price in MODEL_PRICING.items():
         if key in model_name.lower():
             return price
     return (0.01, 0.03)  # 기본값
-
 
 def print_token_cost(model_name: str, input_tokens: int, output_tokens: int) -> None:
     """토큰 사용량 및 비용 출력"""
@@ -155,9 +150,7 @@ def print_token_cost(model_name: str, input_tokens: int, output_tokens: int) -> 
     total_cost = input_cost + output_cost
     total_krw = total_cost * 1400
 
-    print(f"[토큰] in: {input_tokens:,} | out: {output_tokens:,} | total: {input_tokens + output_tokens:,}")
-    print(f"[비용] ${total_cost:.6f} (약 {total_krw:.2f}원)")
-
+    log.info(f"토큰 in={input_tokens:,} out={output_tokens:,} | 비용=${total_cost:.4f} ({total_krw:.0f}원)")
 
 def call_ai(
     model_name: str,
@@ -326,7 +319,6 @@ def call_ai(
 
     return text
 
-
 def get_image_service_type(model_name: str) -> str:
     """이미지 생성 모델명으로 서비스 타입 결정"""
     if model_name.startswith("grok"):
@@ -337,7 +329,6 @@ def get_image_service_type(model_name: str) -> str:
         return "gemini-flash"
     else:
         raise ValueError(f"지원하지 않는 이미지 생성 모델: {model_name}")
-
 
 def _generate_single_grok_image(
     client,
@@ -377,7 +368,6 @@ def _generate_single_grok_image(
     except Exception as e:
         print(f"[Grok] 실패: {e}")
         return None
-
 
 def _generate_single_imagen_image(
     client,
@@ -429,7 +419,6 @@ def _generate_single_imagen_image(
     except Exception as e:
         print(f"[Imagen] 실패: {e}")
         return None
-
 
 def _generate_single_gemini_flash_image(
     client,
@@ -493,7 +482,6 @@ def _generate_single_gemini_flash_image(
         print(f"[Gemini Flash] 실패: {e}")
         return None
 
-
 def call_image_ai(
     model_name: str,
     prompt: str,
@@ -521,8 +509,7 @@ def call_image_ai(
 
         s3_url = _generate_single_grok_image(client, model_name, prompt, keyword, 1)
         if s3_url:
-            print(f"[비용] $0.07 (약 98원)")
-            return {"url": s3_url}
+            return {"url": s3_url, "cost": 0.07}
         return None
 
     elif service_type == "imagen":
@@ -533,8 +520,7 @@ def call_image_ai(
 
         s3_url = _generate_single_imagen_image(client, model_name, prompt, keyword, 1)
         if s3_url:
-            print(f"[비용] $0.04 (약 56원)")
-            return {"url": s3_url}
+            return {"url": s3_url, "cost": 0.04}
         return None
 
     elif service_type == "gemini-flash":
@@ -545,8 +531,7 @@ def call_image_ai(
 
         s3_url = _generate_single_gemini_flash_image(client, model_name, prompt, keyword, 1)
         if s3_url:
-            print(f"[비용] $0.039 (약 55원)")
-            return {"url": s3_url}
+            return {"url": s3_url, "cost": 0.039}
         return None
 
     else:

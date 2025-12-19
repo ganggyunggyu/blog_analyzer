@@ -33,7 +33,6 @@ CATEGORY_SYSTEM_PROMPT = """
 </system_instruction>
 """
 
-
 def build_category_prompt(keyword: str) -> str:
     """카테고리 분류용 프롬프트 생성"""
 
@@ -57,7 +56,6 @@ def build_category_prompt(keyword: str) -> str:
   </if>
 </task>
 """
-
 
 async def get_category_db_name(keyword: str) -> str:
     """

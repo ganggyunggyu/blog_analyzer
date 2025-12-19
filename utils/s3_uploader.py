@@ -14,7 +14,7 @@ from config import (
     AWS_S3_BUCKET,
     AWS_S3_REGION,
 )
-
+from utils.logger import log
 
 def get_s3_client():
     """S3 클라이언트 반환"""
@@ -27,7 +27,6 @@ def get_s3_client():
         aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
         region_name=AWS_S3_REGION,
     )
-
 
 def upload_image_to_s3(
     image_bytes: bytes,
@@ -47,7 +46,7 @@ def upload_image_to_s3(
     """
     client = get_s3_client()
     if not client:
-        print("S3 설정이 없습니다. base64로 반환합니다.")
+        log.warning("S3 설정 없음, base64로 반환")
         return None
 
     # 파일명 생성: keyword/날짜_uuid.png
@@ -55,10 +54,6 @@ def upload_image_to_s3(
     file_id = str(uuid.uuid4())[:8]
     ext = "png" if "png" in content_type else "jpg"
     key = f"images/{keyword}/{date_str}_{file_id}.{ext}"
-
-    print(f"[S3] 버킷: {AWS_S3_BUCKET}")
-    print(f"[S3] 리전: {AWS_S3_REGION}")
-    print(f"[S3] 키: {key}")
 
     try:
         client.put_object(
@@ -69,9 +64,9 @@ def upload_image_to_s3(
         )
 
         url = f"https://{AWS_S3_BUCKET}.s3.{AWS_S3_REGION}.amazonaws.com/{key}"
-        print(f"[S3] 업로드 완료: {url}")
+        log.info(f"S3 업로드", file=f"{date_str}_{file_id}.{ext}")
         return url
 
     except ClientError as e:
-        print(f"S3 업로드 실패: {e}")
+        log.error(f"S3 업로드 실패: {e}")
         return None

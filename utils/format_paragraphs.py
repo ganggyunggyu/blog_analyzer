@@ -5,11 +5,9 @@ from openai import OpenAI
 from config import OPENAI_API_KEY
 from _constants.Model import Model
 
-
 model_name: str = Model.GPT5_MINI
 
 client = OpenAI(api_key=OPENAI_API_KEY)
-
 
 def format_paragraphs(doc: str) -> str:
     """

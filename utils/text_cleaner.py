@@ -4,7 +4,6 @@
 
 import re
 
-
 def replace_middle_dot(text: str) -> str:
     """
     중간점 문자 '·' 를 ',' 로 변환
@@ -12,7 +11,6 @@ def replace_middle_dot(text: str) -> str:
     if not text:
         return text
     return text.replace("·", ",")
-
 
 def clean_trailing_spaces(text: str) -> str:
     """
@@ -26,7 +24,6 @@ def clean_trailing_spaces(text: str) -> str:
 
     return "\n".join(cleaned_lines)
 
-
 def clean_multiple_spaces(text: str) -> str:
     """
     연속된 공백을 하나의 공백으로 변환 (줄바꿈 제외)
@@ -35,7 +32,6 @@ def clean_multiple_spaces(text: str) -> str:
         return text
 
     return re.sub(r"[ \t]+", " ", text)
-
 
 def clean_text_format(text: str) -> str:
     """
@@ -52,7 +48,6 @@ def clean_text_format(text: str) -> str:
 
     return text
 
-
 def clean_empty_lines(text: str) -> str:
     """
     연속된 빈 줄을 하나의 빈 줄로 정리
@@ -61,7 +56,6 @@ def clean_empty_lines(text: str) -> str:
         return text
 
     return re.sub(r"\n\s*\n\s*\n+", "\n\n", text)
-
 
 def comprehensive_text_clean(text: str) -> str:
     """

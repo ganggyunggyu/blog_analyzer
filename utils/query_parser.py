@@ -1,7 +1,6 @@
 import re
 from typing import Optional, Dict
 
-
 CATEGORY_RE = re.compile(
     r"""
     ^\s*
@@ -15,7 +14,6 @@ CATEGORY_RE = re.compile(
     """,
     re.IGNORECASE | re.VERBOSE,
 )
-
 
 def parse_query(s: str) -> Dict[str, Optional[str]]:
     m = CATEGORY_RE.match(s or "")

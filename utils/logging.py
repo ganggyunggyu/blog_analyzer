@@ -12,13 +12,5 @@
 #         (f"{Fore.GREEN}⏱️  분류시간{Style.RESET_ALL}", f"{c_elapsed:.2f}초"),
 #     ]
 
-#     print("\n" + divider)
-#     print(f"{Fore.MAGENTA}🍽️  RESTAURANT 원고 생성기".center(70) + Style.RESET_ALL)
-#     print(divider)
-
 #     for label, value in info:
-#         print(f"{label:<15} : {value}")
 
-#     print(divider)
-#     print(f"{Fore.YELLOW}✨ 상태       : 원고 생성 준비 완료!{Style.RESET_ALL}")
-#     print(divider + "\n")
