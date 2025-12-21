@@ -1,4 +1,4 @@
-"""GPT-4O 원고 생성 서비스"""
+"""ChatGPT-4O 원고 생성 서비스"""
 
 from __future__ import annotations
 
@@ -11,12 +11,12 @@ from utils.text_cleaner import comprehensive_text_clean
 from utils.ai_client_factory import call_ai
 
 
-MODEL_NAME: str = Model.GPT4O_API
+MODEL_NAME: str = Model.GPT4O
 
 
-def gpt4o_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
+def chatgpt4o_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     """
-    GPT-4O 기반 블로그 원고 생성
+    ChatGPT-4O 기반 블로그 원고 생성
 
     Args:
         user_instructions: 키워드 및 추가 요청사항

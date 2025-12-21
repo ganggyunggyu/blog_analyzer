@@ -15,7 +15,7 @@ from routers.generate import (
     claude, clean_claude, clean_deepseek, deepseek, deepseek_new,
     gemini_3_pro, gemini_3_flash, gemini_3_flash_clean, gemini_image, gemini_new,
     gemini_ceo, gpt_ceo,
-    gpt4o, gpt_ver3_clean, gpt_5_2, kkk,
+    gpt4o, chatgpt4o, gpt_ver3_clean, gpt_5_2, kkk,
     grok, grok_new, grok_ver3_clean,
     openai_new, solar, solar_ver3_clean,
 )
@@ -66,6 +66,7 @@ app.include_router(gemini_3_flash_clean.router)
 app.include_router(gemini_image.router)
 app.include_router(gemini_new.router)
 app.include_router(gpt4o.router)
+app.include_router(chatgpt4o.router)
 app.include_router(gpt_ver3_clean.router)
 app.include_router(gpt_5_2.router)
 app.include_router(gpt_ceo.router)
