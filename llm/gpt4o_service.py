@@ -11,7 +11,7 @@ from utils.text_cleaner import comprehensive_text_clean
 from utils.ai_client_factory import call_ai
 
 
-MODEL_NAME: str = Model.GPT4O_API
+MODEL_NAME: str = Model.GPT4_1
 
 
 def gpt4o_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
