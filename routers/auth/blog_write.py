@@ -60,6 +60,7 @@ SELECTORS = {
     "schedule_minute": "select.minute_option__Vb3xB",
 
     # 날짜 선택기 (datepicker)
+    "date_input": "input.input_date__QmA0s",
     "datepicker_next_month": "button.ui-datepicker-next",
     "datepicker_prev_month": "button.ui-datepicker-prev",
     "datepicker_year": "span.ui-datepicker-year",
@@ -234,6 +235,17 @@ async def set_schedule_date(frame, target_date: datetime) -> bool:
         return True
 
     try:
+        # 1. 날짜 입력 필드 클릭해서 캘린더 열기
+        date_input = frame.locator(SELECTORS["date_input"])
+        await date_input.click(timeout=3000)
+        await asyncio.sleep(0.5)
+
+        # 2. 캘린더가 열렸는지 확인
+        datepicker = frame.locator(".ui-datepicker-header")
+        await datepicker.wait_for(state="visible", timeout=3000)
+        log.debug("캘린더 열림")
+
+        # 3. 월 이동 (필요한 경우)
         current_month = today.month
         current_year = today.year
         target_month = target.month
@@ -245,6 +257,7 @@ async def set_schedule_date(frame, target_date: datetime) -> bool:
             await frame.click(SELECTORS["datepicker_next_month"], timeout=3000)
             await asyncio.sleep(0.5)
 
+        # 4. 날짜 버튼 클릭
         day = target.day
         day_selector = f"td:not(.ui-state-disabled) button.ui-state-default"
         day_buttons = await frame.query_selector_all(day_selector)
@@ -254,6 +267,7 @@ async def set_schedule_date(frame, target_date: datetime) -> bool:
             if text and text.strip() == str(day):
                 await btn.click()
                 await asyncio.sleep(0.5)
+                log.debug("날짜 선택 완료", day=day)
                 return True
 
         log.warning("날짜 버튼 찾을 수 없음", day=day)
@@ -412,9 +426,19 @@ async def write_blog_post(
             if images:
                 image_map = match_images_to_subheadings(paragraphs, images)
 
+            prev_was_list = False
             for i, para in enumerate(paragraphs):
-                if para.strip():
-                    await page.keyboard.type(para.strip(), delay=10)
+                text = para.strip()
+                if text:
+                    # 리스트 항목 처리 (네이버 자동완성 대응)
+                    is_list = text.startswith("- ")
+                    if is_list and prev_was_list:
+                        # 연속 리스트면 - 제거 (네이버가 자동으로 붙여줌)
+                        text = text[2:]
+                    await page.keyboard.type(text, delay=10)
+                    prev_was_list = is_list
+                else:
+                    prev_was_list = False
 
                 if i < len(paragraphs) - 1:
                     await page.keyboard.press("Enter")
