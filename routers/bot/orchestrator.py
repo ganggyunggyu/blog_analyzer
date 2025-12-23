@@ -35,10 +35,13 @@ IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp"}
 
 
 def parse_manuscript_txt(folder: Path) -> dict | None:
-    """원고.txt 파싱 (첫 줄=제목, 나머지=본문)"""
-    txt_path = folder / "원고.txt"
-    if not txt_path.exists():
+    """폴더 내 .txt 파일 파싱 (첫 줄=제목, 나머지=본문)"""
+    # 폴더 내 .txt 파일 찾기 (첫 번째 파일 사용)
+    txt_files = [f for f in folder.iterdir() if f.is_file() and f.suffix.lower() == ".txt"]
+    if not txt_files:
         return None
+
+    txt_path = txt_files[0]  # 첫 번째 .txt 파일 사용
 
     with open(txt_path, "r", encoding="utf-8") as f:
         lines = f.read().strip().split("\n")
@@ -54,8 +57,8 @@ def parse_manuscript_txt(folder: Path) -> dict | None:
         f for f in folder.iterdir()
         if f.is_file() and f.suffix.lower() in IMAGE_EXTENSIONS
     ]
-    # 파일명으로 정렬 (012_xxx.jpg, 013_xxx.jpg 순서대로)
-    images = [str(f) for f in sorted(image_files, key=lambda x: x.name)]
+    # 파일명 기본 정렬
+    images = [str(f) for f in sorted(image_files)]
 
     return {
         "title": title,
