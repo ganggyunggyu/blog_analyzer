@@ -43,6 +43,9 @@ dependencies = [
     "rich",
     "tqdm",
     "requests",
+
+    # Browser Automation
+    "playwright",
 ]
 
 [project.optional-dependencies]
