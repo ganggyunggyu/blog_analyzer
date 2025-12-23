@@ -42,7 +42,7 @@ from routers.auth import naver as auth_naver
 from routers.auth import blog_write as auth_blog_write
 
 # 라우터 - 봇
-from routers.bot import orchestrator as bot_orchestrator
+from routers.bot import router as bot_router
 
 LLM_CONCURRENCY = int(os.getenv("LLM_CONCURRENCY", "3"))
 llm_semaphore = asyncio.Semaphore(LLM_CONCURRENCY)
@@ -114,4 +114,4 @@ app.include_router(auth_naver.router)
 app.include_router(auth_blog_write.router)
 
 # 봇
-app.include_router(bot_orchestrator.router)
+app.include_router(bot_router)

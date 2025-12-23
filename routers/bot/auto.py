@@ -9,9 +9,9 @@ from fastapi.responses import JSONResponse
 from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel
 
+from llm.gemini_new_service import gemini_new_gen
 from routers.auth.naver import naver_login_with_playwright
 from routers.generate.batch import generate_images_parallel, save_to_pending
-from llm.gpt4o_service import gpt4o_gen
 from utils.get_category_db_name import get_category_db_name
 from utils.logger import log
 
@@ -40,14 +40,7 @@ class AutoBotRequest(BaseModel):
 
 @router.post("/auto")
 async def auto_bot(request: AutoBotRequest):
-    """
-    전체 자동화: 원고+이미지 생성 → 로그인 → 발행
-
-    1. 키워드별로 원고 + 이미지 생성
-    2. pending 폴더에 저장
-    3. 네이버 로그인
-    4. 예약발행
-    """
+    """전체 자동화: 원고+이미지 생성 → 로그인 → 발행"""
     start_ts = datetime.now()
     account_id = request.account.get("id")
     password = request.account.get("password")
@@ -58,9 +51,8 @@ async def auto_bot(request: AutoBotRequest):
     log.header("전체 자동화 시작", "🤖")
     log.kv("계정", f"{account_id[:3]}***")
     log.kv("키워드", f"{len(request.keywords)}개")
-    log.kv("이미지", "ON" if request.generate_images else "OFF")
 
-    # ========== 1단계: 원고 + 이미지 생성 ==========
+    # ========== 1단계: 원고 생성 ==========
     log.header("1단계: 원고 생성", "📝")
     generated_ids = []
 
@@ -75,38 +67,36 @@ async def auto_bot(request: AutoBotRequest):
             category = await get_category_db_name(keyword=keyword + request.ref)
 
             content = await run_in_threadpool(
-                gpt4o_gen,
+                gemini_new_gen,
                 user_instructions=keyword,
                 ref=request.ref,
-                category=category
+                category=category,
             )
 
             if not content:
-                log.error(f"원고 생성 실패", keyword=keyword[:20])
+                log.error("원고 생성 실패", keyword=keyword[:20])
                 continue
 
             image_urls = []
             if request.generate_images:
                 images = await run_in_threadpool(
-                    generate_images_parallel,
-                    keyword,
-                    request.image_count
+                    generate_images_parallel, keyword, request.image_count
                 )
                 image_urls = [img["url"] for img in images if img.get("url")]
 
             manuscript_id = await save_to_pending(keyword, content, image_urls)
             generated_ids.append(manuscript_id)
-            log.success(f"생성 완료", id=manuscript_id, images=len(image_urls))
+            log.success("생성 완료", id=manuscript_id, images=len(image_urls))
 
         except Exception as e:
-            log.error(f"생성 에러", keyword=keyword[:20], error=str(e))
+            log.error("생성 에러", keyword=keyword[:20], error=str(e))
 
         await asyncio.sleep(1)
 
     if not generated_ids:
         raise HTTPException(status_code=500, detail="원고 생성에 모두 실패했습니다.")
 
-    log.success(f"원고 생성 완료", count=len(generated_ids))
+    log.success("원고 생성 완료", count=len(generated_ids))
 
     # ========== 2단계: 로그인 ==========
     log.header("2단계: 네이버 로그인", "🔐")
@@ -118,10 +108,7 @@ async def auto_bot(request: AutoBotRequest):
     )
 
     if not login_result["success"]:
-        raise HTTPException(
-            status_code=401,
-            detail=f"로그인 실패: {login_result.get('message')}"
-        )
+        raise HTTPException(status_code=401, detail=f"로그인 실패: {login_result.get('message')}")
 
     cookies = login_result["cookies"]
     log.success("로그인 성공", cookies=len(cookies))
@@ -134,6 +121,7 @@ async def auto_bot(request: AutoBotRequest):
 
     for idx, manuscript_id in enumerate(generated_ids):
         schedule_time = None
+
         if request.use_schedule:
             schedule_time = calculate_schedule_time(
                 base_time, idx, request.schedule_interval_hours, 0
@@ -158,7 +146,7 @@ async def auto_bot(request: AutoBotRequest):
     success_count = sum(1 for r in publish_results if r["success"])
 
     log.divider()
-    log.success(f"자동화 완료", 성공=f"{success_count}/{len(generated_ids)}", 시간=f"{elapsed:.0f}s")
+    log.success("자동화 완료", 성공=f"{success_count}/{len(generated_ids)}", 시간=f"{elapsed:.0f}s")
 
     return JSONResponse(content={
         "success": True,
