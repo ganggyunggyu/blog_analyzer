@@ -185,13 +185,41 @@ async def input_tags(frame, page, tags: list[str]) -> bool:
 
 
 async def click_schedule_radio(frame) -> bool:
-    """예약 라디오 버튼 클릭"""
+    """예약 라디오 버튼 클릭 (Playwright 네이티브 클릭)"""
     try:
-        await frame.click(SELECTORS["schedule_radio"], timeout=5000)
-        await asyncio.sleep(2)  # 시간 선택기 나타날 때까지 대기
-        # 시간 선택기가 나타났는지 확인
-        await frame.wait_for_selector(SELECTORS["schedule_hour"], timeout=5000)
-        return True
+        # 방법 1: 레이블 직접 클릭 (가장 자연스러운 방식)
+        label = frame.locator('label[for="radio_time2"]')
+        if await label.count() > 0:
+            await label.click(timeout=5000)
+            log.debug("예약 레이블 클릭 완료")
+            await asyncio.sleep(1)
+        else:
+            # 방법 2: 텍스트로 찾기
+            label = frame.get_by_text("예약", exact=True)
+            await label.click(timeout=5000)
+            log.debug("예약 텍스트 클릭 완료")
+            await asyncio.sleep(1)
+
+        # time_setting 영역이 나타나는지 확인
+        time_setting_selector = "div.time_setting__v6YRU, div[class*='time_setting']"
+        try:
+            await frame.wait_for_selector(time_setting_selector, timeout=5000)
+            log.debug("예약 시간 설정 영역 활성화됨")
+        except:
+            # time_setting이 안 보이면 한번 더 클릭 시도
+            log.debug("time_setting 안 보임 - 재시도")
+            await label.click(force=True)
+            await asyncio.sleep(1)
+
+        # 시간 선택기 확인
+        try:
+            await frame.wait_for_selector(SELECTORS["schedule_hour"], timeout=5000)
+            log.debug("예약 시간 선택기 활성화됨")
+            return True
+        except:
+            log.warning("시간 선택기가 나타나지 않음")
+            return False
+
     except Exception as e:
         log.warning("예약 모드 활성화 실패", error=str(e))
         return False
@@ -242,10 +270,21 @@ async def set_schedule_time(frame, hour: int, minute: int) -> bool:
         hour_str = str(hour).zfill(2)
         minute_str = str((minute // 10) * 10).zfill(2)
 
-        await frame.select_option(SELECTORS["schedule_hour"], value=hour_str)
-        await asyncio.sleep(0.3)
-        await frame.select_option(SELECTORS["schedule_minute"], value=minute_str)
-        await asyncio.sleep(0.3)
+        log.debug(f"예약 시간 설정 시도", hour=hour_str, minute=minute_str)
+
+        # 시간 선택기 대기 후 선택
+        hour_select = frame.locator(SELECTORS["schedule_hour"])
+        await hour_select.wait_for(timeout=5000)
+        await hour_select.select_option(value=hour_str)
+        await asyncio.sleep(0.5)
+
+        # 분 선택기 대기 후 선택
+        minute_select = frame.locator(SELECTORS["schedule_minute"])
+        await minute_select.wait_for(timeout=5000)
+        await minute_select.select_option(value=minute_str)
+        await asyncio.sleep(0.5)
+
+        log.debug(f"예약 시간 설정 완료", time=f"{hour_str}:{minute_str}")
         return True
     except Exception as e:
         log.warning("예약 시간 설정 실패", error=str(e))
