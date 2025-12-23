@@ -1,21 +1,23 @@
-"""배치 원고 생성 API - 키워드 여러개 한번에 처리"""
+"""배치 원고 생성 API - 키워드 여러개 한번에 처리 (원고 + 이미지)"""
 
 import asyncio
 import time
-from datetime import datetime
+import httpx
 from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from fastapi.concurrency import run_in_threadpool
 
 from schema.generate import BatchGenerateRequest
 from llm.gpt4o_service import gpt4o_gen
+from llm.image_service import image_gen_single, get_random_poses
 from utils.get_category_db_name import get_category_db_name
 from utils.logger import log
 
 router = APIRouter()
 
-# pending 폴더 경로
 MANUSCRIPTS_DIR = Path("manuscripts")
 PENDING_DIR = MANUSCRIPTS_DIR / "pending"
 PENDING_DIR.mkdir(parents=True, exist_ok=True)
@@ -31,19 +33,62 @@ def get_next_manuscript_id() -> str:
     return str(max_id + 1).zfill(4)
 
 
-def save_to_pending(keyword: str, content: str) -> str:
-    """생성된 원고를 pending 폴더에 저장"""
+def generate_images_parallel(keyword: str, count: int) -> list[dict]:
+    """이미지 병렬 생성"""
+    poses = get_random_poses(count)
+    images = []
+
+    with ThreadPoolExecutor(max_workers=count) as executor:
+        futures = {
+            executor.submit(image_gen_single, keyword, pose): pose
+            for pose in poses
+        }
+
+        for future in as_completed(futures):
+            result = future.result()
+            if result and result.get("url"):
+                images.append(result)
+
+    return images
+
+
+async def download_image(url: str, save_path: Path) -> bool:
+    """URL에서 이미지 다운로드"""
+    try:
+        async with httpx.AsyncClient(timeout=30) as client:
+            response = await client.get(url)
+            if response.status_code == 200:
+                with open(save_path, "wb") as f:
+                    f.write(response.content)
+                return True
+    except Exception as e:
+        log.warning(f"이미지 다운로드 실패", url=url[:50], error=str(e))
+    return False
+
+
+async def save_to_pending(keyword: str, content: str, image_urls: list[str] = None) -> str:
+    """생성된 원고와 이미지를 pending 폴더에 저장"""
     manuscript_id = get_next_manuscript_id()
     manuscript_dir = PENDING_DIR / manuscript_id
     manuscript_dir.mkdir(parents=True, exist_ok=True)
 
-    # 첫 줄 = 제목 (키워드 기반), 나머지 = 본문
-    title = content.split('\n')[0].strip() if content else keyword
-
     # txt 파일로 저장
-    txt_path = manuscript_dir / f"{keyword[:20]}.txt"
+    safe_keyword = "".join(c for c in keyword[:20] if c.isalnum() or c in " _-").strip()
+    txt_path = manuscript_dir / f"{safe_keyword or 'content'}.txt"
     with open(txt_path, "w", encoding="utf-8") as f:
         f.write(content)
+
+    # 이미지 다운로드
+    if image_urls:
+        download_tasks = []
+        for idx, url in enumerate(image_urls):
+            ext = Path(url).suffix or ".png"
+            img_path = manuscript_dir / f"image_{idx + 1:02d}{ext}"
+            download_tasks.append(download_image(url, img_path))
+
+        results = await asyncio.gather(*download_tasks)
+        downloaded = sum(1 for r in results if r)
+        log.debug(f"이미지 다운로드", 성공=f"{downloaded}/{len(image_urls)}")
 
     return manuscript_id
 
@@ -51,17 +96,23 @@ def save_to_pending(keyword: str, content: str) -> str:
 @router.post("/generate/batch")
 async def generate_batch(request: BatchGenerateRequest):
     """
-    배치 원고 생성 - 키워드 여러개 한번에 처리
-    생성된 원고는 자동으로 pending 폴더에 저장
+    배치 원고 + 이미지 생성
+
+    - keywords: 키워드 목록
+    - generate_images: 이미지 생성 여부 (기본: True)
+    - image_count: 키워드당 이미지 개수 (기본: 5)
     """
     start_ts = time.time()
     service = request.service.lower()
     keywords = request.keywords
     ref = request.ref
+    generate_images = request.generate_images
+    image_count = request.image_count
 
-    log.header(f"배치 원고 생성 시작", "📦")
+    log.header(f"배치 원고 생성", "📦")
     log.kv("서비스", service.upper())
     log.kv("키워드 수", len(keywords))
+    log.kv("이미지 생성", "ON" if generate_images else "OFF")
 
     results = []
     success_count = 0
@@ -74,10 +125,10 @@ async def generate_batch(request: BatchGenerateRequest):
         log.step(idx + 1, len(keywords), keyword[:30])
 
         try:
-            # 카테고리 분류
+            # 1. 카테고리 분류
             category = await get_category_db_name(keyword=keyword + ref)
 
-            # 원고 생성
+            # 2. 원고 생성
             content = await run_in_threadpool(
                 gpt4o_gen,
                 user_instructions=keyword,
@@ -85,25 +136,39 @@ async def generate_batch(request: BatchGenerateRequest):
                 category=category
             )
 
-            if content:
-                # pending 폴더에 저장
-                manuscript_id = save_to_pending(keyword, content)
-                success_count += 1
-
-                results.append({
-                    "keyword": keyword,
-                    "success": True,
-                    "manuscript_id": manuscript_id,
-                    "length": len(content),
-                })
-                log.success(f"생성 완료", keyword=keyword[:20], id=manuscript_id)
-            else:
+            if not content:
                 results.append({
                     "keyword": keyword,
                     "success": False,
-                    "message": "생성 실패",
+                    "message": "원고 생성 실패",
                 })
-                log.error(f"생성 실패", keyword=keyword[:20])
+                log.error(f"원고 생성 실패", keyword=keyword[:20])
+                continue
+
+            # 3. 이미지 생성 (옵션)
+            image_urls = []
+            if generate_images:
+                log.debug(f"이미지 생성 중...", count=image_count)
+                images = await run_in_threadpool(
+                    generate_images_parallel,
+                    keyword,
+                    image_count
+                )
+                image_urls = [img["url"] for img in images if img.get("url")]
+                log.debug(f"이미지 생성 완료", count=len(image_urls))
+
+            # 4. pending 폴더에 저장
+            manuscript_id = await save_to_pending(keyword, content, image_urls)
+            success_count += 1
+
+            results.append({
+                "keyword": keyword,
+                "success": True,
+                "manuscript_id": manuscript_id,
+                "content_length": len(content),
+                "images_count": len(image_urls),
+            })
+            log.success(f"완료", keyword=keyword[:20], id=manuscript_id, images=len(image_urls))
 
         except Exception as e:
             results.append({
@@ -113,7 +178,7 @@ async def generate_batch(request: BatchGenerateRequest):
             })
             log.error(f"에러", keyword=keyword[:20], error=str(e))
 
-        # 요청 간 딜레이 (API 부하 방지)
+        # 요청 간 딜레이
         if idx < len(keywords) - 1:
             await asyncio.sleep(1)
 
