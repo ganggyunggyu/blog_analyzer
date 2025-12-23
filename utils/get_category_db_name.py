@@ -33,6 +33,7 @@ CATEGORY_SYSTEM_PROMPT = """
 </system_instruction>
 """
 
+
 def build_category_prompt(keyword: str) -> str:
     """카테고리 분류용 프롬프트 생성"""
 
@@ -50,12 +51,9 @@ def build_category_prompt(keyword: str) -> str:
     위 키워드가 어느 카테고리에 해당하는지 분석하고,
     카테고리 이름만 정확하게 반환하세요.
   </instruction>
-
-  <if>
-  키워드에 마운자로가 있다면 "위고비_마운자로" 카테고리 반환
-  </if>
 </task>
 """
+
 
 async def get_category_db_name(keyword: str) -> str:
     """
