@@ -54,8 +54,8 @@ SELECTORS = {
     "open_public": "input#open_public",
     "open_private": "input#open_private",
 
-    # 예약
-    "schedule_radio": "input#radio_time2",
+    # 예약 (label 클릭)
+    "schedule_radio": "label[for='radio_time2'], label.radio_label__mB6ia",
     "schedule_hour": "select.hour_option__J_heO",
     "schedule_minute": "select.minute_option__Vb3xB",
 
@@ -187,8 +187,10 @@ async def input_tags(frame, page, tags: list[str]) -> bool:
 async def click_schedule_radio(frame) -> bool:
     """예약 라디오 버튼 클릭"""
     try:
-        await frame.click(SELECTORS["schedule_radio"], timeout=3000)
-        await asyncio.sleep(1)
+        await frame.click(SELECTORS["schedule_radio"], timeout=5000)
+        await asyncio.sleep(2)  # 시간 선택기 나타날 때까지 대기
+        # 시간 선택기가 나타났는지 확인
+        await frame.wait_for_selector(SELECTORS["schedule_hour"], timeout=5000)
         return True
     except Exception as e:
         log.warning("예약 모드 활성화 실패", error=str(e))
