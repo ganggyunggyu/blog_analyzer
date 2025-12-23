@@ -18,6 +18,7 @@ from routers.generate import (
     gpt4o, chatgpt4o, gpt_ver3_clean, gpt_5_2, kkk,
     grok, grok_new, grok_ver3_clean,
     openai_new, solar, solar_ver3_clean,
+    batch as generate_batch,
 )
 
 # 라우터 - 분석
@@ -85,6 +86,7 @@ app.include_router(grok_ver3_clean.router)
 app.include_router(openai_new.router)
 app.include_router(solar.router)
 app.include_router(solar_ver3_clean.router)
+app.include_router(generate_batch.router)
 
 # 분석
 app.include_router(keyword.router)

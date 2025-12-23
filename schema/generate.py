@@ -8,6 +8,12 @@ class GenerateRequest(BaseModel):
     ref: str = ""
 
 
+class BatchGenerateRequest(BaseModel):
+    service: str
+    keywords: List[str]  # 키워드 여러개
+    ref: str = ""
+
+
 class ImageGenerateRequest(BaseModel):
     keyword: str
 
