@@ -12,7 +12,7 @@ from analyzer.parameter import parameter_gen
 from analyzer.template import (
     template_gen,
 )
-from llm.gpt_4_service import gpt_4_gen
+from llm.gpt4o_service import gpt4o_gen
 from analyzer.subtitle import gen_subtitles
 from config import OPENAI_API_KEY
 
@@ -205,7 +205,7 @@ def run_manuscript_generation(
         return None
     click.echo("\n원고 생성 시작")
     try:
-        return gpt_4_gen(user_instructions=user_instructions, ref=ref)
+        return gpt4o_gen(user_instructions=user_instructions, ref=ref)
     except Exception as e:
         click.echo(f"원고 생성 오류: {e}")
         return None
