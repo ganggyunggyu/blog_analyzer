@@ -32,7 +32,7 @@ class PublishRequest(BaseModel):
     schedule_start_hour: int = 10
     schedule_interval_hours: int = 1
     schedule_interval_minutes: int = 0
-    delay_between_posts: int = 60
+    delay_between_posts: int = 10
 
 
 @router.post("/publish")

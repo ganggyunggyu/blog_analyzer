@@ -39,7 +39,7 @@ class AutoBotRequest(BaseModel):
     schedule_date: Optional[str] = None
     schedule_start_hour: int = 10
     schedule_interval_hours: int = 1
-    delay_between_posts: int = 60
+    delay_between_posts: int = 10
 
 
 @router.post("/auto")

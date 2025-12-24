@@ -28,7 +28,7 @@ router = APIRouter()
 class StartBotRequest(BaseModel):
     account: dict  # 단일 계정
     manuscript_ids: Optional[list[str]] = None  # 특정 원고만 (없으면 전체)
-    delay_between_posts: int = 60
+    delay_between_posts: int = 10
     use_schedule: bool = True
     schedule_date: Optional[str] = None
     schedule_start_hour: int = 10
