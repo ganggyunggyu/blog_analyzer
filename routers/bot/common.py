@@ -401,7 +401,9 @@ def move_queue_manuscript_to_completed(queue_dir: Path, manuscript_id: str, resu
     if not manuscript_dir.exists():
         return
 
-    completed_dir = COMPLETED_DIR / manuscript_id
+    queue_id = queue_dir.name
+    new_folder_name = f"{queue_id}_{manuscript_id}"
+    completed_dir = COMPLETED_DIR / new_folder_name
     if completed_dir.exists():
         shutil.rmtree(completed_dir)
     shutil.move(str(manuscript_dir), str(completed_dir))
@@ -425,7 +427,9 @@ def move_queue_manuscript_to_failed(queue_dir: Path, manuscript_id: str, result:
     if not manuscript_dir.exists():
         return
 
-    failed_dir = FAILED_DIR / manuscript_id
+    queue_id = queue_dir.name
+    new_folder_name = f"{queue_id}_{manuscript_id}"
+    failed_dir = FAILED_DIR / new_folder_name
     if failed_dir.exists():
         shutil.rmtree(failed_dir)
     shutil.move(str(manuscript_dir), str(failed_dir))
