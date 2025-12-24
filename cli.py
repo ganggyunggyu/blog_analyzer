@@ -5,7 +5,6 @@ from datetime import datetime
 from typing import Dict, List, Optional
 
 import click
-from tqdm import tqdm
 
 from analyzer.expression import gen_expressions
 from analyzer.parameter import parameter_gen
@@ -15,6 +14,7 @@ from analyzer.template import (
 from llm.gpt4o_service import gpt4o_gen
 from analyzer.subtitle import gen_subtitles
 from config import OPENAI_API_KEY
+from utils.logger import progress, console
 
 
 API_DELAY_EXPR = 1.0
@@ -64,22 +64,28 @@ def run_expression_extraction(
     category = _get_category_from_path(directory_path)
 
     grouped: Dict[str, List[str]] = {}
-    click.echo(f"총 {len(files)}개의 파일을 AI로 분석하여 표현을 추출합니다...")
-    for fp in tqdm(files, desc="표현 추출 중", unit="파일"):
-        content = fp.read_text(encoding="utf-8", errors="ignore")
-        if not content.strip():
-            tqdm.write(f"-> '{fp.name}': 내용 없음, 건너뜀")
-            continue
-        try:
-            result = gen_expressions(content, category, fp.name) or {}
-            for k, vals in result.items():
-                grouped.setdefault(k, [])
-                for v in vals:
-                    if v not in grouped[k]:
-                        grouped[k].append(v)
-            time.sleep(API_DELAY_EXPR)
-        except Exception as e:
-            tqdm.write(f"-> '{fp.name}': 표현 추출 오류: {e}")
+    console.print(f"[cyan]총 {len(files)}개의 파일을 AI로 분석하여 표현을 추출합니다...[/cyan]")
+
+    with progress("표현 추출 중", total=len(files)) as prog:
+        for fp in files:
+            content = fp.read_text(encoding="utf-8", errors="ignore")
+            if not content.strip():
+                prog.skip(fp.name, "내용 없음")
+                prog.update()
+                continue
+            try:
+                result = gen_expressions(content, category, fp.name) or {}
+                for k, vals in result.items():
+                    grouped.setdefault(k, [])
+                    for v in vals:
+                        if v not in grouped[k]:
+                            grouped[k].append(v)
+                prog.success(fp.name)
+                time.sleep(API_DELAY_EXPR)
+            except Exception as e:
+                prog.error(fp.name, str(e))
+            prog.update()
+
     return grouped
 
 
@@ -92,22 +98,28 @@ def run_parameters_analysis(
     category = _get_category_from_path(directory_path)
 
     grouped: Dict[str, List[str]] = {}
-    click.echo(f"총 {len(files)}개의 파일을 AI로 분석하여 파라미터를 추출합니다...")
-    for fp in tqdm(files, desc="파라미터 추출 중", unit="파일"):
-        docs = fp.read_text(encoding="utf-8", errors="ignore")
-        if not docs.strip():
-            tqdm.write(f"-> '{fp.name}': 내용 없음, 건너뜀")
-            continue
-        try:
-            result = parameter_gen(docs, category, fp.name) or {}
-            for k, vals in result.items():
-                grouped.setdefault(k, [])
-                for v in vals:
-                    if v not in grouped[k]:
-                        grouped[k].append(v)
-            time.sleep(API_DELAY_EXPR)
-        except Exception as e:
-            tqdm.write(f"-> '{fp.name}': 파라미터 추출 오류: {e}")
+    console.print(f"[cyan]총 {len(files)}개의 파일을 AI로 분석하여 파라미터를 추출합니다...[/cyan]")
+
+    with progress("파라미터 추출 중", total=len(files)) as prog:
+        for fp in files:
+            docs = fp.read_text(encoding="utf-8", errors="ignore")
+            if not docs.strip():
+                prog.skip(fp.name, "내용 없음")
+                prog.update()
+                continue
+            try:
+                result = parameter_gen(docs, category, fp.name) or {}
+                for k, vals in result.items():
+                    grouped.setdefault(k, [])
+                    for v in vals:
+                        if v not in grouped[k]:
+                            grouped[k].append(v)
+                prog.success(fp.name)
+                time.sleep(API_DELAY_EXPR)
+            except Exception as e:
+                prog.error(fp.name, str(e))
+            prog.update()
+
     return grouped
 
 
@@ -119,7 +131,7 @@ def run_template_generation(
     files = list(p.glob("*.txt"))
     category = _get_category_from_path(directory_path)
     if not files:
-        click.echo("⚠️ 텍스트 파일이 없습니다.")
+        console.print("[yellow]⚠️ 텍스트 파일이 없습니다.[/yellow]")
         return []
 
     if custom_instruction is None:
@@ -131,32 +143,36 @@ def run_template_generation(
 
     results: List[Dict[str, str]] = []
 
-    for fp in tqdm(files, desc="템플릿 생성 중", unit="파일"):
-        content = fp.read_text(encoding="utf-8", errors="ignore").strip()
+    with progress("템플릿 생성 중", total=len(files)) as prog:
+        for fp in files:
+            content = fp.read_text(encoding="utf-8", errors="ignore").strip()
 
-        if not content:
-            tqdm.write(f"-> '{fp.name}': 내용 없음, 건너뜀")
-            continue
+            if not content:
+                prog.skip(fp.name, "내용 없음")
+                prog.update()
+                continue
 
-        user_instructions = f"{custom_instruction}".strip()
+            user_instructions = f"{custom_instruction}".strip()
 
-        try:
-            templated_text = template_gen(
-                user_instructions=user_instructions,
-                docs=content,
-                category=category,
-                file_name=fp.name,
-            )
-            results.append(
-                {
-                    "file_name": fp.name,
-                    "templated_text": templated_text,
-                }
-            )
-        except Exception as e:
-            tqdm.write(f"-> '{fp.name}': 처리 실패 ({e})")
+            try:
+                templated_text = template_gen(
+                    user_instructions=user_instructions,
+                    docs=content,
+                    category=category,
+                    file_name=fp.name,
+                )
+                results.append(
+                    {
+                        "file_name": fp.name,
+                        "templated_text": templated_text,
+                    }
+                )
+                prog.success(fp.name)
+            except Exception as e:
+                prog.error(fp.name, str(e))
+            prog.update()
 
-    click.echo("✅ GPT-5 템플릿 생성 완료")
+    console.print("[green]✅ GPT-5 템플릿 생성 완료[/green]")
     return results
 
 
@@ -173,19 +189,25 @@ def run_subtitle_extraction(
     category = _get_category_from_path(directory_path)
 
     result: Dict[str, List[str]] = {}
-    for fp in tqdm(files, desc="부제목 추출 중", unit="파일"):
-        content = fp.read_text(encoding="utf-8", errors="ignore")
-        if not content.strip():
-            tqdm.write(f"-> '{fp.name}': 내용 없음, 건너뜀")
-            continue
-        try:
-            subs = gen_subtitles(
-                full_text=content, category=category, file_name=fp.name
-            )
-            result[fp.name] = subs or []
-        except Exception as e:
-            tqdm.write(f"-> '{fp.name}': 부제목 추출 오류: {e}")
-            result[fp.name] = []
+
+    with progress("부제목 추출 중", total=len(files)) as prog:
+        for fp in files:
+            content = fp.read_text(encoding="utf-8", errors="ignore")
+            if not content.strip():
+                prog.skip(fp.name, "내용 없음")
+                prog.update()
+                continue
+            try:
+                subs = gen_subtitles(
+                    full_text=content, category=category, file_name=fp.name
+                )
+                result[fp.name] = subs or []
+                prog.success(fp.name, f"{len(subs or [])}개")
+            except Exception as e:
+                prog.error(fp.name, str(e))
+                result[fp.name] = []
+            prog.update()
+
     return result
 
 

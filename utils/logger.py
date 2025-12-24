@@ -116,7 +116,7 @@ class Logger:
         return " " + " ".join(parts)
 
 class ProgressLogger:
-    """프로그레스바 로거"""
+    """프로그레스바 로거 - Rich 기반으로 로그와 충돌 없음"""
 
     def __init__(self, description: str = "처리 중...", total: int = 100):
         self.progress = Progress(
@@ -126,6 +126,7 @@ class ProgressLogger:
             TaskProgressColumn(),
             TimeElapsedColumn(),
             console=console,
+            transient=False,
         )
         self.description = description
         self.total = total
@@ -148,6 +149,23 @@ class ProgressLogger:
     def set(self, completed: int):
         """진행률 직접 설정"""
         self.progress.update(self.task_id, completed=completed)
+
+    def log(self, msg: str, style: str = "dim"):
+        """프로그레스 바 위에 로그 출력 (프로그레스 안 깨짐)"""
+        self.progress.console.print(f"[{style}]{msg}[/{style}]")
+
+    def skip(self, filename: str, reason: str = "건너뜀"):
+        """파일 스킵 로그"""
+        self.progress.console.print(f"  [dim]→ {filename}: {reason}[/dim]")
+
+    def error(self, filename: str, error: str):
+        """에러 로그"""
+        self.progress.console.print(f"  [red]✗ {filename}: {error}[/red]")
+
+    def success(self, filename: str, detail: str = ""):
+        """성공 로그"""
+        extra = f" ({detail})" if detail else ""
+        self.progress.console.print(f"  [green]✓ {filename}{extra}[/green]")
 
 # 싱글톤 인스턴스
 log = Logger()

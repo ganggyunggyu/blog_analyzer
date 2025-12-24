@@ -7,6 +7,7 @@ import json
 from mongodb_service import MongoDBService
 from utils.ai_client_factory import call_ai
 from analyzer.config import ANALYZER_MODEL
+from utils.logger import log
 
 
 def template_gen(
@@ -26,12 +27,11 @@ def template_gen(
             "templates", {"file_name": file_name.strip()}
         )
         if existing_template:
-            print(f"이미 처리된 파일입니다: {file_name}")
-            print("기존 템플릿을 반환합니다. (AI 요청 없음 - 비용 절약!)")
+            log.debug(f"이미 처리된 파일: {file_name} (캐시 사용)")
             db_service.close_connection()
             return existing_template[0].get("templated_text", "")
 
-    print(f"새로운 파일 처리 시작: {file_name or '파일명 없음'}")
+    log.debug(f"템플릿 생성 시작: {file_name or '파일명 없음'}")
 
     analysis_data: Dict[str, Any] = db_service.get_latest_analysis_data() or {}
 
@@ -379,28 +379,19 @@ EXP_END>>>
     }
 
     # 템플릿 저장 (위에서 중복 체크 완료했으므로 안전하게 저장)
-    template_id = "저장 실패"
     try:
-        result = db_service.insert_document("templates", doc)
-        template_id = (
-            str(result.inserted_id) if hasattr(result, "inserted_id") else "저장 완료"
-        )
-        print(f"템플릿 저장 완료: {file_name or '파일명 없음'}")
+        db_service.insert_document("templates", doc)
+        log.info(f"템플릿 저장", file=file_name or '파일명 없음')
     except Exception as e:
-        print(f"템플릿 저장 중 오류 (계속 진행): {e}")
-
-    # 템플릿 정보와 함께 출력
-    print(f"템플릿 [START] {file_name or '파일명 없음'}:{template_id}")
-    print(f"템플릿 길이: {len(text)}자")
-    print(text)
+        log.warning(f"템플릿 저장 오류 (계속 진행)", error=str(e))
 
     elapsed = time.time() - start_ts
     if elapsed >= 60:
         minutes = int(elapsed // 60)
         seconds = int(elapsed % 60)
-        print(f"{category}-템플릿 생성 소요시간: {minutes}분 {seconds}초")
+        log.info(f"템플릿 생성 완료", 소요시간=f"{minutes}분 {seconds}초", 길이=f"{len(text)}자")
     else:
-        print(f"{category}-템플릿 생성 소요시간: {elapsed:.2f}초")
+        log.info(f"템플릿 생성 완료", 소요시간=f"{elapsed:.1f}s", 길이=f"{len(text)}자")
 
     db_service.close_connection()
 
