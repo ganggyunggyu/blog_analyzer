@@ -12,6 +12,7 @@ from _constants.Model import Model
 from utils.query_parser import parse_query
 from utils.text_cleaner import comprehensive_text_clean
 from utils.ai_client_factory import call_ai
+from utils.logger import log
 
 
 MODEL_NAME: str = Model.CLAUDE_OPUS_4_5
@@ -60,5 +61,5 @@ def claude_gen(user_instructions: str, ref: str = "", category: str = "") -> str
         return cleaned_text
 
     except (BadRequestError, RateLimitError) as api_error:
-        print(f"Claude API 오류: {api_error}")
+        log.error("Claude API 오류", error=str(api_error))
         raise api_error
