@@ -1,4 +1,4 @@
-"""전체 자동화: 생성 → 발행"""
+"""전체 자동화: 생성 → 발행 (큐 기반)"""
 
 import asyncio
 from datetime import datetime
@@ -16,9 +16,13 @@ from utils.get_category_db_name import get_category_db_name
 from utils.logger import log
 
 from .common import (
+    create_queue,
+    get_queue_manuscripts,
     get_base_time,
     calculate_schedule_time,
-    publish_single_manuscript,
+    update_queue_status,
+    cleanup_empty_queue,
+    publish_queue_manuscript,
 )
 
 router = APIRouter()
@@ -98,8 +102,22 @@ async def auto_bot(request: AutoBotRequest):
 
     log.success("원고 생성 완료", count=len(generated_ids))
 
-    # ========== 2단계: 로그인 ==========
-    log.header("2단계: 네이버 로그인", "🔐")
+    # ========== 2단계: 큐 생성 ==========
+    log.header("2단계: 큐 생성", "📦")
+
+    queue_id, queue_dir = create_queue(
+        manuscript_ids=generated_ids,
+        account_id=account_id,
+        schedule_date=request.schedule_date,
+    )
+
+    manuscripts = get_queue_manuscripts(queue_id)
+    log.kv("큐 ID", queue_id)
+    log.kv("원고 수", len(manuscripts))
+
+    # ========== 3단계: 로그인 ==========
+    log.header("3단계: 네이버 로그인", "🔐")
+    update_queue_status(queue_id, "processing")
 
     login_result = await naver_login_with_playwright(
         account_id=account_id,
@@ -108,52 +126,57 @@ async def auto_bot(request: AutoBotRequest):
     )
 
     if not login_result["success"]:
+        update_queue_status(queue_id, "failed")
         raise HTTPException(status_code=401, detail=f"로그인 실패: {login_result.get('message')}")
 
     cookies = login_result["cookies"]
     log.success("로그인 성공", cookies=len(cookies))
 
-    # ========== 3단계: 발행 ==========
-    log.header("3단계: 블로그 발행", "📤")
+    # ========== 4단계: 발행 ==========
+    log.header("4단계: 블로그 발행", "📤")
 
     base_time = get_base_time(request.schedule_date, request.schedule_start_hour)
     publish_results = []
 
-    for idx, manuscript_id in enumerate(generated_ids):
+    for idx, manuscript in enumerate(manuscripts):
         schedule_time = None
 
         if request.use_schedule:
             schedule_time = calculate_schedule_time(
                 base_time, idx, request.schedule_interval_hours, 0
             )
-            log.step(idx + 1, len(generated_ids), f"ID:{manuscript_id} (예약: {schedule_time.strftime('%m/%d %H:%M')})")
+            log.step(idx + 1, len(manuscripts), f"{manuscript.title[:25]} (예약: {schedule_time.strftime('%m/%d %H:%M')})")
         else:
-            log.step(idx + 1, len(generated_ids), f"ID:{manuscript_id} (즉시)")
+            log.step(idx + 1, len(manuscripts), f"{manuscript.title[:30]} (즉시)")
 
-        result = await publish_single_manuscript(
+        result = await publish_queue_manuscript(
             cookies=cookies,
-            manuscript_id=manuscript_id,
+            queue_dir=queue_dir,
+            manuscript_id=manuscript.id,
             schedule_time=schedule_time,
             account_id=account_id,
         )
         publish_results.append(result)
 
-        if idx < len(generated_ids) - 1:
+        if idx < len(manuscripts) - 1:
             await asyncio.sleep(request.delay_between_posts)
 
     # ========== 결과 ==========
-    elapsed = (datetime.now() - start_ts).total_seconds()
     success_count = sum(1 for r in publish_results if r["success"])
+    cleanup_empty_queue(queue_id)
+
+    elapsed = (datetime.now() - start_ts).total_seconds()
 
     log.divider()
-    log.success("자동화 완료", 성공=f"{success_count}/{len(generated_ids)}", 시간=f"{elapsed:.0f}s")
+    log.success("자동화 완료", queue_id=queue_id, 성공=f"{success_count}/{len(manuscripts)}", 시간=f"{elapsed:.0f}s")
 
     return JSONResponse(content={
         "success": True,
+        "queue_id": queue_id,
         "account": f"{account_id[:3]}***",
         "generated": len(generated_ids),
         "published": success_count,
-        "failed": len(generated_ids) - success_count,
+        "failed": len(manuscripts) - success_count,
         "elapsed": round(elapsed, 1),
         "results": publish_results,
     })

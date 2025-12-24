@@ -1,9 +1,9 @@
-"""전체 봇 실행 (로그인 + 발행)"""
+"""전체 봇 실행 (큐 기반 로그인 + 발행)"""
 
 import asyncio
 from typing import Optional
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
@@ -11,18 +11,23 @@ from routers.auth.naver import naver_login_with_playwright
 from utils.logger import log
 
 from .common import (
+    create_queue,
+    get_queue_dir,
+    get_queue_manuscripts,
     get_manuscript_list,
     get_base_time,
     calculate_schedule_time,
-    publish_single_manuscript,
+    update_queue_status,
+    cleanup_empty_queue,
+    publish_queue_manuscript,
 )
 
 router = APIRouter()
 
 
 class StartBotRequest(BaseModel):
-    accounts: list[dict]
-    posts_per_account: int = 10
+    account: dict  # 단일 계정
+    manuscript_ids: Optional[list[str]] = None  # 특정 원고만 (없으면 전체)
     delay_between_posts: int = 60
     use_schedule: bool = True
     schedule_date: Optional[str] = None
@@ -33,90 +38,96 @@ class StartBotRequest(BaseModel):
 
 @router.post("/start")
 async def start_bot(request: StartBotRequest):
-    """전체 봇 실행 (계정별 반복)"""
-    all_results = []
+    """큐 기반 봇 실행 (pending → 큐 생성 → 발행)"""
+    account_id = request.account.get("id")
+    password = request.account.get("password")
 
-    for account in request.accounts:
-        account_id = account.get("id")
-        password = account.get("password")
+    if not account_id or not password:
+        raise HTTPException(status_code=400, detail="계정 정보가 필요합니다.")
 
-        if not account_id or not password:
-            all_results.append({
-                "account": account_id or "unknown",
-                "success": False,
-                "message": "ID 또는 비밀번호가 없습니다.",
-                "posts": [],
-            })
-            continue
+    # 원고 ID 결정
+    if request.manuscript_ids:
+        manuscript_ids = request.manuscript_ids
+    else:
+        pending_list = get_manuscript_list("pending")
+        if not pending_list:
+            raise HTTPException(status_code=404, detail="pending에 원고가 없습니다.")
+        manuscript_ids = [m.id for m in pending_list]
 
-        log.header(f"계정 로그인: {account_id[:3]}***", "👤")
-
-        login_result = await naver_login_with_playwright(
-            account_id=account_id,
-            password=password,
-            debug=True,
-        )
-
-        if not login_result["success"]:
-            all_results.append({
-                "account": account_id[:3] + "***",
-                "success": False,
-                "message": f"로그인 실패: {login_result.get('message')}",
-                "posts": [],
-            })
-            continue
-
-        cookies = login_result["cookies"]
-        log.success("로그인 성공", cookies=len(cookies))
-
-        manuscripts = get_manuscript_list("pending")
-        base_time = get_base_time(request.schedule_date, request.schedule_start_hour)
-        posts_results = []
-
-        for i, manuscript in enumerate(manuscripts[:request.posts_per_account]):
-            schedule_time = None
-            if request.use_schedule:
-                schedule_time = calculate_schedule_time(
-                    base_time, i,
-                    request.schedule_interval_hours,
-                    request.schedule_interval_minutes
-                )
-                log.step(i + 1, request.posts_per_account, f"{manuscript.title[:25]} (예약: {schedule_time.strftime('%m/%d %H:%M')})")
-            else:
-                log.step(i + 1, request.posts_per_account, f"{manuscript.title[:30]} (즉시발행)")
-
-            result = await publish_single_manuscript(
-                cookies=cookies,
-                manuscript_id=manuscript.id,
-                schedule_time=schedule_time,
-                account_id=account_id,
-            )
-            posts_results.append(result)
-
-            if i < len(manuscripts[:request.posts_per_account]) - 1:
-                log.debug(f"{request.delay_between_posts}초 대기...")
-                await asyncio.sleep(request.delay_between_posts)
-
-        success_count = sum(1 for p in posts_results if p["success"])
-
-        all_results.append({
-            "account": account_id[:3] + "***",
-            "success": True,
-            "message": f"{success_count}/{len(posts_results)} 발행 완료",
-            "posts": posts_results,
-        })
-
-        log.success(f"계정 완료: {account_id[:3]}***", success=f"{success_count}/{len(posts_results)}")
-
-    total_success = sum(
-        sum(1 for p in r.get("posts", []) if p.get("success"))
-        for r in all_results
+    # 큐 생성
+    log.header("큐 생성", "📦")
+    queue_id, queue_dir = create_queue(
+        manuscript_ids=manuscript_ids,
+        account_id=account_id,
+        schedule_date=request.schedule_date,
     )
-    total_posts = sum(len(r.get("posts", [])) for r in all_results)
+
+    manuscripts = get_queue_manuscripts(queue_id)
+    if not manuscripts:
+        raise HTTPException(status_code=500, detail="큐 생성 실패: 원고가 없습니다.")
+
+    log.kv("큐 ID", queue_id)
+    log.kv("원고 수", len(manuscripts))
+
+    # 로그인
+    log.header(f"로그인: {account_id[:3]}***", "🔐")
+    update_queue_status(queue_id, "processing")
+
+    login_result = await naver_login_with_playwright(
+        account_id=account_id,
+        password=password,
+        debug=True,
+    )
+
+    if not login_result["success"]:
+        update_queue_status(queue_id, "failed")
+        raise HTTPException(status_code=401, detail=f"로그인 실패: {login_result.get('message')}")
+
+    cookies = login_result["cookies"]
+    log.success("로그인 성공", cookies=len(cookies))
+
+    # 발행
+    log.header("발행 시작", "📤")
+    base_time = get_base_time(request.schedule_date, request.schedule_start_hour)
+    results = []
+
+    for idx, manuscript in enumerate(manuscripts):
+        schedule_time = None
+        if request.use_schedule:
+            schedule_time = calculate_schedule_time(
+                base_time, idx,
+                request.schedule_interval_hours,
+                request.schedule_interval_minutes,
+            )
+            log.step(idx + 1, len(manuscripts), f"{manuscript.title[:25]} (예약: {schedule_time.strftime('%m/%d %H:%M')})")
+        else:
+            log.step(idx + 1, len(manuscripts), f"{manuscript.title[:30]} (즉시)")
+
+        result = await publish_queue_manuscript(
+            cookies=cookies,
+            queue_dir=queue_dir,
+            manuscript_id=manuscript.id,
+            schedule_time=schedule_time,
+            account_id=account_id,
+        )
+        results.append(result)
+
+        if idx < len(manuscripts) - 1:
+            await asyncio.sleep(request.delay_between_posts)
+
+    # 완료 처리
+    success_count = sum(1 for r in results if r["success"])
+    cleanup_empty_queue(queue_id)
+
+    log.divider()
+    log.success("발행 완료", queue_id=queue_id, 성공=f"{success_count}/{len(manuscripts)}")
 
     return JSONResponse(content={
-        "total_accounts": len(request.accounts),
-        "total_posts": total_posts,
-        "total_success": total_success,
-        "results": all_results,
+        "success": True,
+        "queue_id": queue_id,
+        "account": f"{account_id[:3]}***",
+        "total": len(manuscripts),
+        "success_count": success_count,
+        "failed_count": len(manuscripts) - success_count,
+        "results": results,
     })

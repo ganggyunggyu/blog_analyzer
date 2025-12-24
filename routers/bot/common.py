@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import shutil
+import uuid
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import Optional
@@ -240,3 +241,265 @@ def get_next_manuscript_id() -> str:
         if folder.is_dir() and folder.name.isdigit():
             max_id = max(max_id, int(folder.name))
     return str(max_id + 1).zfill(4)
+
+
+# ========== 큐 관리 함수 ==========
+
+class QueueInfo(BaseModel):
+    """큐 정보"""
+    queue_id: str
+    created_at: str
+    manuscript_count: int
+    status: str  # pending, processing, completed, failed
+    account_id: Optional[str] = None
+    schedule_date: Optional[str] = None
+
+
+def generate_queue_id() -> str:
+    """유니크한 큐 ID 생성 (uuid_날짜)"""
+    short_uuid = uuid.uuid4().hex[:8]
+    date_str = datetime.now().strftime("%m%d")
+    return f"queue_{short_uuid}_{date_str}"
+
+
+def create_queue(
+    manuscript_ids: list[str],
+    account_id: Optional[str] = None,
+    schedule_date: Optional[str] = None,
+) -> tuple[str, Path]:
+    """새 큐 생성 및 원고 이동
+
+    Args:
+        manuscript_ids: pending에서 가져올 원고 ID 목록
+        account_id: 계정 ID (선택)
+        schedule_date: 예약 날짜 (선택)
+
+    Returns:
+        (queue_id, queue_dir)
+    """
+    queue_id = generate_queue_id()
+    queue_dir = MANUSCRIPTS_DIR / queue_id
+    queue_dir.mkdir(parents=True, exist_ok=True)
+
+    # 메타데이터 저장
+    meta = {
+        "queue_id": queue_id,
+        "created_at": datetime.now().isoformat(),
+        "status": "pending",
+        "manuscripts": [],
+    }
+    if account_id:
+        meta["account_id"] = account_id[:3] + "***"
+    if schedule_date:
+        meta["schedule_date"] = schedule_date
+
+    # 원고들을 큐로 이동 (번호 prefix 붙여서)
+    for idx, manuscript_id in enumerate(manuscript_ids):
+        src_dir = PENDING_DIR / manuscript_id
+        if not src_dir.exists():
+            log.warning(f"원고 없음: {manuscript_id}")
+            continue
+
+        new_id = f"{str(idx + 1).zfill(3)}_{manuscript_id}"
+        dst_dir = queue_dir / new_id
+        shutil.move(str(src_dir), str(dst_dir))
+        meta["manuscripts"].append(new_id)
+        log.debug(f"원고 이동: {manuscript_id} → {new_id}")
+
+    # 메타 파일 저장
+    with open(queue_dir / "queue.json", "w", encoding="utf-8") as f:
+        json.dump(meta, f, ensure_ascii=False, indent=2)
+
+    log.success(f"큐 생성 완료", queue_id=queue_id, count=len(meta["manuscripts"]))
+    return queue_id, queue_dir
+
+
+def get_queue_dir(queue_id: str) -> Optional[Path]:
+    """큐 디렉토리 반환"""
+    queue_dir = MANUSCRIPTS_DIR / queue_id
+    if queue_dir.exists() and queue_dir.is_dir():
+        return queue_dir
+    return None
+
+
+def get_queue_meta(queue_id: str) -> Optional[dict]:
+    """큐 메타데이터 로드"""
+    queue_dir = get_queue_dir(queue_id)
+    if not queue_dir:
+        return None
+
+    meta_path = queue_dir / "queue.json"
+    if meta_path.exists():
+        with open(meta_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return None
+
+
+def update_queue_status(queue_id: str, status: str):
+    """큐 상태 업데이트"""
+    queue_dir = get_queue_dir(queue_id)
+    if not queue_dir:
+        return
+
+    meta_path = queue_dir / "queue.json"
+    if meta_path.exists():
+        with open(meta_path, "r", encoding="utf-8") as f:
+            meta = json.load(f)
+        meta["status"] = status
+        meta["updated_at"] = datetime.now().isoformat()
+        with open(meta_path, "w", encoding="utf-8") as f:
+            json.dump(meta, f, ensure_ascii=False, indent=2)
+
+
+def get_queue_manuscripts(queue_id: str) -> list[ManuscriptInfo]:
+    """큐 내 원고 목록"""
+    queue_dir = get_queue_dir(queue_id)
+    if not queue_dir:
+        return []
+
+    manuscripts = []
+    for folder in sorted(queue_dir.iterdir()):
+        if not folder.is_dir() or folder.name.startswith("."):
+            continue
+
+        data = parse_manuscript_txt(folder)
+        if data:
+            manuscripts.append(ManuscriptInfo(
+                id=folder.name,
+                title=data.get("title", "제목 없음"),
+                category=None,
+                images_count=len(data.get("images", [])),
+                created_at=data.get("created_at", ""),
+            ))
+    return manuscripts
+
+
+def list_active_queues() -> list[QueueInfo]:
+    """진행중인 큐 목록 (queue_로 시작하는 폴더)"""
+    queues = []
+    for folder in sorted(MANUSCRIPTS_DIR.iterdir()):
+        if not folder.is_dir() or not folder.name.startswith("queue_"):
+            continue
+
+        meta = get_queue_meta(folder.name)
+        if meta:
+            manuscripts = [f for f in folder.iterdir() if f.is_dir() and not f.name.startswith(".")]
+            queues.append(QueueInfo(
+                queue_id=folder.name,
+                created_at=meta.get("created_at", ""),
+                manuscript_count=len(manuscripts),
+                status=meta.get("status", "unknown"),
+                account_id=meta.get("account_id"),
+                schedule_date=meta.get("schedule_date"),
+            ))
+    return queues
+
+
+def move_queue_manuscript_to_completed(queue_dir: Path, manuscript_id: str, result: dict, schedule_time: Optional[datetime] = None, account_id: Optional[str] = None):
+    """큐 내 원고를 완료 폴더로 이동"""
+    manuscript_dir = queue_dir / manuscript_id
+    if not manuscript_dir.exists():
+        return
+
+    completed_dir = COMPLETED_DIR / manuscript_id
+    if completed_dir.exists():
+        shutil.rmtree(completed_dir)
+    shutil.move(str(manuscript_dir), str(completed_dir))
+
+    result_data = {
+        "post_url": result.get("post_url"),
+        "published_at": datetime.now().isoformat(),
+    }
+    if schedule_time:
+        result_data["scheduled_at"] = schedule_time.isoformat()
+    if account_id:
+        result_data["account"] = account_id[:3] + "***"
+
+    with open(completed_dir / "result.json", "w", encoding="utf-8") as f:
+        json.dump(result_data, f, ensure_ascii=False, indent=2)
+
+
+def move_queue_manuscript_to_failed(queue_dir: Path, manuscript_id: str, result: dict, account_id: Optional[str] = None):
+    """큐 내 원고를 실패 폴더로 이동"""
+    manuscript_dir = queue_dir / manuscript_id
+    if not manuscript_dir.exists():
+        return
+
+    failed_dir = FAILED_DIR / manuscript_id
+    if failed_dir.exists():
+        shutil.rmtree(failed_dir)
+    shutil.move(str(manuscript_dir), str(failed_dir))
+
+    error_data = {
+        "error": result.get("message"),
+        "failed_at": datetime.now().isoformat(),
+    }
+    if account_id:
+        error_data["account"] = account_id[:3] + "***"
+
+    with open(failed_dir / "error.json", "w", encoding="utf-8") as f:
+        json.dump(error_data, f, ensure_ascii=False, indent=2)
+
+
+async def publish_queue_manuscript(
+    cookies: list,
+    queue_dir: Path,
+    manuscript_id: str,
+    schedule_time: Optional[datetime] = None,
+    account_id: Optional[str] = None,
+) -> dict:
+    """큐 내 단일 원고 발행"""
+    manuscript_dir = queue_dir / manuscript_id
+    data = get_manuscript_data(manuscript_dir)
+
+    if not data:
+        return {
+            "manuscript_id": manuscript_id,
+            "success": False,
+            "message": "원고를 찾을 수 없습니다.",
+        }
+
+    if schedule_time:
+        log.info(f"발행: {data['title'][:30]}", id=manuscript_id, schedule=schedule_time.strftime('%m/%d %H:%M'))
+    else:
+        log.info(f"발행: {data['title'][:30]}", id=manuscript_id)
+
+    result = await write_blog_post(
+        cookies=cookies,
+        title=data["title"],
+        content=data["content"],
+        tags=data.get("tags"),
+        images=data.get("images"),
+        is_public=True,
+        schedule_time=schedule_time.isoformat() if schedule_time else None,
+        debug=True,
+    )
+
+    if result["success"]:
+        move_queue_manuscript_to_completed(queue_dir, manuscript_id, result, schedule_time, account_id)
+        log.success("발행 성공", id=manuscript_id)
+    else:
+        move_queue_manuscript_to_failed(queue_dir, manuscript_id, result, account_id)
+        log.error("발행 실패", id=manuscript_id, message=result.get("message"))
+
+    return {
+        "manuscript_id": manuscript_id,
+        "title": data["title"][:50],
+        "success": result["success"],
+        "post_url": result.get("post_url"),
+        "message": result.get("message"),
+    }
+
+
+def cleanup_empty_queue(queue_id: str):
+    """빈 큐 폴더 정리"""
+    queue_dir = get_queue_dir(queue_id)
+    if not queue_dir:
+        return
+
+    # 남은 원고 폴더 확인
+    remaining = [f for f in queue_dir.iterdir() if f.is_dir() and not f.name.startswith(".")]
+    if not remaining:
+        # queue.json만 남았으면 삭제
+        shutil.rmtree(queue_dir)
+        log.info(f"빈 큐 삭제: {queue_id}")

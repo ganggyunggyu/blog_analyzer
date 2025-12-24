@@ -7,6 +7,8 @@ from .publish import router as publish_router
 from .start import router as start_router
 from .manuscript import router as manuscript_router
 from .health import router as health_router
+from .queue import router as queue_router
+from .upload import router as upload_router
 
 # 통합 라우터
 router = APIRouter(prefix="/bot", tags=["bot-orchestrator"])
@@ -16,3 +18,5 @@ router.include_router(publish_router)
 router.include_router(start_router)
 router.include_router(manuscript_router)
 router.include_router(health_router)
+router.include_router(queue_router)
+router.include_router(upload_router)
