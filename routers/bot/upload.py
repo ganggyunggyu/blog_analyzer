@@ -4,20 +4,49 @@ import zipfile
 import shutil
 from pathlib import Path
 from tempfile import NamedTemporaryFile
+from typing import Optional
 
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from fastapi.responses import JSONResponse
 
 from utils.logger import log
 
 from .common import PENDING_DIR, get_manuscript_list
+from routers.generate.batch import generate_batch_id
 
 router = APIRouter()
 
 
+@router.get("/batch-id")
+async def get_batch_id():
+    """배치 ID 발급
+
+    동시 요청 시 원고가 섞이지 않도록 고유 ID를 발급합니다.
+    이 ID를 업로드 또는 생성 요청 시 함께 전송하세요.
+
+    Returns:
+        {"batch_id": "abc12345"}
+    """
+    batch_id = generate_batch_id()
+    log.info(f"배치 ID 발급: {batch_id}")
+
+    return JSONResponse(content={
+        "batch_id": batch_id,
+    })
+
+
 @router.post("/upload")
-async def upload_manuscripts(file: UploadFile = File(...)):
+async def upload_manuscripts(
+    file: UploadFile = File(...),
+    batch_id: Optional[str] = Form(None),
+):
     """ZIP 파일로 원고 업로드
+
+    Args:
+        file: ZIP 파일
+        batch_id: 배치 ID (선택, 동시 요청 구분용)
+            - 없으면: 폴더명 그대로 저장 (예: 탈모, 위고비)
+            - 있으면: {batch_id}_{순번} 형식 (예: abc12345_0001)
 
     ZIP 구조:
     ```
@@ -36,6 +65,8 @@ async def upload_manuscripts(file: UploadFile = File(...)):
 
     log.header("ZIP 업로드", "📦")
     log.kv("파일명", file.filename)
+    if batch_id:
+        log.kv("배치 ID", batch_id)
 
     # 임시 파일로 저장
     with NamedTemporaryFile(delete=False, suffix=".zip") as tmp:
@@ -45,6 +76,7 @@ async def upload_manuscripts(file: UploadFile = File(...)):
 
     uploaded = []
     skipped = []
+    upload_idx = 0
 
     try:
         with zipfile.ZipFile(tmp_path, "r") as zf:
@@ -57,17 +89,24 @@ async def upload_manuscripts(file: UploadFile = File(...)):
 
             log.kv("폴더 수", len(top_folders))
 
-            for folder_name in top_folders:
+            for folder_name in sorted(top_folders):
                 # __MACOSX 등 시스템 폴더 무시
                 if folder_name.startswith("__") or folder_name.startswith("."):
                     continue
 
-                dst_dir = PENDING_DIR / folder_name
+                # batch_id 있으면 새 ID 생성, 없으면 원래 폴더명 사용
+                if batch_id:
+                    upload_idx += 1
+                    new_folder_name = f"{batch_id}_{str(upload_idx).zfill(4)}"
+                else:
+                    new_folder_name = folder_name
 
-                # 이미 존재하면 스킵
+                dst_dir = PENDING_DIR / new_folder_name
+
+                # 이미 존재하면 스킵 (batch_id 모드에서는 거의 발생 안함)
                 if dst_dir.exists():
                     skipped.append(folder_name)
-                    log.warning(f"이미 존재: {folder_name}")
+                    log.warning(f"이미 존재: {new_folder_name}")
                     continue
 
                 dst_dir.mkdir(parents=True, exist_ok=True)
@@ -90,8 +129,11 @@ async def upload_manuscripts(file: UploadFile = File(...)):
                         with open(target_path, "wb") as dst:
                             dst.write(src.read())
 
-                uploaded.append(folder_name)
-                log.success(f"업로드 완료: {folder_name}")
+                uploaded.append({
+                    "original": folder_name,
+                    "id": new_folder_name,
+                })
+                log.success(f"업로드 완료: {folder_name} → {new_folder_name}")
 
     except zipfile.BadZipFile:
         raise HTTPException(status_code=400, detail="잘못된 ZIP 파일입니다.")
@@ -104,6 +146,7 @@ async def upload_manuscripts(file: UploadFile = File(...)):
 
     return JSONResponse(content={
         "success": True,
+        "batch_id": batch_id,
         "uploaded": uploaded,
         "skipped": skipped,
         "message": f"{len(uploaded)}개 폴더가 pending에 추가되었습니다.",

@@ -40,6 +40,4 @@ def gemini_new_gen(user_instructions: str, ref: str = "", category: str = "") ->
 
     text = comprehensive_text_clean(text)
 
-    length_no_space = len(re.sub(r"\s+", "", text))
-
     return text
