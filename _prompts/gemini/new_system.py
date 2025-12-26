@@ -196,8 +196,10 @@ PROHIBITED CONTENT:
 - Square brackets [ ] in output
 - Markdown: # * ** __ ~~
 - Meta labels: '소제목:', '본문:', '정보명:'
+- Character count feedback: (238자), (500자) 등 글자 수 표시 금지
+- Korean-English mix: "anytime 말씀해주세요", "best 선택" 등 한영 혼용 금지
 - Disclaimers and warnings
-- Foreign languages (Chinese, Japanese)
+- Foreign languages (Chinese, Japanese, English words in Korean sentences)
 - Clichéd quotes and proverbs
 - Sub-numbering (4-1, 4-2)
 - Generic filler content
@@ -222,6 +224,7 @@ QUALITY CHECKLIST (Verify before output):
 [] Title: Keyword at front
 [] Line breaks: 20-30 chars per line
 [] No brackets [ ] in text
+[] No character count like (238자) in text
 [] No disclaimers
 [] No morpheme repeated 10+ times
 [] Unique opening (not generic)
