@@ -2,8 +2,11 @@
 
 import asyncio
 import time
+import uuid
 import httpx
+from datetime import datetime
 from pathlib import Path
+from typing import Optional
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from fastapi import APIRouter
@@ -23,14 +26,37 @@ PENDING_DIR = MANUSCRIPTS_DIR / "pending"
 PENDING_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def get_next_manuscript_id() -> str:
-    """다음 원고 ID 생성"""
-    existing = list(PENDING_DIR.iterdir()) if PENDING_DIR.exists() else []
-    max_id = 0
-    for folder in existing:
-        if folder.is_dir() and folder.name.isdigit():
-            max_id = max(max_id, int(folder.name))
-    return str(max_id + 1).zfill(4)
+def generate_batch_id() -> str:
+    """배치(스케줄) 고유 ID 생성"""
+    return uuid.uuid4().hex[:8]
+
+
+def get_next_manuscript_id(batch_id: str = None) -> str:
+    """다음 원고 ID 생성
+
+    Args:
+        batch_id: 배치 고유 ID (있으면 {batch_id}_{순번} 형식)
+
+    Returns:
+        batch_id가 있으면: abc12345_0001
+        batch_id가 없으면: 0001 (레거시 호환)
+    """
+    if batch_id:
+        # 해당 배치의 원고만 카운트
+        existing = [
+            f for f in PENDING_DIR.iterdir()
+            if f.is_dir() and f.name.startswith(f"{batch_id}_")
+        ] if PENDING_DIR.exists() else []
+        next_num = len(existing) + 1
+        return f"{batch_id}_{str(next_num).zfill(4)}"
+    else:
+        # 레거시: 순차 번호
+        existing = list(PENDING_DIR.iterdir()) if PENDING_DIR.exists() else []
+        max_id = 0
+        for folder in existing:
+            if folder.is_dir() and folder.name.isdigit():
+                max_id = max(max_id, int(folder.name))
+        return str(max_id + 1).zfill(4)
 
 
 def generate_images_parallel(keyword: str, count: int) -> list[dict]:
@@ -66,9 +92,16 @@ async def download_image(url: str, save_path: Path) -> bool:
     return False
 
 
-async def save_to_pending(keyword: str, content: str, image_urls: list[str] = None) -> str:
-    """생성된 원고와 이미지를 pending 폴더에 저장"""
-    manuscript_id = get_next_manuscript_id()
+async def save_to_pending(keyword: str, content: str, image_urls: list[str] = None, batch_id: Optional[str] = None) -> str:
+    """생성된 원고와 이미지를 pending 폴더에 저장
+
+    Args:
+        keyword: 키워드
+        content: 원고 내용
+        image_urls: 이미지 URL 목록
+        batch_id: 배치 고유 ID (있으면 {batch_id}_{순번} 형식으로 저장)
+    """
+    manuscript_id = get_next_manuscript_id(batch_id)
     manuscript_dir = PENDING_DIR / manuscript_id
     manuscript_dir.mkdir(parents=True, exist_ok=True)
 

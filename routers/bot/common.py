@@ -15,7 +15,7 @@ from fastapi.concurrency import run_in_threadpool
 
 from llm.gemini_new_service import gemini_new_gen
 from routers.auth.blog_write import write_blog_post
-from routers.generate.batch import generate_images_parallel, save_to_pending
+from routers.generate.batch import generate_batch_id, generate_images_parallel, save_to_pending
 from utils.get_category_db_name import get_category_db_name
 from utils.logger import log
 
@@ -524,8 +524,16 @@ async def generate_single_manuscript(
     ref: str = "",
     generate_images: bool = True,
     image_count: int = 5,
+    batch_id: Optional[str] = None,
 ) -> Optional[dict]:
     """단일 원고 생성 (원고 + 이미지 + pending 저장)
+
+    Args:
+        keyword: 키워드
+        ref: 참조 원고
+        generate_images: 이미지 생성 여부
+        image_count: 이미지 개수
+        batch_id: 배치 고유 ID (동시 요청 구분용)
 
     Returns:
         {"id": manuscript_id, "keyword": keyword, "images": count} or None
@@ -551,7 +559,7 @@ async def generate_single_manuscript(
             )
             image_urls = [img["url"] for img in images if img.get("url")]
 
-        manuscript_id = await save_to_pending(keyword, content, image_urls)
+        manuscript_id = await save_to_pending(keyword, content, image_urls, batch_id)
 
         log.success("생성 완료", id=manuscript_id, images=len(image_urls))
 
@@ -573,7 +581,7 @@ async def generate_manuscripts_batch(
     image_count: int = 5,
     delay: float = 1.0,
     on_progress: Optional[Callable] = None,
-) -> list[dict]:
+) -> tuple[str, list[dict]]:
     """여러 키워드 원고 일괄 생성
 
     Args:
@@ -585,9 +593,14 @@ async def generate_manuscripts_batch(
         on_progress: 진행 콜백 (idx, total, keyword)
 
     Returns:
-        생성된 원고 목록 [{"id": ..., "keyword": ..., "images": ...}, ...]
+        (batch_id, 생성된 원고 목록)
+        batch_id: 이 배치의 고유 ID
+        원고 목록: [{"id": ..., "keyword": ..., "images": ...}, ...]
     """
+    batch_id = generate_batch_id()
     generated = []
+
+    log.kv("배치 ID", batch_id)
 
     for idx, keyword in enumerate(keywords):
         keyword = keyword.strip()
@@ -604,6 +617,7 @@ async def generate_manuscripts_batch(
             ref=ref,
             generate_images=generate_images,
             image_count=image_count,
+            batch_id=batch_id,
         )
 
         if result:
@@ -612,7 +626,7 @@ async def generate_manuscripts_batch(
         if idx < len(keywords) - 1:
             await asyncio.sleep(delay)
 
-    return generated
+    return batch_id, generated
 
 
 async def publish_manuscripts_batch(

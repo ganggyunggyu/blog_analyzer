@@ -127,7 +127,9 @@ async def auto_bot(request: AutoBotRequest):
 
     if not login_result["success"]:
         update_queue_status(queue_id, "failed")
-        raise HTTPException(status_code=401, detail=f"로그인 실패: {login_result.get('message')}")
+        raise HTTPException(
+            status_code=401, detail=f"로그인 실패: {login_result.get('message')}"
+        )
 
     cookies = login_result["cookies"]
     log.success("로그인 성공", cookies=len(cookies))
@@ -145,7 +147,11 @@ async def auto_bot(request: AutoBotRequest):
             schedule_time = calculate_schedule_time(
                 base_time, idx, request.schedule_interval_hours, 0
             )
-            log.step(idx + 1, len(manuscripts), f"{manuscript.title[:25]} (예약: {schedule_time.strftime('%m/%d %H:%M')})")
+            log.step(
+                idx + 1,
+                len(manuscripts),
+                f"{manuscript.title[:25]} (예약: {schedule_time.strftime('%m/%d %H:%M')})",
+            )
         else:
             log.step(idx + 1, len(manuscripts), f"{manuscript.title[:30]} (즉시)")
 
@@ -168,15 +174,22 @@ async def auto_bot(request: AutoBotRequest):
     elapsed = (datetime.now() - start_ts).total_seconds()
 
     log.divider()
-    log.success("자동화 완료", queue_id=queue_id, 성공=f"{success_count}/{len(manuscripts)}", 시간=f"{elapsed:.0f}s")
+    log.success(
+        "자동화 완료",
+        queue_id=queue_id,
+        성공=f"{success_count}/{len(manuscripts)}",
+        시간=f"{elapsed:.0f}s",
+    )
 
-    return JSONResponse(content={
-        "success": True,
-        "queue_id": queue_id,
-        "account": f"{account_id[:3]}***",
-        "generated": len(generated_ids),
-        "published": success_count,
-        "failed": len(manuscripts) - success_count,
-        "elapsed": round(elapsed, 1),
-        "results": publish_results,
-    })
+    return JSONResponse(
+        content={
+            "success": True,
+            "queue_id": queue_id,
+            "account": f"{account_id[:3]}***",
+            "generated": len(generated_ids),
+            "published": success_count,
+            "failed": len(manuscripts) - success_count,
+            "elapsed": round(elapsed, 1),
+            "results": publish_results,
+        }
+    )

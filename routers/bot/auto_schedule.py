@@ -182,7 +182,7 @@ async def auto_schedule_bot(request: AutoScheduleRequest):
     # ========== 2단계: 원고 생성 (공통 함수 사용) ==========
     log.header("2단계: 원고 생성", "📝")
 
-    generated_ids = await generate_manuscripts_batch(
+    batch_id, generated_ids = await generate_manuscripts_batch(
         keywords=request.keywords,
         ref=request.ref,
         generate_images=request.generate_images,
@@ -192,7 +192,7 @@ async def auto_schedule_bot(request: AutoScheduleRequest):
     if not generated_ids:
         raise HTTPException(status_code=500, detail="원고 생성에 모두 실패했습니다.")
 
-    log.success("원고 생성 완료", count=len(generated_ids))
+    log.success("원고 생성 완료", batch_id=batch_id, count=len(generated_ids))
 
     # ========== 3단계: 큐 생성 ==========
     log.header("3단계: 큐 생성", "📦")
