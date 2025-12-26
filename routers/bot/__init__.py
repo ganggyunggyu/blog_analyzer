@@ -9,6 +9,7 @@ from .manuscript import router as manuscript_router
 from .health import router as health_router
 from .queue import router as queue_router
 from .upload import router as upload_router
+from .auto_schedule import router as auto_schedule_router
 
 # 통합 라우터
 router = APIRouter(prefix="/bot", tags=["bot-orchestrator"])
@@ -20,3 +21,4 @@ router.include_router(manuscript_router)
 router.include_router(health_router)
 router.include_router(queue_router)
 router.include_router(upload_router)
+router.include_router(auto_schedule_router)

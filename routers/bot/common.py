@@ -7,11 +7,16 @@ import shutil
 import uuid
 from pathlib import Path
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Callable, Optional
 
 from pydantic import BaseModel
 
+from fastapi.concurrency import run_in_threadpool
+
+from llm.gemini_new_service import gemini_new_gen
 from routers.auth.blog_write import write_blog_post
+from routers.generate.batch import generate_images_parallel, save_to_pending
+from utils.get_category_db_name import get_category_db_name
 from utils.logger import log
 
 
@@ -507,3 +512,156 @@ def cleanup_empty_queue(queue_id: str):
         # queue.json만 남았으면 삭제
         shutil.rmtree(queue_dir)
         log.info(f"빈 큐 삭제: {queue_id}")
+
+
+# ========== 원고 생성 공통 함수 ==========
+
+import asyncio
+
+
+async def generate_single_manuscript(
+    keyword: str,
+    ref: str = "",
+    generate_images: bool = True,
+    image_count: int = 5,
+) -> Optional[dict]:
+    """단일 원고 생성 (원고 + 이미지 + pending 저장)
+
+    Returns:
+        {"id": manuscript_id, "keyword": keyword, "images": count} or None
+    """
+    try:
+        category = await get_category_db_name(keyword=keyword + ref)
+
+        content = await run_in_threadpool(
+            gemini_new_gen,
+            user_instructions=keyword,
+            ref=ref,
+            category=category,
+        )
+
+        if not content:
+            log.error("원고 생성 실패", keyword=keyword[:20])
+            return None
+
+        image_urls = []
+        if generate_images:
+            images = await run_in_threadpool(
+                generate_images_parallel, keyword, image_count
+            )
+            image_urls = [img["url"] for img in images if img.get("url")]
+
+        manuscript_id = await save_to_pending(keyword, content, image_urls)
+
+        log.success("생성 완료", id=manuscript_id, images=len(image_urls))
+
+        return {
+            "id": manuscript_id,
+            "keyword": keyword,
+            "images": len(image_urls),
+        }
+
+    except Exception as e:
+        log.error("생성 에러", keyword=keyword[:20], error=str(e))
+        return None
+
+
+async def generate_manuscripts_batch(
+    keywords: list[str],
+    ref: str = "",
+    generate_images: bool = True,
+    image_count: int = 5,
+    delay: float = 1.0,
+    on_progress: Optional[Callable] = None,
+) -> list[dict]:
+    """여러 키워드 원고 일괄 생성
+
+    Args:
+        keywords: 키워드 목록
+        ref: 참조 원고
+        generate_images: 이미지 생성 여부
+        image_count: 키워드당 이미지 수
+        delay: 생성 간 딜레이 (초)
+        on_progress: 진행 콜백 (idx, total, keyword)
+
+    Returns:
+        생성된 원고 목록 [{"id": ..., "keyword": ..., "images": ...}, ...]
+    """
+    generated = []
+
+    for idx, keyword in enumerate(keywords):
+        keyword = keyword.strip()
+        if not keyword:
+            continue
+
+        if on_progress:
+            on_progress(idx + 1, len(keywords), keyword)
+        else:
+            log.step(idx + 1, len(keywords), keyword[:30])
+
+        result = await generate_single_manuscript(
+            keyword=keyword,
+            ref=ref,
+            generate_images=generate_images,
+            image_count=image_count,
+        )
+
+        if result:
+            generated.append(result)
+
+        if idx < len(keywords) - 1:
+            await asyncio.sleep(delay)
+
+    return generated
+
+
+async def publish_manuscripts_batch(
+    cookies: list,
+    queue_dir: Path,
+    manuscripts: list,
+    schedule_times: Optional[list[datetime]] = None,
+    account_id: Optional[str] = None,
+    delay: float = 10.0,
+    on_progress: Optional[Callable] = None,
+) -> list[dict]:
+    """여러 원고 일괄 발행
+
+    Args:
+        cookies: 로그인 쿠키
+        queue_dir: 큐 디렉토리
+        manuscripts: ManuscriptInfo 목록
+        schedule_times: 예약 시간 목록 (None이면 즉시 발행)
+        account_id: 계정 ID
+        delay: 발행 간 딜레이 (초)
+        on_progress: 진행 콜백 (idx, total, manuscript, schedule_time)
+
+    Returns:
+        발행 결과 목록
+    """
+    results = []
+
+    for idx, manuscript in enumerate(manuscripts):
+        schedule_time = schedule_times[idx] if schedule_times and idx < len(schedule_times) else None
+
+        if on_progress:
+            on_progress(idx + 1, len(manuscripts), manuscript, schedule_time)
+        else:
+            if schedule_time:
+                log.step(idx + 1, len(manuscripts), f"{manuscript.title[:25]} ({schedule_time.strftime('%m/%d %H:%M')})")
+            else:
+                log.step(idx + 1, len(manuscripts), f"{manuscript.title[:30]} (즉시)")
+
+        result = await publish_queue_manuscript(
+            cookies=cookies,
+            queue_dir=queue_dir,
+            manuscript_id=manuscript.id,
+            schedule_time=schedule_time,
+            account_id=account_id,
+        )
+
+        results.append(result)
+
+        if idx < len(manuscripts) - 1:
+            await asyncio.sleep(delay)
+
+    return results
