@@ -46,6 +46,9 @@ dependencies = [
 
     # Browser Automation
     "playwright",
+
+    # Image Processing
+    "Pillow",
 ]
 
 [project.optional-dependencies]
