@@ -19,6 +19,7 @@ from routers.generate import (
     grok, grok_new, grok_ver3_clean,
     openai_new, solar, solar_ver3_clean,
     batch as generate_batch,
+    stream as generate_stream,
 )
 
 # 라우터 - 분석
@@ -88,6 +89,7 @@ app.include_router(openai_new.router)
 app.include_router(solar.router)
 app.include_router(solar_ver3_clean.router)
 app.include_router(generate_batch.router)
+app.include_router(generate_stream.router)
 
 # 분석
 app.include_router(keyword.router)

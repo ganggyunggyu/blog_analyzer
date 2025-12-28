@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Optional, Dict, Any, List, Tuple
+from typing import Optional, Dict, Any, List, Tuple, Generator, AsyncGenerator
 
 from anthropic import Anthropic
 from openai import OpenAI
@@ -305,6 +305,138 @@ def call_ai(
         print_token_cost(model_name, input_tokens, output_tokens)
 
     return text
+
+
+def call_ai_stream(
+    model_name: str,
+    system_prompt: str,
+    user_prompt: str,
+    max_tokens: int = 4096,
+) -> Generator[str, None, None]:
+    """
+    스트리밍 AI 호출 함수 - SSE 형식으로 청크 단위 응답
+
+    Args:
+        model_name: 사용할 모델 이름
+        system_prompt: 시스템 프롬프트
+        user_prompt: 유저 프롬프트
+        max_tokens: 최대 토큰 수
+
+    Yields:
+        str: 텍스트 청크 (SSE data 형식)
+    """
+    ai_service_type = get_ai_service_type(model_name)
+    validate_api_key(ai_service_type)
+
+    client = get_ai_client(ai_service_type)
+    if not client:
+        raise ValueError(f"AI 클라이언트를 찾을 수 없습니다. (service_type: {ai_service_type})")
+
+    # OpenAI 계열 (GPT-4, GPT-4o 등)
+    if ai_service_type == "openai" and not model_name.startswith("gpt-5"):
+        stream = client.chat.completions.create(
+            model=model_name,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            max_tokens=max_tokens,
+            stream=True,
+        )
+        for chunk in stream:
+            if chunk.choices and chunk.choices[0].delta.content:
+                yield f"data: {chunk.choices[0].delta.content}\n\n"
+        yield "data: [DONE]\n\n"
+
+    # Claude
+    elif ai_service_type == "claude":
+        with client.messages.stream(
+            model=model_name,
+            system=system_prompt,
+            messages=[{"role": "user", "content": user_prompt}],
+            max_tokens=max_tokens,
+        ) as stream:
+            for text in stream.text_stream:
+                yield f"data: {text}\n\n"
+        yield "data: [DONE]\n\n"
+
+    # Gemini
+    elif ai_service_type == "gemini":
+        response = client.models.generate_content_stream(
+            model=model_name,
+            config=types.GenerateContentConfig(
+                system_instruction=system_prompt,
+            ),
+            contents=user_prompt,
+        )
+        for chunk in response:
+            if hasattr(chunk, "text") and chunk.text:
+                yield f"data: {chunk.text}\n\n"
+        yield "data: [DONE]\n\n"
+
+    # DeepSeek (OpenAI 호환)
+    elif ai_service_type == "deepseek":
+        stream = client.chat.completions.create(
+            model=model_name,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            stream=True,
+        )
+        for chunk in stream:
+            if chunk.choices and chunk.choices[0].delta.content:
+                yield f"data: {chunk.choices[0].delta.content}\n\n"
+        yield "data: [DONE]\n\n"
+
+    # Solar (OpenAI 호환)
+    elif ai_service_type == "solar":
+        stream = client.chat.completions.create(
+            model=model_name,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt + system_prompt},
+            ],
+            stream=True,
+        )
+        for chunk in stream:
+            if chunk.choices and chunk.choices[0].delta.content:
+                yield f"data: {chunk.choices[0].delta.content}\n\n"
+        yield "data: [DONE]\n\n"
+
+    # Grok (xai_sdk는 스트리밍 미지원 - fallback)
+    elif ai_service_type == "grok":
+        # Grok SDK는 현재 스트리밍 미지원, 전체 응답 후 한번에
+        chat_session = client.chat.create(model=model_name)
+        chat_session.append(grok_system_message(system_prompt))
+        chat_session.append(grok_user_message(user_prompt))
+        response = chat_session.sample()
+        text = getattr(response, "content", "") or ""
+        # 청크 단위로 쪼개서 전송 (시뮬레이션)
+        chunk_size = 20
+        for i in range(0, len(text), chunk_size):
+            yield f"data: {text[i:i+chunk_size]}\n\n"
+        yield "data: [DONE]\n\n"
+
+    # GPT-5 (Responses API - 스트리밍 미지원 가능성)
+    elif ai_service_type == "openai" and model_name.startswith("gpt-5"):
+        # GPT-5 Responses API는 스트리밍 방식이 다를 수 있음
+        response = client.responses.create(
+            model=model_name,
+            instructions=system_prompt,
+            input=user_prompt,
+            reasoning={"effort": "medium"},
+            text={"verbosity": "medium"},
+        )
+        text = getattr(response, "output_text", "") or ""
+        chunk_size = 20
+        for i in range(0, len(text), chunk_size):
+            yield f"data: {text[i:i+chunk_size]}\n\n"
+        yield "data: [DONE]\n\n"
+
+    else:
+        raise ValueError(f"지원하지 않는 AI 서비스 타입: {ai_service_type}")
+
 
 def get_image_service_type(model_name: str) -> str:
     """이미지 생성 모델명으로 서비스 타입 결정"""
