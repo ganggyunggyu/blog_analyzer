@@ -75,7 +75,7 @@ async def naver_login_with_playwright(
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(
-            headless=True,
+            headless=False,  # headless=True면 봇으로 감지됨
             slow_mo=100 if debug else 0,
         )
 
