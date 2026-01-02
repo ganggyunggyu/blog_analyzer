@@ -555,7 +555,7 @@ async def generate_single_manuscript(
         image_urls = []
         if generate_images:
             images = await run_in_threadpool(
-                generate_images_parallel, keyword, image_count
+                generate_images_parallel, keyword, image_count, category
             )
             image_urls = [img["url"] for img in images if img.get("url")]
 
@@ -633,7 +633,7 @@ async def publish_manuscripts_batch(
     cookies: list,
     queue_dir: Path,
     manuscripts: list,
-    schedule_times: Optional[list[datetime]] = None,
+    schedule_times: Optional[list[Optional[datetime]]] = None,
     account_id: Optional[str] = None,
     delay: float = 10.0,
     on_progress: Optional[Callable] = None,
