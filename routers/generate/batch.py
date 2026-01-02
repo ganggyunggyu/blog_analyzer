@@ -191,7 +191,8 @@ async def generate_batch(request: BatchGenerateRequest):
                 images = await run_in_threadpool(
                     generate_images_parallel,
                     keyword,
-                    image_count
+                    image_count,
+                    category or ""
                 )
                 image_urls = [img["url"] for img in images if img.get("url")]
                 log.debug(f"이미지 생성 완료", count=len(image_urls))

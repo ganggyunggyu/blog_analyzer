@@ -581,6 +581,7 @@ def _generate_single_gemini_flash_image(
             parts = response.candidates[0].content.parts
 
         if not parts:
+            console.print(f"  [yellow]#{index}[/yellow] 응답에 parts 없음 (정책 거부 가능)")
             return None
 
         for part in parts:

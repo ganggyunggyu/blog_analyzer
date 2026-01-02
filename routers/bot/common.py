@@ -14,8 +14,13 @@ from pydantic import BaseModel
 from fastapi.concurrency import run_in_threadpool
 
 from llm.gemini_new_service import gemini_new_gen
+from llm.grok_service import grok_gen
 from routers.auth.blog_write import write_blog_post
-from routers.generate.batch import generate_batch_id, generate_images_parallel, save_to_pending
+from routers.generate.batch import (
+    generate_batch_id,
+    generate_images_parallel,
+    save_to_pending,
+)
 from utils.get_category_db_name import get_category_db_name
 from utils.logger import log
 
@@ -34,9 +39,12 @@ IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp"}
 
 # ========== 유틸리티 함수 ==========
 
+
 def parse_manuscript_txt(folder: Path) -> dict | None:
     """폴더 내 .txt 파일 파싱 (첫 줄=제목, 나머지=본문)"""
-    txt_files = [f for f in folder.iterdir() if f.is_file() and f.suffix.lower() == ".txt"]
+    txt_files = [
+        f for f in folder.iterdir() if f.is_file() and f.suffix.lower() == ".txt"
+    ]
     if not txt_files:
         return None
 
@@ -50,7 +58,11 @@ def parse_manuscript_txt(folder: Path) -> dict | None:
     title = lines[0].strip()
     content = "\n".join(lines[1:]).strip() if len(lines) > 1 else ""
 
-    image_files = [f for f in folder.iterdir() if f.is_file() and f.suffix.lower() in IMAGE_EXTENSIONS]
+    image_files = [
+        f
+        for f in folder.iterdir()
+        if f.is_file() and f.suffix.lower() in IMAGE_EXTENSIONS
+    ]
     images = [str(f) for f in sorted(image_files)]
 
     return {
@@ -85,10 +97,7 @@ def get_base_time(schedule_date: Optional[str], schedule_start_hour: int) -> dat
 
 
 def calculate_schedule_time(
-    base_time: datetime,
-    idx: int,
-    interval_hours: int,
-    interval_minutes: int
+    base_time: datetime, idx: int, interval_hours: int, interval_minutes: int
 ) -> datetime:
     """예약 시간 계산"""
     if interval_minutes > 0:
@@ -96,7 +105,13 @@ def calculate_schedule_time(
     return base_time + timedelta(hours=(idx + 1) * interval_hours)
 
 
-def move_to_completed(manuscript_id: str, manuscript_dir: Path, result: dict, schedule_time: Optional[datetime] = None, account_id: Optional[str] = None):
+def move_to_completed(
+    manuscript_id: str,
+    manuscript_dir: Path,
+    result: dict,
+    schedule_time: Optional[datetime] = None,
+    account_id: Optional[str] = None,
+):
     """완료 폴더로 이동"""
     completed_dir = COMPLETED_DIR / manuscript_id
     if completed_dir.exists():
@@ -116,7 +131,12 @@ def move_to_completed(manuscript_id: str, manuscript_dir: Path, result: dict, sc
         json.dump(result_data, f, ensure_ascii=False, indent=2)
 
 
-def move_to_failed(manuscript_id: str, manuscript_dir: Path, result: dict, account_id: Optional[str] = None):
+def move_to_failed(
+    manuscript_id: str,
+    manuscript_dir: Path,
+    result: dict,
+    account_id: Optional[str] = None,
+):
     """실패 폴더로 이동"""
     failed_dir = FAILED_DIR / manuscript_id
     if failed_dir.exists():
@@ -138,7 +158,7 @@ async def publish_single_manuscript(
     cookies: list,
     manuscript_id: str,
     schedule_time: Optional[datetime] = None,
-    account_id: Optional[str] = None
+    account_id: Optional[str] = None,
 ) -> dict:
     """단일 원고 발행 (공통 로직)"""
     manuscript_dir = PENDING_DIR / manuscript_id
@@ -152,7 +172,11 @@ async def publish_single_manuscript(
         }
 
     if schedule_time:
-        log.info(f"발행: {data['title'][:30]}", id=manuscript_id, schedule=schedule_time.strftime('%m/%d %H:%M'))
+        log.info(
+            f"발행: {data['title'][:30]}",
+            id=manuscript_id,
+            schedule=schedule_time.strftime("%m/%d %H:%M"),
+        )
     else:
         log.info(f"발행: {data['title'][:30]}", id=manuscript_id)
 
@@ -168,7 +192,9 @@ async def publish_single_manuscript(
     )
 
     if result["success"]:
-        move_to_completed(manuscript_id, manuscript_dir, result, schedule_time, account_id)
+        move_to_completed(
+            manuscript_id, manuscript_dir, result, schedule_time, account_id
+        )
         log.success("발행 성공", id=manuscript_id)
     else:
         move_to_failed(manuscript_id, manuscript_dir, result, account_id)
@@ -184,6 +210,7 @@ async def publish_single_manuscript(
 
 
 # ========== Pydantic 모델 ==========
+
 
 class ManuscriptData(BaseModel):
     title: str
@@ -216,31 +243,41 @@ def get_manuscript_list(status: str = "pending") -> list[ManuscriptInfo]:
 
         data = parse_manuscript_txt(folder)
         if data:
-            manuscripts.append(ManuscriptInfo(
-                id=folder.name,
-                title=data.get("title", "제목 없음"),
-                category=None,
-                images_count=len(data.get("images", [])),
-                created_at=data.get("created_at", ""),
-            ))
+            manuscripts.append(
+                ManuscriptInfo(
+                    id=folder.name,
+                    title=data.get("title", "제목 없음"),
+                    category=None,
+                    images_count=len(data.get("images", [])),
+                    created_at=data.get("created_at", ""),
+                )
+            )
         elif (folder / "manuscript.json").exists():
             with open(folder / "manuscript.json", "r", encoding="utf-8") as f:
                 json_data = json.load(f)
                 images_dir = folder / "images"
-                images_count = len(list(images_dir.glob("*"))) if images_dir.exists() else 0
-                manuscripts.append(ManuscriptInfo(
-                    id=folder.name,
-                    title=json_data.get("title", "제목 없음"),
-                    category=json_data.get("category"),
-                    images_count=images_count,
-                    created_at=json_data.get("created_at", ""),
-                ))
+                images_count = (
+                    len(list(images_dir.glob("*"))) if images_dir.exists() else 0
+                )
+                manuscripts.append(
+                    ManuscriptInfo(
+                        id=folder.name,
+                        title=json_data.get("title", "제목 없음"),
+                        category=json_data.get("category"),
+                        images_count=images_count,
+                        created_at=json_data.get("created_at", ""),
+                    )
+                )
     return manuscripts
 
 
 def get_next_manuscript_id() -> str:
     """다음 원고 ID 생성"""
-    existing = list(PENDING_DIR.iterdir()) + list(COMPLETED_DIR.iterdir()) + list(FAILED_DIR.iterdir())
+    existing = (
+        list(PENDING_DIR.iterdir())
+        + list(COMPLETED_DIR.iterdir())
+        + list(FAILED_DIR.iterdir())
+    )
     max_id = 0
     for folder in existing:
         if folder.is_dir() and folder.name.isdigit():
@@ -250,8 +287,10 @@ def get_next_manuscript_id() -> str:
 
 # ========== 큐 관리 함수 ==========
 
+
 class QueueInfo(BaseModel):
     """큐 정보"""
+
     queue_id: str
     created_at: str
     manuscript_count: int
@@ -369,13 +408,15 @@ def get_queue_manuscripts(queue_id: str) -> list[ManuscriptInfo]:
 
         data = parse_manuscript_txt(folder)
         if data:
-            manuscripts.append(ManuscriptInfo(
-                id=folder.name,
-                title=data.get("title", "제목 없음"),
-                category=None,
-                images_count=len(data.get("images", [])),
-                created_at=data.get("created_at", ""),
-            ))
+            manuscripts.append(
+                ManuscriptInfo(
+                    id=folder.name,
+                    title=data.get("title", "제목 없음"),
+                    category=None,
+                    images_count=len(data.get("images", [])),
+                    created_at=data.get("created_at", ""),
+                )
+            )
     return manuscripts
 
 
@@ -388,19 +429,29 @@ def list_active_queues() -> list[QueueInfo]:
 
         meta = get_queue_meta(folder.name)
         if meta:
-            manuscripts = [f for f in folder.iterdir() if f.is_dir() and not f.name.startswith(".")]
-            queues.append(QueueInfo(
-                queue_id=folder.name,
-                created_at=meta.get("created_at", ""),
-                manuscript_count=len(manuscripts),
-                status=meta.get("status", "unknown"),
-                account_id=meta.get("account_id"),
-                schedule_date=meta.get("schedule_date"),
-            ))
+            manuscripts = [
+                f for f in folder.iterdir() if f.is_dir() and not f.name.startswith(".")
+            ]
+            queues.append(
+                QueueInfo(
+                    queue_id=folder.name,
+                    created_at=meta.get("created_at", ""),
+                    manuscript_count=len(manuscripts),
+                    status=meta.get("status", "unknown"),
+                    account_id=meta.get("account_id"),
+                    schedule_date=meta.get("schedule_date"),
+                )
+            )
     return queues
 
 
-def move_queue_manuscript_to_completed(queue_dir: Path, manuscript_id: str, result: dict, schedule_time: Optional[datetime] = None, account_id: Optional[str] = None):
+def move_queue_manuscript_to_completed(
+    queue_dir: Path,
+    manuscript_id: str,
+    result: dict,
+    schedule_time: Optional[datetime] = None,
+    account_id: Optional[str] = None,
+):
     """큐 내 원고를 완료 폴더로 이동"""
     manuscript_dir = queue_dir / manuscript_id
     if not manuscript_dir.exists():
@@ -426,7 +477,9 @@ def move_queue_manuscript_to_completed(queue_dir: Path, manuscript_id: str, resu
         json.dump(result_data, f, ensure_ascii=False, indent=2)
 
 
-def move_queue_manuscript_to_failed(queue_dir: Path, manuscript_id: str, result: dict, account_id: Optional[str] = None):
+def move_queue_manuscript_to_failed(
+    queue_dir: Path, manuscript_id: str, result: dict, account_id: Optional[str] = None
+):
     """큐 내 원고를 실패 폴더로 이동"""
     manuscript_dir = queue_dir / manuscript_id
     if not manuscript_dir.exists():
@@ -469,7 +522,11 @@ async def publish_queue_manuscript(
         }
 
     if schedule_time:
-        log.info(f"발행: {data['title'][:30]}", id=manuscript_id, schedule=schedule_time.strftime('%m/%d %H:%M'))
+        log.info(
+            f"발행: {data['title'][:30]}",
+            id=manuscript_id,
+            schedule=schedule_time.strftime("%m/%d %H:%M"),
+        )
     else:
         log.info(f"발행: {data['title'][:30]}", id=manuscript_id)
 
@@ -485,7 +542,9 @@ async def publish_queue_manuscript(
     )
 
     if result["success"]:
-        move_queue_manuscript_to_completed(queue_dir, manuscript_id, result, schedule_time, account_id)
+        move_queue_manuscript_to_completed(
+            queue_dir, manuscript_id, result, schedule_time, account_id
+        )
         log.success("발행 성공", id=manuscript_id)
     else:
         move_queue_manuscript_to_failed(queue_dir, manuscript_id, result, account_id)
@@ -507,7 +566,9 @@ def cleanup_empty_queue(queue_id: str):
         return
 
     # 남은 원고 폴더 확인
-    remaining = [f for f in queue_dir.iterdir() if f.is_dir() and not f.name.startswith(".")]
+    remaining = [
+        f for f in queue_dir.iterdir() if f.is_dir() and not f.name.startswith(".")
+    ]
     if not remaining:
         # queue.json만 남았으면 삭제
         shutil.rmtree(queue_dir)
@@ -542,6 +603,7 @@ async def generate_single_manuscript(
         category = await get_category_db_name(keyword=keyword + ref)
 
         content = await run_in_threadpool(
+            # 여기서 서비스 변경
             gemini_new_gen,
             user_instructions=keyword,
             ref=ref,
@@ -655,13 +717,21 @@ async def publish_manuscripts_batch(
     results = []
 
     for idx, manuscript in enumerate(manuscripts):
-        schedule_time = schedule_times[idx] if schedule_times and idx < len(schedule_times) else None
+        schedule_time = (
+            schedule_times[idx]
+            if schedule_times and idx < len(schedule_times)
+            else None
+        )
 
         if on_progress:
             on_progress(idx + 1, len(manuscripts), manuscript, schedule_time)
         else:
             if schedule_time:
-                log.step(idx + 1, len(manuscripts), f"{manuscript.title[:25]} ({schedule_time.strftime('%m/%d %H:%M')})")
+                log.step(
+                    idx + 1,
+                    len(manuscripts),
+                    f"{manuscript.title[:25]} ({schedule_time.strftime('%m/%d %H:%M')})",
+                )
             else:
                 log.step(idx + 1, len(manuscripts), f"{manuscript.title[:30]} (즉시)")
 
