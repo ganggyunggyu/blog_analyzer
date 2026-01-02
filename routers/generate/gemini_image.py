@@ -19,8 +19,15 @@ IMAGE_COUNT: int = 5
 MAX_RETRIES: int = 3
 
 
-def _generate_images_parallel(keyword: str, poses: list, target_count: int = IMAGE_COUNT) -> tuple:
-    """이미지 병렬 생성 (실패 시 재시도)"""
+def _generate_images_parallel(keyword: str, poses: list, target_count: int = IMAGE_COUNT, category: str = "") -> tuple:
+    """이미지 병렬 생성 (실패 시 재시도)
+
+    Args:
+        keyword: 이미지 주제 키워드
+        poses: 포즈 목록
+        target_count: 목표 이미지 개수
+        category: 카테고리 (애견동물_반려동물_분양일 때 Puppy 가이드라인 추가)
+    """
     images = []
     total_cost = 0.0
     retry_count = 0
@@ -30,7 +37,7 @@ def _generate_images_parallel(keyword: str, poses: list, target_count: int = IMA
     while len(images) < target_count and retry_count < MAX_RETRIES:
         with ThreadPoolExecutor(max_workers=len(remaining_poses)) as executor:
             futures = {
-                executor.submit(image_gen_single, keyword, pose): pose
+                executor.submit(image_gen_single, keyword, pose, category): pose
                 for pose in remaining_poses
             }
 
@@ -63,9 +70,11 @@ async def generate_image(request: ImageGenerateRequest):
     이미지 5장 동시 생성
 
     - keyword: 이미지 주제 키워드
+    - category: 카테고리 (애견동물_반려동물_분양일 때 Puppy 가이드라인 추가)
     """
     start_ts = time.time()
     keyword = request.keyword.strip()
+    category = request.category.strip() if request.category else ""
 
     if not keyword:
         raise HTTPException(status_code=400, detail="keyword가 필요합니다.")
@@ -76,6 +85,8 @@ async def generate_image(request: ImageGenerateRequest):
     log.kv("키워드", keyword)
     log.kv("모델", MODEL_NAME)
     log.kv("포즈", f"{len(poses)}개 선택")
+    if category:
+        log.kv("카테고리", category)
 
     try:
         with progress(label=f"image:{keyword}"):
@@ -83,6 +94,8 @@ async def generate_image(request: ImageGenerateRequest):
                 _generate_images_parallel,
                 keyword,
                 poses,
+                IMAGE_COUNT,
+                category,
             )
 
         elapsed = time.time() - start_ts

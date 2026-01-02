@@ -59,14 +59,20 @@ def get_next_manuscript_id(batch_id: str = None) -> str:
         return str(max_id + 1).zfill(4)
 
 
-def generate_images_parallel(keyword: str, count: int) -> list[dict]:
-    """이미지 병렬 생성"""
+def generate_images_parallel(keyword: str, count: int, category: str = "") -> list[dict]:
+    """이미지 병렬 생성
+
+    Args:
+        keyword: 이미지 주제 키워드
+        count: 생성할 이미지 개수
+        category: 카테고리 (애견동물_반려동물_분양일 때만 Puppy 가이드라인 추가)
+    """
     poses = get_random_poses(count)
     images = []
 
     with ThreadPoolExecutor(max_workers=count) as executor:
         futures = {
-            executor.submit(image_gen_single, keyword, pose): pose
+            executor.submit(image_gen_single, keyword, pose, category): pose
             for pose in poses
         }
 

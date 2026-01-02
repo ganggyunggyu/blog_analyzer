@@ -61,20 +61,36 @@ DOG_POSES = [
 # """
 
 
-def build_image_prompt(keyword: str, pose: str) -> str:
-    """이미지 생성용 프롬프트 생성"""
-    return f"""Authentic candid photograph of '{keyword}' {pose}
+def build_image_prompt(keyword: str, pose: str, category: str = "") -> str:
+    """이미지 생성용 프롬프트 생성
+
+    Args:
+        keyword: 이미지 주제 키워드
+        pose: 포즈 (애견동물 카테고리일 때만 사용)
+        category: 카테고리
+    """
+    # 애견/반려동물 카테고리일 때만 동물 관련 지침 추가
+    if category == "애견동물_반려동물_분양":
+        return f"""Authentic candid photograph of '{keyword}' {pose}
 
 CRITICAL - Natural & Organic Feel:
 - Real camera photo taken by amateur photographer
 - Slightly imperfect composition, not too centered
 - Natural ambient lighting with real shadows
-- Genuine fur/skin texture with visible details
+- Genuine fur texture with visible details
 - Real environment with authentic background elements
 - Candid moment, not posed or staged looking
 
+Puppy/Young Dog Guidelines:
+- Show age-appropriate puppy features: soft fluffy fur, round face, big eyes
+- Puppies have shorter snouts and rounder heads than adults
+- Include playful or curious expressions natural to young dogs
+- Puppy proportions: larger paws relative to body, shorter legs
+- Avoid making puppies look like miniature adult dogs
+- Natural puppy behaviors: exploring, playing, sleeping curled up
+
 Anti-AI Aesthetics (VERY IMPORTANT):
-- NO plastic or waxy skin/fur texture
+- NO plastic or waxy fur texture
 - NO overly smooth or airbrushed look
 - NO hyperrealistic uncanny valley effect
 - NO perfect symmetry
@@ -93,6 +109,11 @@ Output Rules:
 - Single subject only, NO collage or grid
 - Photorealistic documentary style
 
+
+"""
+
+    return f"""Authentic photograph of '{keyword}'
+
 CRITICAL - NO TEXT IN IMAGE:
 - NEVER include any text, letters, words, or typography in the image
 - NO watermarks, logos, signs, labels, or captions
@@ -110,13 +131,16 @@ def get_random_poses(count: int) -> List[str]:
     return random.sample(DOG_POSES, min(count, len(DOG_POSES)))
 
 
-def image_gen_single(keyword: str, pose: Optional[str] = None) -> Optional[dict]:
+def image_gen_single(
+    keyword: str, pose: Optional[str] = None, category: str = ""
+) -> Optional[dict]:
     """
     단일 이미지 생성
 
     Args:
         keyword: 이미지 주제 키워드
         pose: 포즈 (없으면 랜덤)
+        category: 카테고리 (애견동물_반려동물_분양일 때만 Puppy 가이드라인 추가)
 
     Returns:
         이미지 dict {"url": "..."} 또는 None (실패 시)
@@ -127,7 +151,7 @@ def image_gen_single(keyword: str, pose: Optional[str] = None) -> Optional[dict]
     if not pose:
         pose = get_random_pose()
 
-    prompt = build_image_prompt(keyword, pose)
+    prompt = build_image_prompt(keyword, pose, category)
 
     result = call_image_ai(
         model_name=MODEL_NAME,

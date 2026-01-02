@@ -18,6 +18,7 @@ class BatchGenerateRequest(BaseModel):
 
 class ImageGenerateRequest(BaseModel):
     keyword: str
+    category: str = ""  # 카테고리 (애견동물_반려동물_분양일 때 Puppy 가이드라인 추가)
 
 
 class ImageItem(BaseModel):
