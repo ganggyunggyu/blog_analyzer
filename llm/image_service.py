@@ -112,12 +112,43 @@ Output Rules:
 
 """
 
-    return f"""Authentic photograph of '{keyword}'
+    return f"""Authentic photograph of '{keyword}' for blog content
+
+PURPOSE - Blog Image Guidelines:
+- Image for Korean blog post (Naver blog style)
+- Friendly yet professional tone
+- Approachable and trustworthy feeling
+- Should complement informational blog content
 
 CRITICAL - NO TEXT IN IMAGE:
 - NEVER include any text, letters, words, or typography in the image
 - NO watermarks, logos, signs, labels, or captions
 - NO written content of any kind - pure visual only
+
+Style Requirements:
+- Clean and modern aesthetic
+- Warm, inviting color palette
+- Natural lighting preferred
+- Professional but not corporate/cold
+- Relatable to everyday Korean readers
+
+Anti-AI Aesthetics:
+- NO plastic or artificial textures
+- NO oversaturated or HDR-like colors
+- NO uncanny valley effects
+- Natural imperfections acceptable
+
+Viewer Comfort (IMPORTANT):
+- NO disturbing, grotesque, or unsettling imagery
+- NO distorted faces, bodies, or unnatural proportions
+- NO creepy or uncomfortable expressions
+- Visually pleasant and easy on the eyes
+- Natural human/animal forms without deformities
+- Safe for all audiences, family-friendly
+
+Output Rules:
+- Single subject focus, NO collage or grid
+- High quality, blog-ready composition
 """
 
 
