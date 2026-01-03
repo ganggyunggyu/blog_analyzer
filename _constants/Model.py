@@ -32,3 +32,5 @@ class Model:
 
     DEEPSEEK_CHAT = "deepseek-chat"
     DEEPSEEK_RES = "deepseek-reasoner"
+
+    RECRAFT_V3 = "recraft-v3"

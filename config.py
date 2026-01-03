@@ -21,6 +21,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 CLAUDE_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 GROK_API_KEY = os.getenv("GROK_API_KEY")
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
+RECRAFT_API_KEY = os.getenv("RECRAFT_API_KEY")
 
 deepseek_client = OpenAI(
     api_key=DEEPSEEK_API_KEY,

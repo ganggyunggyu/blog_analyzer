@@ -14,6 +14,7 @@ from config import (
     GEMINI_API_KEY,
     GROK_API_KEY,
     OPENAI_API_KEY,
+    RECRAFT_API_KEY,
     UPSTAGE_API_KEY,
     deepseek_client,
     grok_client,
@@ -446,6 +447,8 @@ def get_image_service_type(model_name: str) -> str:
         return "imagen"
     elif "flash" in model_name and "image" in model_name:
         return "gemini-flash"
+    elif model_name.startswith("recraft"):
+        return "recraft"
     else:
         raise ValueError(f"지원하지 않는 이미지 생성 모델: {model_name}")
 
@@ -628,6 +631,76 @@ def _generate_single_gemini_flash_image(
         console.print(f"  [red]#{index}[/red] 실패: {e}")
         return None
 
+
+def _generate_single_recraft_image(
+    api_key: str,
+    model_name: str,
+    prompt: str,
+    keyword: str,
+    index: int,
+    style: str = "realistic_image",
+    size: str = "1280x720",
+) -> Optional[str]:
+    """Recraft V3 단일 이미지 생성 (병렬 처리용)"""
+    import requests
+    import json
+    from utils.s3_uploader import upload_image_to_s3
+
+    console.print(f"  [dim]#{index}[/dim] 생성 중...", end="\r")
+
+    try:
+        url = "https://external.api.recraft.ai/v1/images/generations"
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        }
+        data = {
+            "model": model_name,
+            "prompt": prompt,
+            "style": style,
+            "size": size,
+            "n": 1,
+        }
+
+        response = requests.post(url, headers=headers, data=json.dumps(data), timeout=60)
+
+        if response.status_code != 200:
+            console.print(f"  [red]#{index}[/red] API 오류: {response.status_code}")
+            return None
+
+        result = response.json()
+        image_url = result.get("data", [{}])[0].get("url")
+
+        if not image_url:
+            console.print(f"  [yellow]#{index}[/yellow] 이미지 URL 없음")
+            return None
+
+        # 이미지 다운로드 후 S3 업로드
+        img_response = requests.get(image_url, timeout=30)
+        if img_response.status_code != 200:
+            console.print(f"  [red]#{index}[/red] 이미지 다운로드 실패")
+            return None
+
+        image_bytes = img_response.content
+
+        s3_url = upload_image_to_s3(
+            image_bytes=image_bytes,
+            keyword=keyword,
+            content_type="image/png",
+        )
+
+        if s3_url:
+            console.print(f"  [green]#{index}[/green] ✓ 완료           ")
+            return s3_url
+
+        console.print(f"  [yellow]#{index}[/yellow] S3 업로드 실패")
+        return None
+
+    except Exception as e:
+        console.print(f"  [red]#{index}[/red] 실패: {e}")
+        return None
+
+
 def call_image_ai(
     model_name: str,
     prompt: str,
@@ -678,6 +751,15 @@ def call_image_ai(
         s3_url = _generate_single_gemini_flash_image(client, model_name, prompt, keyword, 1)
         if s3_url:
             return {"url": s3_url, "cost": 0.039}
+        return None
+
+    elif service_type == "recraft":
+        if not RECRAFT_API_KEY:
+            raise ValueError("RECRAFT_API_KEY가 설정되어 있지 않습니다.")
+
+        s3_url = _generate_single_recraft_image(RECRAFT_API_KEY, model_name, prompt, keyword, 1)
+        if s3_url:
+            return {"url": s3_url, "cost": 0.008}  # 장당 약 $0.008
         return None
 
     else:
