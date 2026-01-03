@@ -96,6 +96,13 @@ def get_base_time(schedule_date: Optional[str], schedule_start_hour: int) -> dat
     return datetime.now()
 
 
+def should_publish_immediately(schedule_time: Optional[datetime]) -> bool:
+    """예약 시간이 이미 지났는지 확인 (지났으면 즉시 발행해야 함)"""
+    if not schedule_time:
+        return True
+    return schedule_time <= datetime.now()
+
+
 def calculate_schedule_time(
     base_time: datetime, idx: int, interval_hours: int, interval_minutes: int
 ) -> datetime:
@@ -171,11 +178,21 @@ async def publish_single_manuscript(
             "message": "원고를 찾을 수 없습니다.",
         }
 
-    if schedule_time:
+    # 예약 시간이 이미 지났으면 즉시 발행
+    actual_schedule_time = schedule_time
+    if schedule_time and should_publish_immediately(schedule_time):
+        log.warning(
+            f"예약 시간 지남 → 즉시 발행",
+            id=manuscript_id,
+            원래예약=schedule_time.strftime("%m/%d %H:%M"),
+        )
+        actual_schedule_time = None
+
+    if actual_schedule_time:
         log.info(
             f"발행: {data['title'][:30]}",
             id=manuscript_id,
-            schedule=schedule_time.strftime("%m/%d %H:%M"),
+            schedule=actual_schedule_time.strftime("%m/%d %H:%M"),
         )
     else:
         log.info(f"발행: {data['title'][:30]}", id=manuscript_id)
@@ -187,7 +204,7 @@ async def publish_single_manuscript(
         tags=data.get("tags"),
         images=data.get("images"),
         is_public=True,
-        schedule_time=schedule_time.isoformat() if schedule_time else None,
+        schedule_time=actual_schedule_time.isoformat() if actual_schedule_time else None,
         debug=True,
     )
 
@@ -521,11 +538,21 @@ async def publish_queue_manuscript(
             "message": "원고를 찾을 수 없습니다.",
         }
 
-    if schedule_time:
+    # 예약 시간이 이미 지났으면 즉시 발행
+    actual_schedule_time = schedule_time
+    if schedule_time and should_publish_immediately(schedule_time):
+        log.warning(
+            f"예약 시간 지남 → 즉시 발행",
+            id=manuscript_id,
+            원래예약=schedule_time.strftime("%m/%d %H:%M"),
+        )
+        actual_schedule_time = None
+
+    if actual_schedule_time:
         log.info(
             f"발행: {data['title'][:30]}",
             id=manuscript_id,
-            schedule=schedule_time.strftime("%m/%d %H:%M"),
+            schedule=actual_schedule_time.strftime("%m/%d %H:%M"),
         )
     else:
         log.info(f"발행: {data['title'][:30]}", id=manuscript_id)
@@ -537,7 +564,7 @@ async def publish_queue_manuscript(
         tags=data.get("tags"),
         images=data.get("images"),
         is_public=True,
-        schedule_time=schedule_time.isoformat() if schedule_time else None,
+        schedule_time=actual_schedule_time.isoformat() if actual_schedule_time else None,
         debug=True,
     )
 
