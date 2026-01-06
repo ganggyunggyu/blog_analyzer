@@ -20,6 +20,7 @@ from routers.generate import (
     openai_new, solar, solar_ver3_clean,
     batch as generate_batch,
     stream as generate_stream,
+    comment as generate_comment,
 )
 
 # 라우터 - 분석
@@ -90,6 +91,7 @@ app.include_router(solar.router)
 app.include_router(solar_ver3_clean.router)
 app.include_router(generate_batch.router)
 app.include_router(generate_stream.router)
+app.include_router(generate_comment.router)
 
 # 분석
 app.include_router(keyword.router)
