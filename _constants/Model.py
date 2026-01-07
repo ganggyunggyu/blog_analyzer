@@ -14,7 +14,6 @@ class Model:
     GEMINI_2_5_FLASH_IMAGE = "gemini-2.5-flash-image"
     IMAGEN_4 = "imagen-4.0-generate-001"
     GEMINI_3_PRO = "gemini-3-pro-preview"
-    GEMINI_3_FLASH = "gemini-3.0-flash"
     GEMINI_3_FLASH_PREVIEW = "gemini-3-flash-preview"
 
     CLAUDE_SONNET_4_5 = "claude-sonnet-4-5-20250929"
