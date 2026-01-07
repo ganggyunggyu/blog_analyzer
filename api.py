@@ -21,6 +21,7 @@ from routers.generate import (
     batch as generate_batch,
     stream as generate_stream,
     comment as generate_comment,
+    recomment as generate_recomment,
 )
 
 # 라우터 - 분석
@@ -92,6 +93,7 @@ app.include_router(solar_ver3_clean.router)
 app.include_router(generate_batch.router)
 app.include_router(generate_stream.router)
 app.include_router(generate_comment.router)
+app.include_router(generate_recomment.router)
 
 # 분석
 app.include_router(keyword.router)
