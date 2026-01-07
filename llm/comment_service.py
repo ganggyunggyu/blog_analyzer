@@ -1,4 +1,4 @@
-"""댓글 생성 서비스 - Grok AI 기반"""
+"""댓글 생성 서비스 - Gemini Flash 기반"""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from _prompts.comment import get_random_persona, get_persona_by_index
 from utils.ai_client_factory import call_ai
 
 
-MODEL_NAME: str = Model.GROK_4_NON_RES
+MODEL_NAME: str = Model.GEMINI_3_FLASH_PREVIEW
 
 
 SYSTEM_PROMPT = """당신은 블로그 댓글 작성자입니다.
