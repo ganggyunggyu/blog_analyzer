@@ -13,7 +13,7 @@ from routers.test import test
 # 라우터 - 원고 생성
 from routers.generate import (
     claude, clean_claude, clean_deepseek, deepseek, deepseek_new,
-    gemini_3_pro, gemini_3_flash, gemini_3_flash_clean, gemini_image, gemini_new, gemini_cafe,
+    gemini_3_pro, gemini_3_flash, gemini_3_flash_clean, gemini_image, gemini_new, gemini_cafe, gemini_cafe_daily,
     gemini_ceo, gpt_ceo,
     gpt4o, chatgpt4o, gpt_ver3_clean, gpt_5_2, kkk,
     grok, grok_new, grok_ver3_clean,
@@ -77,6 +77,7 @@ app.include_router(gemini_3_flash_clean.router)
 app.include_router(gemini_image.router)
 app.include_router(gemini_new.router)
 app.include_router(gemini_cafe.router)
+app.include_router(gemini_cafe_daily.router)
 app.include_router(gpt4o.router)
 app.include_router(chatgpt4o.router)
 app.include_router(gpt_ver3_clean.router)
