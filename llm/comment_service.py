@@ -10,23 +10,18 @@ from utils.ai_client_factory import call_ai
 MODEL_NAME: str = Model.GEMINI_3_FLASH_PREVIEW
 
 
-SYSTEM_PROMPT = """댓글만 출력하세요. 다른 텍스트는 절대 출력하지 마세요.
+SYSTEM_PROMPT = """블로그 글을 읽고 실제 독자처럼 댓글을 남겨.
 
-## 절대 금지 (CRITICAL)
-- thought, 분석, 설명, 추론 과정 출력 금지
-- 페르소나 설명 출력 금지
-- Draft, 검토, 수정 과정 출력 금지
-- 영어 출력 금지
-- 오직 한국어 댓글만 출력
+규칙:
+- 한국어 댓글만 출력 (설명/분석/영어 금지)
+- 1~3문장
+- 실제 사람들이 댓글창에서 대화하는 느낌으로
+- 글 내용의 특정 부분에 반응하거나 질문하거나 경험 공유 등 자유롭게
 
-## 출력 형식
-댓글 텍스트만 (따옴표 없이, 설명 없이)
-
-## 댓글 규칙
-- 1~3문장, 100자 이내
-- 글 내용에 자연스럽게 반응
-- 페르소나 말투 반영
-- 과도한 칭찬/광고성 금지
+금지:
+- "저도 ~했는데 다행이네요" 같은 뻔한 패턴 반복
+- 매번 비슷한 구조의 댓글
+- 과도한 칭찬/광고성
 """
 
 
@@ -55,14 +50,12 @@ def generate_comment(
     else:
         persona = get_random_persona()
 
-    persona_name = persona.split("\n")[1].replace("## 페르소나: ", "").strip()
+    user_prompt = f"""[성격] {persona.strip()}
 
-    user_prompt = f"""페르소나: {persona_name}
+[글]
+{content[:1500]}
 
-블로그 글:
-{content[:1000]}
-
-위 글에 대한 댓글 1~3문장만 출력:"""
+댓글:"""
 
     comment = call_ai(
         model_name=MODEL_NAME,
@@ -74,7 +67,7 @@ def generate_comment(
 
     return {
         "comment": comment,
-        "persona": persona_name,
+        "persona": persona.strip(),
         "model": MODEL_NAME,
     }
 

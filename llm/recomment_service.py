@@ -10,22 +10,17 @@ from utils.ai_client_factory import call_ai
 MODEL_NAME: str = Model.GEMINI_3_FLASH_PREVIEW
 
 
-SYSTEM_PROMPT = """대댓글만 출력하세요. 다른 텍스트는 절대 출력하지 마세요.
+SYSTEM_PROMPT = """댓글에 대한 답글을 남겨.
 
-## 절대 금지 (CRITICAL)
-- thought, 분석, 설명, 추론 과정 출력 금지
-- 페르소나 설명 출력 금지
-- Draft, 검토, 수정 과정 출력 금지
-- 영어 출력 금지
-- 오직 한국어 대댓글 1문장만 출력
+규칙:
+- 한국어만 (설명/분석/영어 금지)
+- 1~2문장
+- 원댓글 작성자에게 대화하듯이
+- 동의/반박/질문/추가정보 등 자유롭게
 
-## 출력 형식
-대댓글 텍스트만 (따옴표 없이, 설명 없이)
-
-## 대댓글 규칙
-- 1문장, 50자 이내
-- 원댓글에 반응
-- 자연스러운 한국어
+금지:
+- 뻔한 패턴 반복
+- 원글에 대한 감상 (원댓글에만 반응)
 """
 
 
@@ -56,19 +51,11 @@ def generate_recomment(
     else:
         persona = get_random_persona()
 
-    # 원글은 참고용으로만 (있으면)
-    context_section = ""
-    if content and content.strip():
-        context_section = f"""
-## 원글 내용 (참고용, 이건 무시하고 댓글에만 반응)
-{content[:300]}...
-"""
+    user_prompt = f"""[성격] {persona.strip()}
 
-    user_prompt = f"""페르소나: {persona.split(chr(10))[1].replace("## 페르소나: ", "").strip()}
+[원댓글] {parent_comment}
 
-원댓글: {parent_comment}
-
-위 원댓글에 대한 대댓글 1문장만 출력:"""
+답글:"""
 
     comment = call_ai(
         model_name=MODEL_NAME,
@@ -80,7 +67,7 @@ def generate_recomment(
 
     return {
         "comment": comment,
-        "persona": persona.split("\n")[1].replace("## 페르소나: ", "").strip(),
+        "persona": persona.strip(),
         "model": MODEL_NAME,
     }
 
