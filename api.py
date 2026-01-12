@@ -22,6 +22,7 @@ from routers.generate import (
     stream as generate_stream,
     comment as generate_comment,
     recomment as generate_recomment,
+    keyword_generator,
 )
 
 # 라우터 - 분석
@@ -95,6 +96,7 @@ app.include_router(generate_batch.router)
 app.include_router(generate_stream.router)
 app.include_router(generate_comment.router)
 app.include_router(generate_recomment.router)
+app.include_router(keyword_generator.router)
 
 # 분석
 app.include_router(keyword.router)
