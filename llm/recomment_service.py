@@ -1,6 +1,7 @@
 """대댓글 생성 서비스 - Gemini Flash 기반"""
 
 from __future__ import annotations
+import random
 
 from _constants.Model import Model
 from _prompts.comment import get_random_persona, get_persona_by_index
@@ -9,19 +10,21 @@ from utils.ai_client_factory import call_ai
 
 MODEL_NAME: str = Model.GEMINI_3_FLASH_PREVIEW
 
+# 글자수 분배 (대댓글은 더 짧게)
+LENGTH_OPTIONS = [
+    ("한 줄", 60),      # 60%
+    ("1~2문장", 30),    # 30%
+    ("2~3문장", 10),    # 10%
+]
 
-SYSTEM_PROMPT = """댓글에 대한 답글을 남겨.
 
-규칙:
-- 한국어만 (설명/분석/영어 금지)
-- 1~2문장
-- 원댓글 작성자에게 대화하듯이
-- 동의/반박/질문/추가정보 등 자유롭게
+def _get_random_length() -> str:
+    """가중치 기반 랜덤 길이 선택"""
+    options, weights = zip(*LENGTH_OPTIONS)
+    return random.choices(options, weights=weights, k=1)[0]
 
-금지:
-- 뻔한 패턴 반복
-- 원글에 대한 감상 (원댓글에만 반응)
-"""
+
+SYSTEM_PROMPT = """원댓글에 페르소나에 맞게 답글 작성. 자유롭게."""
 
 
 def generate_recomment(
@@ -29,29 +32,15 @@ def generate_recomment(
     content: str = "",
     persona_index: int | None = None,
 ) -> dict:
-    """대댓글 생성
-
-    Args:
-        parent_comment: 원댓글 내용 (필수)
-        content: 원글 내용 (참고용, 선택)
-        persona_index: 페르소나 인덱스 (None이면 랜덤)
-
-    Returns:
-        dict: {
-            "comment": 생성된 대댓글,
-            "persona": 사용된 페르소나,
-            "model": 사용된 모델
-        }
-    """
+    """대댓글 생성"""
     if not parent_comment or not parent_comment.strip():
         raise ValueError("원댓글 내용이 없습니다.")
 
-    if persona_index is not None:
-        persona = get_persona_by_index(persona_index)
-    else:
-        persona = get_random_persona()
+    persona = get_persona_by_index(persona_index) if persona_index is not None else get_random_persona()
+    length = _get_random_length()
 
-    user_prompt = f"""[성격] {persona.strip()}
+    user_prompt = f"""[페르소나] {persona.strip()}
+[길이] {length}
 
 [원댓글] {parent_comment}
 
@@ -97,6 +86,6 @@ def _clean_output(text: str) -> str:
         text = korean_lines[-1]
 
     # 따옴표 제거
-    text = text.strip('"\'""''')
+    text = text.strip('"\'""' "")
 
     return text

@@ -1,6 +1,7 @@
 """댓글 생성 서비스 - Gemini Flash 기반"""
 
 from __future__ import annotations
+import random
 
 from _constants.Model import Model
 from _prompts.comment import get_random_persona, get_persona_by_index
@@ -9,48 +10,37 @@ from utils.ai_client_factory import call_ai
 
 MODEL_NAME: str = Model.GEMINI_3_FLASH_PREVIEW
 
+# 글자수 분배 (짧은 댓글 위주)
+LENGTH_OPTIONS = [
+    ("한 줄", 50),      # 50%
+    ("1~2문장", 35),    # 35%
+    ("2~3문장", 12),    # 12%
+    ("3~4문장", 3),     # 3%
+]
 
-SYSTEM_PROMPT = """블로그 글을 읽고 실제 독자처럼 댓글을 남겨.
 
-규칙:
-- 한국어 댓글만 출력 (설명/분석/영어 금지)
-- 1~3문장
-- 실제 사람들이 댓글창에서 대화하는 느낌으로
-- 글 내용의 특정 부분에 반응하거나 질문하거나 경험 공유 등 자유롭게
+def _get_random_length() -> str:
+    """가중치 기반 랜덤 길이 선택"""
+    options, weights = zip(*LENGTH_OPTIONS)
+    return random.choices(options, weights=weights, k=1)[0]
 
-금지:
-- "저도 ~했는데 다행이네요" 같은 뻔한 패턴 반복
-- 매번 비슷한 구조의 댓글
-- 과도한 칭찬/광고성
-"""
+
+SYSTEM_PROMPT = """글 읽고 페르소나에 맞게 댓글 작성. 자유롭게."""
 
 
 def generate_comment(
     content: str,
     persona_index: int | None = None,
 ) -> dict:
-    """블로그 글에 대한 댓글 생성
-
-    Args:
-        content: 블로그 글 내용
-        persona_index: 페르소나 인덱스 (None이면 랜덤)
-
-    Returns:
-        dict: {
-            "comment": 생성된 댓글,
-            "persona": 사용된 페르소나,
-            "model": 사용된 모델
-        }
-    """
+    """블로그 글에 대한 댓글 생성"""
     if not content or not content.strip():
         raise ValueError("글 내용이 없습니다.")
 
-    if persona_index is not None:
-        persona = get_persona_by_index(persona_index)
-    else:
-        persona = get_random_persona()
+    persona = get_persona_by_index(persona_index) if persona_index is not None else get_random_persona()
+    length = _get_random_length()
 
-    user_prompt = f"""[성격] {persona.strip()}
+    user_prompt = f"""[페르소나] {persona.strip()}
+[길이] {length}
 
 [글]
 {content[:1500]}
@@ -97,6 +87,6 @@ def _clean_output(text: str) -> str:
         text = " ".join(korean_lines[-3:])  # 마지막 3줄까지
 
     # 따옴표 제거
-    text = text.strip('"\'""''')
+    text = text.strip('"\'""' "")
 
     return text
