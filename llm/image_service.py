@@ -125,6 +125,28 @@ CRITICAL - NO TEXT IN IMAGE:
 - NO watermarks, logos, signs, labels, or captions
 - NO written content of any kind - pure visual only
 
+MEDICAL/SENSITIVE TOPIC HANDLING (VERY IMPORTANT):
+If the keyword relates to medical conditions (hemorrhoids, anal issues, skin conditions,
+injuries, diseases, bodily functions, etc.):
+- DO NOT show actual body parts, wounds, or graphic medical imagery
+- USE CREATIVE VISUAL METAPHORS that clearly convey the condition:
+
+For hemorrhoids/anal pain (치질, 항문):
+  * Person struggling to sit on a chair (back view, no face)
+  * Silhouette with red/orange pain indicator on sitting area
+  * Donut cushion, hemorrhoid cushion prominently featured
+  * Person standing at desk because sitting is uncomfortable
+
+For other conditions - use relevant visual metaphors:
+  * Show the DISCOMFORT or PAIN symbolically (red glow, lightning bolts)
+  * Back view or partial body (avoid showing face)
+  * Related comfort items or solutions
+
+Key principles:
+- The image should IMMEDIATELY convey what condition it's about
+- No face needed - back view or partial body is fine
+- Use color (red, orange) to indicate pain areas
+
 Style Requirements:
 - Clean and modern aesthetic
 - Warm, inviting color palette
@@ -145,6 +167,7 @@ Viewer Comfort (IMPORTANT):
 - Visually pleasant and easy on the eyes
 - Natural human/animal forms without deformities
 - Safe for all audiences, family-friendly
+- NO medical gore, wounds, or graphic body parts
 
 Output Rules:
 - Single subject focus, NO collage or grid
