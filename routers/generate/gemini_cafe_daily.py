@@ -25,7 +25,7 @@ async def generator_gemini_cafe_daily(request: GenerateRequest):
 
     category = await get_category_db_name(keyword=keyword)
 
-    log.info("Gemini Cafe Daily 생성", keyword=keyword[:20], category=category)
+    log.info(f"Gemini Cafe Daily 생성 | persona_id={request.persona_id!r}, persona_index={request.persona_index!r}")
 
     db_service = MongoDBService()
     db_service.set_db_name(db_name=category)
@@ -36,9 +36,12 @@ async def generator_gemini_cafe_daily(request: GenerateRequest):
                 gemini_cafe_daily_gen,
                 user_instructions=keyword,
                 category=category,
+                persona_id=request.persona_id,
+                persona_index=request.persona_index,
             )
 
         generated_text = result.get("content", "")
+        persona_id = result.get("persona_id", "")
         persona = result.get("persona", "")
 
         if generated_text:
@@ -50,6 +53,7 @@ async def generator_gemini_cafe_daily(request: GenerateRequest):
                 "category": category,
                 "keyword": keyword,
                 "type": "cafe_daily",
+                "persona_id": persona_id,
                 "persona": persona,
             }
 

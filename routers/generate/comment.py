@@ -8,7 +8,7 @@ from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel
 
 from llm.comment_service import generate_comment, MODEL_NAME
-from _prompts.comment import ALL_PERSONAS
+from _prompts.comment import PERSONAS
 from utils.logger import log
 
 
@@ -17,12 +17,15 @@ router = APIRouter()
 
 class CommentRequest(BaseModel):
     content: str
-    persona_index: Optional[int] = None
+    author_name: str = ""
+    persona_id: Optional[str] = None      # 페르소나 ID (우선)
+    persona_index: Optional[int] = None   # 페르소나 인덱스 (하위호환)
 
 
 class CommentResponse(BaseModel):
     success: bool
     comment: str
+    persona_id: str
     persona: str
     model: str
     elapsed: float
@@ -39,23 +42,26 @@ async def generate_comment_api(request: CommentRequest):
 
     log.header("댓글 생성", "💬")
     log.kv("글 길이", f"{len(request.content)}자")
-    log.kv("페르소나", request.persona_index if request.persona_index is not None else "랜덤")
+    log.kv("페르소나", request.persona_id or request.persona_index or "랜덤")
     log.kv("모델", MODEL_NAME)
 
     try:
         result = await run_in_threadpool(
             generate_comment,
             content=request.content,
+            author_name=request.author_name,
+            persona_id=request.persona_id,
             persona_index=request.persona_index,
         )
 
         elapsed = time.time() - start_ts
 
-        log.success("댓글 생성 완료", 페르소나=result["persona"], 시간=f"{elapsed:.2f}s")
+        log.success("댓글 생성 완료", 페르소나=result["persona_id"], 시간=f"{elapsed:.2f}s")
 
         return CommentResponse(
             success=True,
             comment=result["comment"],
+            persona_id=result["persona_id"],
             persona=result["persona"],
             model=result["model"],
             elapsed=round(elapsed, 2),
@@ -71,15 +77,10 @@ async def generate_comment_api(request: CommentRequest):
 @router.get("/generate/comment/personas")
 async def get_personas():
     """사용 가능한 페르소나 목록 조회"""
-    personas = []
-    for idx, persona in enumerate(ALL_PERSONAS):
-        name = persona.split("\n")[1].replace("## 페르소나: ", "").strip()
-        personas.append({
-            "index": idx,
-            "name": name,
-        })
-
     return {
-        "count": len(personas),
-        "personas": personas,
+        "count": len(PERSONAS),
+        "personas": [
+            {"id": pid, "description": desc, "weight": w}
+            for pid, desc, w in PERSONAS
+        ],
     }
