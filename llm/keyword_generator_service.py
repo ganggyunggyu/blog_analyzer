@@ -7,7 +7,7 @@ from _prompts.keyword_generator import get_keyword_generator_system_prompt
 from utils.ai_client_factory import call_ai
 
 
-MODEL_NAME: str = Model.GEMINI_3_FLASH_PREVIEW
+MODEL_NAME: str = Model.GROK_4_NON_RES
 
 
 def generate_keywords(
@@ -46,7 +46,9 @@ def generate_keywords(
     user_parts.append(f"\n[생성 개수]\n{count}개")
 
     if include_keywords:
-        user_parts.append(f"\n[포함 키워드]\n{', '.join(include_keywords)} (10~30% 빈도로 섞어서)")
+        user_parts.append(
+            f"\n[포함 키워드]\n{', '.join(include_keywords)} (10~30% 빈도로 섞어서)"
+        )
 
     if exclude_keywords:
         user_parts.append(f"\n[제외 키워드]\n{', '.join(exclude_keywords)}")
@@ -107,9 +109,11 @@ def _parse_output(text: str, valid_categories: list[str]) -> list[dict]:
             continue
 
         seen_keywords.add(keyword)
-        results.append({
-            "keyword": keyword,
-            "category": category,
-        })
+        results.append(
+            {
+                "keyword": keyword,
+                "category": category,
+            }
+        )
 
     return results
