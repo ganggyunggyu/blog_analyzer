@@ -1,67 +1,41 @@
-"""댓글 생성 서비스 - Gemini Flash 기반"""
+"""댓글 생성 서비스 - Gemini Flash 기반 (18종 페르소나)"""
 
 from __future__ import annotations
 import random
 
 from _constants.Model import Model
-from _prompts.comment import PERSONAS, get_persona_by_id
-from _prompts.viral import get_comment_system_prompt, get_comment_user_prompt
+from _prompts.viral import (
+    get_comment_system_prompt,
+    get_comment_user_prompt,
+    COMMENT_PERSONAS,
+    get_comment_persona,
+)
 from utils.ai_client_factory import call_ai
 
 
 MODEL_NAME: str = Model.GEMINI_3_FLASH_PREVIEW
 
-# 글자수 분배 (짧은 댓글 위주)
-LENGTH_OPTIONS = [
-    ("한 줄", 50),  # 50%
-    ("1~2문장", 35),  # 35%
-    ("2~3문장", 12),  # 12%
-    ("3~4문장", 3),  # 3%
-]
-
-
-def _get_random_length() -> str:
-    """가중치 기반 랜덤 길이 선택"""
-    options, weights = zip(*LENGTH_OPTIONS)
-    return random.choices(options, weights=weights, k=1)[0]
-
-
-# ============================================================
-# 기존 프롬프트 (주석처리)
-# ============================================================
-# SYSTEM_PROMPT = """
-# 댓글 작성.
-#
-# [핵심]
-# - 짧게 (1~2문장)
-#
-# [출력] 순수 댓글만
-# """
-# ============================================================
-
 
 def generate_comment(
     content: str,
     author_name: str = "",
-    persona_id: str | None = None,
-    persona_index: int | None = None,
+    persona_id: int | None = None,
     keyword: str = "",
     keyword_type: str = "자사",
     comment_type: str = "공감형",
+    product_name: str = "한려담원 흑염소진액",
 ) -> dict:
-    """블로그 글에 대한 댓글 생성"""
+    """블로그 글에 대한 댓글 생성 (18종 페르소나)"""
     if not content or not content.strip():
         raise ValueError("글 내용이 없습니다.")
 
-    # 페르소나 선택
-    if persona_id:
+    # 페르소나 선택 (1~18 랜덤 또는 지정)
+    if persona_id and persona_id in COMMENT_PERSONAS:
         used_id = persona_id
-        persona = get_persona_by_id(persona_id)
-    elif persona_index is not None:
-        used_id, persona, _ = PERSONAS[persona_index]
     else:
-        weights = [w for _, _, w in PERSONAS]
-        used_id, persona, _ = random.choices(PERSONAS, weights=weights, k=1)[0]
+        used_id = random.randint(1, 18)
+
+    persona = get_comment_persona(used_id)
 
     # 새 바이럴 프롬프트 사용
     system_prompt = get_comment_system_prompt()
@@ -70,7 +44,8 @@ def generate_comment(
         keyword=keyword,
         keyword_type=keyword_type,
         comment_type=comment_type,
-        persona=persona.strip(),
+        persona_id=used_id,
+        product_name=product_name,
     )
 
     # ============================================================
@@ -103,7 +78,7 @@ def generate_comment(
     return {
         "comment": comment,
         "persona_id": used_id,
-        "persona": persona.strip(),
+        "persona": persona["name"],
         "model": MODEL_NAME,
     }
 
