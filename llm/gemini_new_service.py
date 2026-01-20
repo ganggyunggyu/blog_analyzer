@@ -9,6 +9,7 @@ from _constants.Model import Model
 from utils.query_parser import parse_query
 from utils.text_cleaner import comprehensive_text_clean
 from utils.ai_client_factory import call_ai
+from utils.logger import log
 
 
 MODEL_NAME: str = Model.GEMINI_3_PRO
@@ -32,11 +33,24 @@ def gemini_new_gen(user_instructions: str, ref: str = "", category: str = "") ->
         ref=ref,
     )
 
-    text = call_ai(
-        model_name=MODEL_NAME,
-        system_prompt=system,
-        user_prompt=user,
-    )
+    # 디버그: 프롬프트 길이 확인
+    log.info(f"[DEBUG] 시스템 프롬프트 길이: {len(system)}자")
+    log.info(f"[DEBUG] 유저 프롬프트 길이: {len(user)}자")
+
+    try:
+        text = call_ai(
+            model_name=MODEL_NAME,
+            system_prompt=system,
+            user_prompt=user,
+        )
+    except Exception as e:
+        log.error(f"[DEBUG] call_ai 에러: {type(e).__name__}: {e}")
+        raise
+
+    # 디버그: 응답 길이 확인
+    log.info(f"[DEBUG] 응답 길이: {len(text)}자")
+    if len(text) < 100:
+        log.warning(f"[DEBUG] 짧은 응답: {text!r}")
 
     text = comprehensive_text_clean(text)
 
