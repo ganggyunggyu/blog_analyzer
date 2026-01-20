@@ -13,13 +13,11 @@ from utils.logger import log
 
 router = APIRouter()
 
-IMAGE_COUNT: int = 5
-
-
+MAX_IMAGE_COUNT: int = 10
 MAX_RETRIES: int = 3
 
 
-def _generate_images_parallel(keyword: str, poses: list, target_count: int = IMAGE_COUNT, category: str = "") -> tuple:
+def _generate_images_parallel(keyword: str, poses: list, target_count: int, category: str = "") -> tuple:
     """이미지 병렬 생성 (실패 시 재시도)
 
     Args:
@@ -67,21 +65,23 @@ def _generate_images_parallel(keyword: str, poses: list, target_count: int = IMA
 @router.post("/generate/image", response_model=ImageGenerateResponse)
 async def generate_image(request: ImageGenerateRequest):
     """
-    이미지 5장 동시 생성
+    이미지 동시 생성
 
     - keyword: 이미지 주제 키워드
     - category: 카테고리 (애견동물_반려동물_분양일 때 Puppy 가이드라인 추가)
+    - count: 생성할 이미지 개수 (기본: 5, 최대: 10)
     """
     start_ts = time.time()
     keyword = request.keyword.strip()
     category = request.category.strip() if request.category else ""
+    count = min(request.count, MAX_IMAGE_COUNT)  # 최대 10장
 
     if not keyword:
         raise HTTPException(status_code=400, detail="keyword가 필요합니다.")
 
-    poses = get_random_poses(IMAGE_COUNT)
+    poses = get_random_poses(count)
 
-    log.header(f"IMAGE {IMAGE_COUNT}장 생성", "🎨")
+    log.header(f"IMAGE {count}장 생성", "🎨")
     log.kv("키워드", keyword)
     log.kv("모델", MODEL_NAME)
     log.kv("포즈", f"{len(poses)}개 선택")
@@ -94,7 +94,7 @@ async def generate_image(request: ImageGenerateRequest):
                 _generate_images_parallel,
                 keyword,
                 poses,
-                IMAGE_COUNT,
+                count,
                 category,
             )
 
