@@ -33,24 +33,15 @@ def gemini_new_gen(user_instructions: str, ref: str = "", category: str = "") ->
         ref=ref,
     )
 
-    # 디버그: 프롬프트 길이 확인
-    log.info(f"[DEBUG] 시스템 프롬프트 길이: {len(system)}자")
-    log.info(f"[DEBUG] 유저 프롬프트 길이: {len(user)}자")
+    log.info(f"프롬프트 sys={len(system)} user={len(user)}")
 
     try:
-        text = call_ai(
-            model_name=MODEL_NAME,
-            system_prompt=system,
-            user_prompt=user,
-        )
+        text = call_ai(model_name=MODEL_NAME, system_prompt=system, user_prompt=user)
     except Exception as e:
-        log.error(f"[DEBUG] call_ai 에러: {type(e).__name__}: {e}")
+        log.error(f"call_ai 에러: {e}")
         raise
 
-    # 디버그: 응답 길이 확인
-    log.info(f"[DEBUG] 응답 길이: {len(text)}자")
-    if len(text) < 100:
-        log.warning(f"[DEBUG] 짧은 응답: {text!r}")
+    log.info(f"응답 len={len(text)}" + (f" | {text[:50]!r}..." if len(text) < 100 else ""))
 
     text = comprehensive_text_clean(text)
 
