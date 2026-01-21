@@ -24,6 +24,7 @@ from routers.generate import (
     recomment as generate_recomment,
     keyword_generator,
     test_comment, test_recomment, test_cafe_daily,
+    ghost_story,
 )
 
 # 라우터 - 분석
@@ -101,6 +102,7 @@ app.include_router(test_comment.router)
 app.include_router(test_recomment.router)
 app.include_router(test_cafe_daily.router)
 app.include_router(keyword_generator.router)
+app.include_router(ghost_story.router)
 
 # 분석
 app.include_router(keyword.router)
