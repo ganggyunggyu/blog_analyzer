@@ -12,7 +12,7 @@ from utils.ai_client_factory import call_ai
 from utils.logger import log
 
 
-MODEL_NAME: str = Model.GEMINI_3_PRO
+MODEL_NAME: str = Model.GEMINI_3_FLASH_PREVIEW
 
 
 def gemini_new_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
@@ -41,7 +41,9 @@ def gemini_new_gen(user_instructions: str, ref: str = "", category: str = "") ->
         log.error(f"call_ai 에러: {e}")
         raise
 
-    log.info(f"응답 len={len(text)}" + (f" | {text[:50]!r}..." if len(text) < 100 else ""))
+    log.info(
+        f"응답 len={len(text)}" + (f" | {text[:50]!r}..." if len(text) < 100 else "")
+    )
 
     text = comprehensive_text_clean(text)
 

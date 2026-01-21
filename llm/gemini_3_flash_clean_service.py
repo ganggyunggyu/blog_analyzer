@@ -9,7 +9,7 @@ from utils.query_parser import parse_query
 from utils.text_cleaner import comprehensive_text_clean
 
 
-MODEL_NAME: str = Model.GEMINI_3_PRO
+MODEL_NAME: str = Model.GEMINI_3_FLASH_PREVIEW
 
 
 SYSTEM_PROMPT = """
