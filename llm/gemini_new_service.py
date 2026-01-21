@@ -12,7 +12,7 @@ from utils.ai_client_factory import call_ai
 from utils.logger import log
 
 
-MODEL_NAME: str = Model.GEMINI_3_FLASH_PREVIEW
+MODEL_NAME: str = Model.GEMINI_3_PRO
 
 
 def gemini_new_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
