@@ -1,4 +1,5 @@
 """Blog Filler - 블로그 글밥 쌓기 전용 라우터"""
+
 import time
 from datetime import datetime
 from fastapi import HTTPException, APIRouter
@@ -68,7 +69,12 @@ async def generator_blog_filler(request: GenerateRequest):
                 char_count = len(generated_manuscript.replace(" ", ""))
 
                 log.divider()
-                log.success("Blog Filler 완료", 키워드=keyword, 길이=f"{char_count}자", 시간=f"{elapsed:.1f}s")
+                log.success(
+                    "Blog Filler 완료",
+                    키워드=keyword,
+                    길이=f"{char_count}자",
+                    시간=f"{elapsed:.1f}s",
+                )
 
                 return document
             except Exception as e:
