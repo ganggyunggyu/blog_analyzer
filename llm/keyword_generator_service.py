@@ -7,7 +7,7 @@ from _prompts.keyword_generator import get_keyword_generator_system_prompt
 from utils.ai_client_factory import call_ai
 
 
-MODEL_NAME: str = Model.GROK_4_NON_RES
+MODEL_NAME: str = Model.GPT5_2
 
 
 def generate_keywords(
