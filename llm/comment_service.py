@@ -13,7 +13,7 @@ from _prompts.viral import (
 from utils.ai_client_factory import call_ai
 
 
-MODEL_NAME: str = Model.GEMINI_3_FLASH_PREVIEW
+MODEL_NAME: str = Model.GROK_4_1_NON_RES
 
 
 def generate_comment(
