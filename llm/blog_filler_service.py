@@ -1,9 +1,9 @@
-"""Blog Filler - 블로그 글밥 쌓기 전용 서비스 (Gemini 3 Flash Preview)"""
+"""Blog Filler - 블로그 글밥 쌓기 전용 서비스"""
 
 from __future__ import annotations
 
-from _prompts.gemini.new_system import get_gemini_new_system_prompt
-from _prompts.gemini.new_user import get_gemini_new_user_prompt
+from _prompts.blog_filler.system import get_blog_filler_system_prompt
+from _prompts.blog_filler.user import get_blog_filler_user_prompt
 from _constants.Model import Model
 from utils.query_parser import parse_query
 from utils.text_cleaner import comprehensive_text_clean
@@ -15,7 +15,7 @@ MODEL_NAME: str = Model.GROK_4_1_NON_RES
 
 
 def blog_filler_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
-    """Gemini 3 Flash Preview를 사용한 블로그 글밥 생성"""
+    """블로그 글밥 생성"""
 
     parsed = parse_query(user_instructions)
     keyword = parsed.get("keyword", "")
@@ -24,8 +24,8 @@ def blog_filler_gen(user_instructions: str, ref: str = "", category: str = "") -
     if not keyword:
         raise ValueError("키워드가 없습니다.")
 
-    system = get_gemini_new_system_prompt()
-    user = get_gemini_new_user_prompt(
+    system = get_blog_filler_system_prompt()
+    user = get_blog_filler_user_prompt(
         keyword=keyword,
         category=category,
         note=note,

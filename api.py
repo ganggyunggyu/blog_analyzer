@@ -28,6 +28,7 @@ from routers.generate import (
     restaurant_gemini,
     update_restaurant,
     cafe_total,
+    blog_filler,
 )
 
 # 라우터 - 분석
@@ -109,6 +110,7 @@ app.include_router(ghost_story.router)
 app.include_router(restaurant_gemini.router)
 app.include_router(update_restaurant.router)
 app.include_router(cafe_total.router)
+app.include_router(blog_filler.router)
 
 # 분석
 app.include_router(keyword.router)
