@@ -3,7 +3,12 @@
 from __future__ import annotations
 import random
 
-from _prompts.viral import get_post_system_prompt, get_post_user_prompt, PERSONAS, get_persona
+from _prompts.viral import (
+    get_post_system_prompt,
+    get_post_user_prompt,
+    PERSONAS,
+    get_persona,
+)
 from _constants.Model import Model
 from utils.query_parser import parse_query
 from utils.text_cleaner import comprehensive_text_clean
@@ -11,7 +16,7 @@ from utils.ai_client_factory import call_ai
 from utils.logger import log
 
 
-MODEL_NAME: str = Model.GEMINI_3_FLASH_PREVIEW
+MODEL_NAME: str = Model.GEMINI_3_PRO
 
 
 def gemini_cafe_daily_gen(
@@ -52,7 +57,11 @@ def gemini_cafe_daily_gen(
         user_prompt=user,
     )
 
-    log.info(f"[DEBUG] 응답 원문: {text[:200]!r}..." if len(text) > 200 else f"[DEBUG] 응답 원문: {text!r}")
+    log.info(
+        f"[DEBUG] 응답 원문: {text[:200]!r}..."
+        if len(text) > 200
+        else f"[DEBUG] 응답 원문: {text!r}"
+    )
 
     text = comprehensive_text_clean(text)
 

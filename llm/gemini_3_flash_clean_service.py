@@ -1,7 +1,6 @@
 """Gemini 3 Flash Preview - 클린 버전 (프롬프트 없음)"""
 
 from __future__ import annotations
-import re
 
 from _constants.Model import Model
 from utils.ai_client_factory import call_ai
@@ -9,7 +8,7 @@ from utils.query_parser import parse_query
 from utils.text_cleaner import comprehensive_text_clean
 
 
-MODEL_NAME: str = Model.GEMINI_3_FLASH_PREVIEW
+MODEL_NAME: str = Model.GROK_4_1_NON_RES
 
 
 SYSTEM_PROMPT = """
@@ -18,9 +17,7 @@ SYSTEM_PROMPT = """
 USER_PROMPT_TEMPLATE = """{keyword}"""
 
 
-def gemini_3_flash_clean_gen(
-    user_instructions: str, ref: str = "", category: str = ""
-) -> str:
+def gemini_3_flash_clean_gen(user_instructions: str, ref: str = "") -> str:
     parsed = parse_query(user_instructions)
     keyword = parsed.get("keyword", "")
     note = parsed.get("note", "")
@@ -41,7 +38,5 @@ def gemini_3_flash_clean_gen(
     )
 
     text = comprehensive_text_clean(text)
-
-    length_no_space = len(re.sub(r"\s+", "", text))
 
     return text
