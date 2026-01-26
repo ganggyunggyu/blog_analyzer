@@ -7,7 +7,7 @@ from _prompts.keyword_generator import get_keyword_generator_system_prompt
 from utils.ai_client_factory import call_ai
 
 
-MODEL_NAME: str = Model.GPT5_2
+MODEL_NAME: str = Model.GEMINI_3_FLASH_PREVIEW
 
 
 def generate_keywords(
@@ -18,48 +18,23 @@ def generate_keywords(
     shuffle: bool = True,
     note: str = "",
 ) -> dict:
-    """키워드-카테고리 매핑 생성
-
-    Args:
-        categories: 사용 가능한 카테고리 목록 (필수)
-        count: 생성할 키워드 개수 (기본 60)
-        include_keywords: 포함해야 할 키워드 목록 (선택)
-        exclude_keywords: 제외해야 할 키워드 목록 (선택)
-        shuffle: 카테고리 뒤죽박죽 섞기 (기본 True)
-        note: 추가 요청사항 (선택)
-
-    Returns:
-        dict: {
-            "keywords": 생성된 키워드:카테고리 리스트,
-            "raw": 원본 텍스트,
-            "count": 생성된 개수,
-            "model": 사용된 모델
-        }
-    """
+    """카테고리별 키워드 매핑 생성"""
     if not categories:
         raise ValueError("카테고리 목록이 필요합니다.")
 
     system_prompt = get_keyword_generator_system_prompt()
 
     # 유저 프롬프트 구성
-    user_parts = [f"[카테고리 목록]\n{', '.join(categories)}"]
-    user_parts.append(f"\n[생성 개수]\n{count}개")
+    include_section = f"\n[포함 키워드]\n{', '.join(include_keywords)} (10~30% 빈도로 섞어서)" if include_keywords else ""
+    exclude_section = f"\n[제외 키워드]\n{', '.join(exclude_keywords)}" if exclude_keywords else ""
+    shuffle_section = "\n[배치 방식]\n뒤죽박죽 섞어서 (같은 카테고리 연속 최소화)" if shuffle else ""
+    note_section = f"\n[추가 요청]\n{note}" if note else ""
 
-    if include_keywords:
-        user_parts.append(
-            f"\n[포함 키워드]\n{', '.join(include_keywords)} (10~30% 빈도로 섞어서)"
-        )
+    user_prompt = f"""[카테고리 목록]
+{', '.join(categories)}
 
-    if exclude_keywords:
-        user_parts.append(f"\n[제외 키워드]\n{', '.join(exclude_keywords)}")
-
-    if shuffle:
-        user_parts.append("\n[배치 방식]\n뒤죽박죽 섞어서 (같은 카테고리 연속 최소화)")
-
-    if note:
-        user_parts.append(f"\n[추가 요청]\n{note}")
-
-    user_prompt = "\n".join(user_parts)
+[생성 개수]
+{count}개{include_section}{exclude_section}{shuffle_section}{note_section}"""
 
     raw_output = call_ai(
         model_name=MODEL_NAME,
