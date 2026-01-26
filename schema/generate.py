@@ -21,7 +21,7 @@ class BatchGenerateRequest(BaseModel):
 class ImageGenerateRequest(BaseModel):
     keyword: str
     category: str = ""  # 카테고리 (애견동물_반려동물_분양일 때 Puppy 가이드라인 추가)
-    count: int = 1  # 생성할 이미지 개수 (기본: 5, 최대: 10)
+    count: int = 5  # 생성할 이미지 개수 (기본: 5, 최대: 10)
 
 
 class ImageItem(BaseModel):
