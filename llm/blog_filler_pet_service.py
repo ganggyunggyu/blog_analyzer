@@ -11,7 +11,7 @@ from utils.ai_client_factory import call_ai
 from utils.logger import log
 
 
-MODEL_NAME: str = Model.GROK_4_1_RES
+MODEL_NAME: str = Model.GPT5_CHAT
 
 PEN_NAMES: list[str] = [
     "초파맘",

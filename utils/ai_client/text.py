@@ -204,7 +204,7 @@ def call_ai(
             output_tokens = getattr(usage, "output_tokens", 0) or 0
 
     elif ai_service_type == "openai":
-        if model_name.startswith("gpt-5"):
+        if model_name.startswith("gpt-5") and "chat" not in model_name:
             response = client.responses.create(
                 model=model_name,
                 instructions=system_prompt,
@@ -319,7 +319,7 @@ def call_ai_stream(
     if not client:
         raise ValueError(f"AI 클라이언트를 찾을 수 없습니다. (service_type: {ai_service_type})")
 
-    if ai_service_type == "openai" and not model_name.startswith("gpt-5"):
+    if ai_service_type == "openai" and (not model_name.startswith("gpt-5") or "chat" in model_name):
         stream = client.chat.completions.create(
             model=model_name,
             messages=[
@@ -397,7 +397,7 @@ def call_ai_stream(
             yield f"data: {text[i:i+chunk_size]}\n\n"
         yield "data: [DONE]\n\n"
 
-    elif ai_service_type == "openai" and model_name.startswith("gpt-5"):
+    elif ai_service_type == "openai" and model_name.startswith("gpt-5") and "chat" not in model_name:
         response = client.responses.create(
             model=model_name,
             instructions=system_prompt,
