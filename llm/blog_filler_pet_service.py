@@ -6,7 +6,7 @@ import random
 
 from _constants.Model import Model
 from utils.query_parser import parse_query
-from utils.text_cleaner import comprehensive_text_clean
+from utils.text_cleaner import comprehensive_text_clean, remove_markdown
 from utils.ai_client_factory import call_ai
 from utils.logger import log
 
@@ -926,6 +926,7 @@ SYSTEM_PROMPT = """
 - 각 섹션의 핵심 내용을 반영해야 합니다.
 - 5개 섹션에 대해 각각 작성합니다.
 - 적절히 키워드를 삽입합니다.
+- 1. 2. 3. 형식의 번호 리스트로 작성합니다.
 
 <example>
 1. 이혼전문변호사란
@@ -936,13 +937,37 @@ SYSTEM_PROMPT = """
 
 </example>
 
-피드백과 마크다운이 없는 없는 순수 텍스트 형식으로만 출력합니다.
+## 출력 구조 형식
+
+- 하단의 구조를 따라 피드백과 마크다운이 없는 없는 순수 텍스트 형식으로만 출력합니다.
+- () 안의 내용은 설명을 위한 것으로 실제 출력물에 포함하지 않습니다.
+- 외래어 사용하지 않고 문자는 한글로만 작성합니다.
 
 <example>
 
-제목
+(제목)
 
-본문 내용
+(서론)
+
+1. (부제)
+
+(본문)
+
+2. (부제)
+
+(본문)
+
+3. (부제)
+
+(본문)
+
+4. (부제)
+
+(본문)
+
+5. (부제)
+
+(본문)
 
 </example>
 """
@@ -985,5 +1010,6 @@ def blog_filler_pet_gen(
     )
 
     text = comprehensive_text_clean(text)
+    text = remove_markdown(text)
 
     return text
