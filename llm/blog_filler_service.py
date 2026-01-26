@@ -6,7 +6,7 @@ from _prompts.blog_filler.system import get_blog_filler_system_prompt
 from _prompts.blog_filler.user import get_blog_filler_user_prompt
 from _constants.Model import Model
 from utils.query_parser import parse_query
-from utils.text_cleaner import comprehensive_text_clean
+from utils.text_cleaner import comprehensive_text_clean, remove_markdown
 from utils.ai_client_factory import call_ai
 from utils.logger import log
 
@@ -48,6 +48,7 @@ def blog_filler_gen(user_instructions: str, ref: str = "", category: str = "") -
         f"응답 len={len(text)}" + (f" | {text[:50]!r}..." if len(text) < 100 else "")
     )
 
+    text = remove_markdown(text)
     text = comprehensive_text_clean(text)
 
     return text

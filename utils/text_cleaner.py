@@ -57,6 +57,61 @@ def clean_empty_lines(text: str) -> str:
 
     return re.sub(r"\n\s*\n\s*\n+", "\n\n", text)
 
+def remove_markdown(text: str) -> str:
+    """
+    마크다운 문법 제거
+    - 헤딩 (#, ##, ###)
+    - 볼드 (**text**)
+    - 이탤릭 (*text*, _text_)
+    - 테이블 (| col |)
+    - 코드블록 (```)
+    - 인라인 코드 (`code`)
+    - 링크 [text](url)
+    - 이미지 ![alt](url)
+    - 체크박스 이모지 (✔, ✅, ❌, ⚠️, ❗, →)
+    - 제로 너비 공백 (​)
+    """
+    if not text:
+        return text
+
+    # 제로 너비 공백 제거
+    text = text.replace("\u200b", "")
+    text = text.replace("​", "")
+
+    # 코드블록 제거 (```...```)
+    text = re.sub(r"```[\s\S]*?```", "", text)
+
+    # 인라인 코드 제거 (`code`)
+    text = re.sub(r"`([^`]+)`", r"\1", text)
+
+    # 테이블 라인 제거 (|로 시작하는 줄)
+    text = re.sub(r"^\|.*\|$", "", text, flags=re.MULTILINE)
+
+    # 헤딩 제거 (## 텍스트 -> 텍스트)
+    text = re.sub(r"^#{1,6}\s*", "", text, flags=re.MULTILINE)
+
+    # 볼드 제거 (**text** -> text)
+    text = re.sub(r"\*\*([^*]+)\*\*", r"\1", text)
+
+    # 이탤릭 제거 (*text* -> text, _text_ -> text)
+    text = re.sub(r"\*([^*]+)\*", r"\1", text)
+    text = re.sub(r"_([^_]+)_", r"\1", text)
+
+    # 링크 제거 [text](url) -> text
+    text = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", text)
+
+    # 이미지 제거 ![alt](url) -> alt
+    text = re.sub(r"!\[([^\]]*)\]\([^)]+\)", r"\1", text)
+
+    # 체크 이모지 제거
+    text = re.sub(r"[✔✅❌⚠️❗→]", "", text)
+
+    # 구분선 제거 (---, ___, ***)
+    text = re.sub(r"^[-_*]{3,}$", "", text, flags=re.MULTILINE)
+
+    return text
+
+
 def comprehensive_text_clean(text: str) -> str:
     """
     모든 텍스트 정리 기능을 포함한 종합 정리 함수
