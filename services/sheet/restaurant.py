@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import os
 import requests
 from typing import Optional
 
 
-BASE_URL = "http://localhost:3000"
+BASE_URL = os.getenv("SHEET_SERVER_URL", "http://localhost:3000")
 
 
 class SheetRestaurantService:
