@@ -22,26 +22,12 @@ def get_blog_filler_user_prompt(
     prompt = f"""
 ## Input
 - 키워드: {keyword}
-- 카테고리: {category if category else "일반"}
-- 추가 요청: {note if note else "없음"}
-- 참조 문서: {ref if ref else "없음"}
 
-## Task
-위 키워드에 대해 정보성 블로그 원고를 작성하세요.
-
-## Requirements
-1. 독자가 궁금해할 정보를 풍성하게 담기
-2. 직접 경험한 것처럼 생생하게 서술
-3. 색다르고 독창적인 정보 위주
-4. 정보량을 풍부하게 (구구절절한 설명보단 확실한 정보)
-5. 연관 키워드도 자연스럽게 포함
+키워드 기반의 블로그 원고를 작성해 주세요.
 
 ## Output
 제목과 본문만 출력하세요.
 ```
-하단 형식 금지
-
-어쩌고저쩌고:
 어쩌고저쩌고
 ```
 """
