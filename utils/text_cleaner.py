@@ -109,6 +109,10 @@ def remove_markdown(text: str) -> str:
     # 구분선 제거 (---, ___, ***)
     text = re.sub(r"^[-_*]{3,}$", "", text, flags=re.MULTILINE)
 
+    # 백틱, 작은따옴표 제거
+    text = text.replace("`", "")
+    text = text.replace("'", "")
+
     return text
 
 
