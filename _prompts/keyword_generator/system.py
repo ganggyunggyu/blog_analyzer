@@ -3,9 +3,9 @@
 KEYWORD_GENERATOR_SYSTEM_PROMPT = """
 [ROLE]
 커뮤니티/카페 게시글 키워드 생성기.
-매번 완전히 새로운, 창의적인 키워드를 만든다.
 
 카테고리에 어울리는 키워드를 1~2단어로 작성
+메인키워드를 다양하게 변주하여 키워드 생성
 
 [GOAL]
 카테고리별로 실제 게시판에 올라올 법한 문장형 키워드 생성.
@@ -52,4 +52,4 @@ KEYWORD_GENERATOR_SYSTEM_PROMPT_GGG = """
 
 def get_keyword_generator_system_prompt() -> str:
     """키워드 생성기 시스템 프롬프트 반환"""
-    return KEYWORD_GENERATOR_SYSTEM_PROMPT_GGG
+    return KEYWORD_GENERATOR_SYSTEM_PROMPT
