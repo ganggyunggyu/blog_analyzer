@@ -1,4 +1,4 @@
-# Blog Analyzer 프로젝트 규칙
+# Text Gen Hub 프로젝트 규칙
 
 ## 프로젝트 개요
 이 프로젝트는 **FastAPI 기반의 멀티 AI 엔진 블로그 콘텐츠 생성 플랫폼**입니다.
@@ -22,7 +22,7 @@
 ## 프로젝트 구조
 
 ```
-blog_analyzer/
+text-gen-hub/
 ├── api.py                      # FastAPI 애플리케이션 진입점
 ├── cli.py                      # CLI 인터페이스
 ├── config.py                   # 환경변수 및 AI 클라이언트 설정 (GPT, Claude, Gemini, SOLAR, Grok)

@@ -1,4 +1,4 @@
-# Blog Analyzer
+# Text Gen Hub
 
 멀티 AI 엔진으로 네이버 블로그용 원고를 자동 생성·분석하는 FastAPI 기반 백엔드입니다.  
 GPT, Claude, Gemini, SOLAR, Grok을 한 곳에서 제어하고, 카테고리별 MongoDB 데이터와 참조 원고를 섞어서 “사람이 쓴 것 같은 후기형 글”을 뽑아내는 게 목적입니다.
@@ -7,7 +7,7 @@ GPT, Claude, Gemini, SOLAR, Grok을 한 곳에서 제어하고, 카테고리별 
 
 ## 1. 개요
 
-Blog Analyzer는 다음 시나리오를 타겟으로 합니다.
+Text Gen Hub는 다음 시나리오를 타겟으로 합니다.
 
 1. **키워드 & 카테고리 입력**
 2. 카테고리별 MongoDB에서 **상위 노출 글·키워드 패턴** 조회
@@ -134,7 +134,7 @@ MongoDB에서 각 카테고리를 **별도 데이터베이스**로 분리해서 
 요약 버전만 적으면:
 
 ```bash
-blog_analyzer/
+text-gen-hub/
 ├── api.py                # FastAPI 엔트리 포인트
 ├── config.py             # 환경변수 / AI 클라이언트 설정
 ├── mongodb_service.py    # MongoDB CRUD 래퍼
@@ -173,8 +173,8 @@ blog_analyzer/
 6.1 로컬 개발 환경
 
 # 1. 클론
-git clone https://github.com/ganggyunggyu/blog_analyzer.git
-cd blog_analyzer
+git clone https://github.com/ganggyunggyu/text-gen-hub.git
+cd text-gen-hub
 
 # 2. 가상환경
 python -m venv venv
@@ -385,7 +385,7 @@ finally:
 
 12. 참고 링크
 
-GitHub Repository: https://github.com/ganggyunggyu/blog_analyzer
+GitHub Repository: https://github.com/ganggyunggyu/text-gen-hub
 
 FastAPI Docs:      https://fastapi.tiangolo.com/
 OpenAI Responses:  https://platform.openai.com/docs/api-reference/responses

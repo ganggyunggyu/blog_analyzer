@@ -39,7 +39,7 @@
 # WSL 터미널에서
 cd ~ && mkdir -p projects && cd projects
 git clone <repository-url>
-cd blog_analyzer
+cd text-gen-hub
 
 # 패키지 설치
 uv sync

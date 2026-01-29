@@ -112,7 +112,7 @@ if (-not $Phase2) {
             $taskTrigger = New-ScheduledTaskTrigger -AtLogOn
             $taskSettings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
 
-            Register-ScheduledTask -TaskName "BlogAnalyzer_Setup_Phase2" -Action $taskAction -Trigger $taskTrigger -Settings $taskSettings -Force | Out-Null
+            Register-ScheduledTask -TaskName "TextGenHub_Setup_Phase2" -Action $taskAction -Trigger $taskTrigger -Settings $taskSettings -Force | Out-Null
             Write-Success "Phase 2 자동 실행 등록 완료"
 
             Write-Host ""
@@ -138,7 +138,7 @@ if ($Phase2) {
     Write-Step "Phase 2: WSL 환경 설정"
 
     # 예약된 태스크 삭제
-    Unregister-ScheduledTask -TaskName "BlogAnalyzer_Setup_Phase2" -Confirm:$false -ErrorAction SilentlyContinue
+    Unregister-ScheduledTask -TaskName "TextGenHub_Setup_Phase2" -Confirm:$false -ErrorAction SilentlyContinue
 
     # Ubuntu 실행 확인
     Write-Step "Ubuntu 확인 중..."
@@ -191,8 +191,8 @@ echo -e "${GREEN}[+] WSL 환경 설정 완료!${NC}"
 echo ""
 echo -e "${YELLOW}다음 단계:${NC}"
 echo "  1. cd ~/projects"
-echo "  2. git clone <your-repo> blog_analyzer"
-echo "  3. cd blog_analyzer"
+echo "  2. git clone <your-repo> text-gen-hub"
+echo "  3. cd text-gen-hub"
 echo "  4. uv sync"
 echo "  5. cp .env.example .env && nano .env"
 echo "  6. uv run playwright install chromium"
@@ -212,8 +212,8 @@ echo "  7. uv run uvicorn api:app --reload"
     Write-Host "  2. Ubuntu 탭 선택" -ForegroundColor White
     Write-Host "  3. 프로젝트 클론:" -ForegroundColor White
     Write-Host "     mkdir -p ~/projects && cd ~/projects" -ForegroundColor Gray
-    Write-Host "     git clone <your-repo> blog_analyzer" -ForegroundColor Gray
-    Write-Host "     cd blog_analyzer && uv sync" -ForegroundColor Gray
+    Write-Host "     git clone <your-repo> text-gen-hub" -ForegroundColor Gray
+    Write-Host "     cd text-gen-hub && uv sync" -ForegroundColor Gray
     Write-Host ""
     Write-Host "  4. VS Code에서 열기:" -ForegroundColor White
     Write-Host "     code ." -ForegroundColor Gray

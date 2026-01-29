@@ -1,4 +1,4 @@
-# Blog Analyzer - 개발 가이드
+# Text Gen Hub - 개발 가이드
 
 ## 프로젝트 개요
 - **타입**: FastAPI + Python 멀티 AI 엔진 블로그 콘텐츠 생성 플랫폼
@@ -19,7 +19,7 @@
 
 ## 디렉토리 구조
 ```
-blog_analyzer/
+text-gen-hub/
 ├── api.py                 # FastAPI 진입점
 ├── cli.py                 # CLI 인터페이스
 ├── config.py              # 환경변수 및 AI 클라이언트
