@@ -14,10 +14,12 @@ from config import (
     DEEPSEEK_API_KEY,
     GEMINI_API_KEY,
     GROK_API_KEY,
+    MOONSHOT_API_KEY,
     OPENAI_API_KEY,
     UPSTAGE_API_KEY,
     deepseek_client,
     grok_client,
+    moonshot_client,
     solar_client,
 )
 from utils.logger import log
@@ -39,6 +41,7 @@ MODEL_PRICING: dict[str, Tuple[float, float]] = {
     "grok-4": (3.00, 15.00),
     "deepseek": (0.28, 0.42),
     "solar": (0.15, 0.60),
+    "kimi": (0.60, 2.50),
 }
 
 
@@ -62,6 +65,8 @@ def get_ai_service_type(model_name: str) -> str:
         return "grok"
     elif model_name.startswith("deepseek"):
         return "deepseek"
+    elif model_name.startswith("kimi"):
+        return "kimi"
     else:
         return "openai"
 
@@ -88,6 +93,8 @@ def get_ai_client(ai_service_type: str) -> Optional[Any]:
         return grok_client
     elif ai_service_type == "deepseek":
         return deepseek_client
+    elif ai_service_type == "kimi":
+        return moonshot_client
     return None
 
 
@@ -119,6 +126,9 @@ def validate_api_key(ai_service_type: str) -> None:
     elif ai_service_type == "deepseek":
         if not DEEPSEEK_API_KEY:
             raise ValueError("DEEPSEEK_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요.")
+    elif ai_service_type == "kimi":
+        if not MOONSHOT_API_KEY:
+            raise ValueError("MOONSHOT_API_KEY가 설정되어 있지 않습니다. .env를 확인하세요.")
 
 
 def get_model_pricing(model_name: str) -> Tuple[float, float]:
@@ -281,6 +291,23 @@ def call_ai(
             input_tokens = getattr(usage, "prompt_tokens", 0) or 0
             output_tokens = getattr(usage, "completion_tokens", 0) or 0
 
+    elif ai_service_type == "kimi":
+        response = client.chat.completions.create(
+            model=model_name,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+        )
+        choices = getattr(response, "choices", []) or []
+        if not choices or not getattr(choices[0], "message", None):
+            raise RuntimeError("Kimi가 유효한 choices/message를 반환하지 않았습니다.")
+        text = (choices[0].message.content or "").strip()
+        usage = getattr(response, "usage", None)
+        if usage:
+            input_tokens = getattr(usage, "prompt_tokens", 0) or 0
+            output_tokens = getattr(usage, "completion_tokens", 0) or 0
+
     else:
         raise ValueError(f"지원하지 않는 AI 서비스 타입: {ai_service_type}")
 
@@ -359,6 +386,20 @@ def call_ai_stream(
         yield "data: [DONE]\n\n"
 
     elif ai_service_type == "deepseek":
+        stream = client.chat.completions.create(
+            model=model_name,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            stream=True,
+        )
+        for chunk in stream:
+            if chunk.choices and chunk.choices[0].delta.content:
+                yield f"data: {chunk.choices[0].delta.content}\n\n"
+        yield "data: [DONE]\n\n"
+
+    elif ai_service_type == "kimi":
         stream = client.chat.completions.create(
             model=model_name,
             messages=[

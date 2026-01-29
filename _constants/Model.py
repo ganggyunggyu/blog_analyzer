@@ -32,4 +32,7 @@ class Model:
     DEEPSEEK_CHAT = "deepseek-chat"
     DEEPSEEK_RES = "deepseek-reasoner"
 
+    KIMI_K2 = "kimi-k2-0711-preview"
+    KIMI_K2_5 = "kimi-k2.5"
+
     RECRAFT_V3 = "recraft-v3"

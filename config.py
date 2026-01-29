@@ -22,6 +22,7 @@ CLAUDE_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 GROK_API_KEY = os.getenv("GROK_API_KEY")
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
 RECRAFT_API_KEY = os.getenv("RECRAFT_API_KEY")
+MOONSHOT_API_KEY = os.getenv("MOONSHOT_API_KEY")
 
 deepseek_client = OpenAI(
     api_key=DEEPSEEK_API_KEY,
@@ -32,6 +33,11 @@ deepseek_client = OpenAI(
 grok_client = Client(
     api_key=GROK_API_KEY,
     timeout=3600,
+)
+
+moonshot_client = OpenAI(
+    api_key=MOONSHOT_API_KEY,
+    base_url="https://api.moonshot.ai/v1",
 )
 
 # AWS S3
