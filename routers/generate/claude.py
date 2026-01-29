@@ -6,6 +6,7 @@ from llm.claude_service import claude_gen, MODEL_NAME
 from mongodb_service import MongoDBService
 from utils.get_category_db_name import get_category_db_name
 from utils.progress_logger import progress
+from utils.logger import log
 
 router = APIRouter()
 
@@ -34,9 +35,7 @@ async def generate_manuscript_claude_api(request: GenerateRequest):
     db_service.set_db_name(db_name=category)
 
     is_ref = bool(ref and ref.strip())
-    print(
-        f"[GEN] service={service} | model={MODEL_NAME} | category={category} | keyword={keyword} | hasRef={is_ref}"
-    )
+    log.info("Claude 생성", keyword=keyword[:20], category=category)
 
     try:
         with progress(label=f"{service}:{MODEL_NAME}:{keyword}"):

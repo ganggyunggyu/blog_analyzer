@@ -1,4 +1,4 @@
-"""GPT CEO - GPT 5.2 + CEO 프롬프트 라우터"""
+""" """
 
 import time
 from datetime import datetime
@@ -67,9 +67,15 @@ async def generator_gpt_ceo(request: GenerateRequest):
 
                 document["_id"] = str(document["_id"])
                 elapsed = time.time() - start_ts
+                char_count = len(generated_manuscript.replace(" ", ""))
 
                 log.divider()
-                log.success("GPT CEO 완료", 키워드=keyword, 카테고리=category, 시간=f"{elapsed:.1f}s")
+                log.success(
+                    "GPT CEO 완료",
+                    키워드=keyword,
+                    길이=f"{char_count}자",
+                    시간=f"{elapsed:.1f}s",
+                )
 
                 return document
             except Exception as e:
@@ -80,7 +86,9 @@ async def generator_gpt_ceo(request: GenerateRequest):
                 detail="GPT-CEO 원고 생성에 실패했습니다.",
             )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"GPT-CEO 원고 생성 중 오류 발생: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"GPT-CEO 원고 생성 중 오류 발생: {e}"
+        )
     finally:
         if db_service:
             db_service.close_connection()

@@ -10,6 +10,7 @@ from mongodb_service import MongoDBService
 from schema.search import ManuscriptUpdateRequest
 from config import MONGO_URI
 from _constants.categories import CATEGORIES
+from utils.logger import log
 
 router = APIRouter()
 
@@ -162,20 +163,12 @@ async def delete_manuscript(
     Returns:
         {"ok": true, "deletedId": "..."}
     """
-    print(f"\n{'='*60}")
-    print(f"🗑️ 원고 삭제 시작")
-    print(f"{'='*60}")
-    print(f"🆔 ID         : {manuscript_id}")
-    print(f"📁 카테고리   : {category}")
-    print(f"{'='*60}\n")
-
     result = await run_in_threadpool(
         delete_manuscript_by_id,
         manuscript_id=manuscript_id,
         category=category,
     )
-
-    print(f"✅ 원고 삭제 완료: {manuscript_id}")
+    log.success("원고 삭제", id=manuscript_id[:8])
 
     return result
 
@@ -197,14 +190,6 @@ async def update_manuscript(
     Returns:
         {"ok": true, "manuscript": {"_id": "...", "content": "...", "updatedAt": ...}}
     """
-    print(f"\n{'='*60}")
-    print(f"✏️ 원고 수정 시작")
-    print(f"{'='*60}")
-    print(f"🆔 ID         : {manuscript_id}")
-    print(f"📁 카테고리   : {category}")
-    print(f"📝 메모       : {body.memo or '없음'}")
-    print(f"{'='*60}\n")
-
     result = await run_in_threadpool(
         update_manuscript_by_id,
         manuscript_id=manuscript_id,
@@ -212,8 +197,7 @@ async def update_manuscript(
         content=body.content,
         memo=body.memo,
     )
-
-    print(f"✅ 원고 수정 완료: {manuscript_id}")
+    log.success("원고 수정", id=manuscript_id[:8])
 
     return result
 
@@ -298,21 +282,12 @@ async def toggle_visibility(
     Returns:
         {"ok": true, "visible": true/false, "manuscriptId": "..."}
     """
-    print(f"\n{'='*60}")
-    print(f"👁️ 노출여부 토글 시작")
-    print(f"{'='*60}")
-    print(f"🆔 ID         : {manuscript_id}")
-    print(f"📁 카테고리   : {category}")
-    print(f"{'='*60}\n")
-
     result = await run_in_threadpool(
         toggle_visibility_by_id,
         manuscript_id=manuscript_id,
         category=category,
     )
-
-    status = "노출" if result["visible"] else "숨김"
-    print(f"✅ 노출여부 변경 완료: {manuscript_id} → {status}")
+    log.success("노출여부 변경", id=manuscript_id[:8], visible=result["visible"])
 
     return result
 
@@ -436,21 +411,12 @@ async def get_visible_manuscripts_api(
     """
     skip = (page - 1) * limit
 
-    print(f"\n{'='*60}")
-    print(f"👁️ 노출 원고 목록 조회")
-    print(f"{'='*60}")
-    print(f"📁 카테고리   : {category or '전체'}")
-    print(f"📄 페이지     : {page}")
-    print(f"📊 결과 수    : {limit}개")
-    print(f"{'='*60}\n")
-
     result = await run_in_threadpool(
         get_visible_manuscripts,
         category=category,
         skip=skip,
         limit=limit,
     )
-
-    print(f"✅ 조회 완료: {len(result['documents'])}개 / 전체 {result['total']}개")
+    log.success("노출 원고 조회", count=len(result['documents']), total=result['total'])
 
     return result

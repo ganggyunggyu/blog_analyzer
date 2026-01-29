@@ -20,3 +20,16 @@ _docs
 
 
 _data
+
+ceo.*
+
+# Build artifacts
+*.egg-info/
+
+# Data folders
+debug/
+manuscripts/
+마운자로 인기글/
+
+# Scripts
+run

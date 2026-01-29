@@ -8,7 +8,7 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 def file_upload(file_name):
     try:
         with open(
-            f"/Users/ganggyunggyu/Programing/21lab/blog_analyzer/_docs/merge_docs/{file_name}.txt",
+            f"/Users/ganggyunggyu/Programing/21lab/text-gen-hub/_docs/merge_docs/{file_name}.txt",
             "rb",
         ) as f:
             response = client.files.create(

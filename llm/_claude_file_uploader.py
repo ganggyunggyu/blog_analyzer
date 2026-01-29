@@ -12,7 +12,7 @@ def file_upload(file_name):
         file=(
             f"{file_name}.txt",
             open(
-                f"/Users/ganggyunggyu/Programing/21lab/blog_analyzer/_docs/claude_docs/{file_name}.txt",
+                f"/Users/ganggyunggyu/Programing/21lab/text-gen-hub/_docs/claude_docs/{file_name}.txt",
                 "rb",
             ),
             "text/plain",

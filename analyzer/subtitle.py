@@ -8,6 +8,7 @@ import re
 from _constants.Model import Model
 from mongodb_service import MongoDBService
 from utils.ai_client_factory import call_ai
+from utils.logger import log
 
 
 model_name: str = Model.GROK_4_1_RES
@@ -80,8 +81,7 @@ JSON만 반환해.
         db_service.insert_many_documents("subtitles", docs_to_save)
 
     elapsed = time.time() - start_ts
-    print(f"{category}-부제목 추출 소요시간: {elapsed:.2f}s")
-    print(f"추출된 부제목: {len(subtitles)}개")
+    log.info(f"부제목 추출 완료", 소요시간=f"{elapsed:.1f}s", 개수=len(subtitles))
 
     db_service.close_connection()
 

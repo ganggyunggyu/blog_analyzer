@@ -1,69 +1,169 @@
-# AGENT Guide - blog_analyzer
+# Text Gen Hub - 개발 가이드
 
-## Quick Orientation
-- FastAPI service plus CLI that generates SEO-oriented manuscripts through multi-engine LLM calls (OpenAI, Claude, Gemini, SOLAR, Grok) and persists aggregates in MongoDB.
-- Entry points: `api.py` wires routers under `routers/`; `cli.py` runs the interactive analyzer (keep `main.py` compatibility in mind). Core transformations live in `analyzer/`, prompt orchestration in `llm/`, and persistence in `mongodb_service.py`.
-- System assets: `_prompts/` (category prompts, service prompts, writing rules), `_constants/Model.py` (engine registry), `_rule/` (style constraints), `_data/` (seed documents), `output/` (saved manuscripts).
+## 프로젝트 개요
+- **타입**: FastAPI + Python 멀티 AI 엔진 블로그 콘텐츠 생성 플랫폼
+- **패키지 매니저**: uv (pyproject.toml)
+- **Python 버전**: 3.11+
+- **데이터베이스**: MongoDB (PyMongo) + MongoDB Atlas
+- **배포**: Fly.io (Docker)
 
-## Bootstrapping
-```bash
-python -m venv .venv && source .venv/bin/activate
-pip install --upgrade pip
-pip install -r requirements.txt
-# API (start only when explicitly approved)
-uvicorn api:app --reload --port 8000
-# CLI
-python main.py  # legacy entry point still supported
+## AI 엔진 (6개)
+| 엔진 | 클라이언트 | 모델 예시 |
+|------|-----------|----------|
+| OpenAI GPT | `openai_client` | gpt-4o, gpt-4-turbo |
+| Anthropic Claude | anthropic SDK | claude-sonnet-4-5 |
+| Google Gemini | google-genai | gemini-2.5-flash |
+| Upstage SOLAR | `solar_client` | solar-pro |
+| xAI Grok | `grok_client` | grok-4 |
+| DeepSeek | `deepseek_client` | deepseek-chat |
+
+## 디렉토리 구조
 ```
-- Env requirements: `OPENAI_API_KEY`, `MONGO_URI`, `MONGO_DB_NAME`. Optional enhancers: `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`, `UPSTAGE_API_KEY`, `GROK_API_KEY`, `LLM_CONCURRENCY`.
-- `MongoDBService.ensure_unique_indexes()` should run once after connection bootstrap to guard against duplicates.
+text-gen-hub/
+├── api.py                 # FastAPI 진입점
+├── cli.py                 # CLI 인터페이스
+├── config.py              # 환경변수 및 AI 클라이언트
+├── mongodb_service.py     # MongoDB CRUD
+│
+├── routers/               # FastAPI 라우터
+│   ├── generate/          # 원고 생성 (25개)
+│   │   ├── gpt4o.py, chatgpt4o.py
+│   │   ├── claude.py, clean_claude.py
+│   │   ├── gemini_3_flash.py, gemini_3_pro.py
+│   │   ├── grok.py, grok_new.py
+│   │   ├── solar.py, deepseek.py
+│   │   └── kkk.py (멀티 AI 통합)
+│   ├── analysis/          # 텍스트 분석
+│   ├── category/          # 카테고리 관리
+│   ├── ref/               # 참조 원고
+│   ├── search/            # 검색 (9개)
+│   └── manuscript/        # 원고 관리
+│
+├── llm/                   # LLM 서비스 로직 (25개)
+│   ├── gpt4o_service.py
+│   ├── claude_service.py
+│   ├── gemini_3_flash_service.py
+│   ├── grok_service.py
+│   ├── deepseek_service.py
+│   └── kkk_service.py
+│
+├── _prompts/              # 프롬프트 엔지니어링
+│   ├── category/          # 카테고리별 프롬프트 (45개+)
+│   ├── gpt/, gpt4o/       # GPT 전용 프롬프트
+│   ├── claude/            # Claude 전용 프롬프트
+│   ├── gemini/            # Gemini 전용 프롬프트
+│   ├── grok/              # Grok 전용 프롬프트
+│   ├── deepseek/          # DeepSeek 전용 프롬프트
+│   ├── solar/             # SOLAR 전용 프롬프트
+│   ├── rules/             # 작성 규칙
+│   ├── service/           # 서비스 프롬프트
+│   └── common/            # 공통 프롬프트
+│
+├── analyzer/              # 텍스트 분석 모듈
+├── ai_lib/                # AI 라이브러리 (줄바꿈 등)
+├── utils/                 # 유틸리티 (18개)
+├── schema/                # Pydantic 스키마
+├── _constants/            # 상수 정의
+├── _docs/                 # 학습용 문서
+└── _data/                 # 시드 데이터
+```
 
-## Backend Architecture
-- **Routers (`routers/generate|analysis|category|ref`)**: FastAPI orchestrators; use DTOs from `schema/`, validate input with Pydantic, convert domain errors into `HTTPException`.
-- **Analyzer Layer (`analyzer/`)**: pure Python transforms (morpheme -> sentence -> expression -> parameter -> template -> subtitle). Keep functions deterministic; no DB writes or network inside.
-- **LLM Services (`llm/`)**: engine-specific clients (e.g., `kkk_service`, `gpt_4_v2_service`, `chunk_service`). Always respect model names from `_constants/Model.py` and persist shared retry/backoff logic here.
-- **Config (`config.py`)**: centralizes client wiring and environment parsing. Extend settings here when new providers or knobs appear.
-- **Utilities (`utils/`)**: text cleaning, formatting, query parsing, category mapping. Favor these helpers instead of introducing scattered logic.
+## 실행 명령어
+```bash
+# 가상환경 설정 (uv)
+uv sync
+source .venv/bin/activate
 
-## Python Delivery Standard (3.8+)
-- Use absolute imports (`from src...` style once package is virtualenv-installed) and include `from __future__ import annotations` when forward references appear.
-- Every function/class carries explicit type hints; data exchanged with API or CLI must use `pydantic.BaseModel` with `Field` metadata (describe purpose, min/max, regex when relevant).
-- Extract constants into `_constants/` (UPPER_SNAKE_CASE). Avoid sprinkling magic numbers/strings inside routers, services, or analyzers.
-- Handle side effects through service/repository classes; routers/CLI remain thin controllers.
-- Logging goes through a shared logger (extend `logging` utility if necessary); never `print`.
+# 개발 서버
+uvicorn api:app --reload --port 8000
 
-## Frontend Handshake (React / Next.js / Vue)
-- Consumers follow FSD folders: `src/app`, `src/pages`, `src/widgets`, `src/features`, `src/entities`, `src/shared`, `src/assets`.
-- Absolute imports only (`@/...`) and all `className` composition must pass through a shared `cn` util (`clsx` + `tailwind-merge`).
-- Style with Tailwind CSS v4 (follow Next.js or Vite integration guide) and prefer icon libraries over emoji to avoid the "AI wrote this" vibe.
-- State baseline:
-  - TanStack Query provider configured under `src/app/provider/query-client.tsx`.
-  - Global atoms in Jotai under `src/shared/state`; mutations/actions live in hooks (no business logic inside atoms).
-  - Domain hooks expose typed handlers that call backend APIs; avoid stuffing actions in stores.
-- Generate OpenAPI-driven types for DTO parity:
-  ```bash
-  pnpm dlx openapi-typescript http://localhost:8000/openapi.json -o src/shared/api/types.ts
-  ```
+# 또는 run 스크립트
+./run
 
-## LLM & Prompt Pipeline
-- Category prompts, anti-AI writing rules, and reference templates live in `_prompts/` and `_rule/`. Always reuse these assets instead of duplicating strings.
-- When adding an engine, update `_constants/Model.py`, extend `config.py` for the client, and register request/response cleanup in the appropriate `llm/*_service.py`.
-- Sanitise outputs through shared cleaners (`utils/format_paragraphs.py`, `utils/text_cleaner.py`) before persistence.
-- Respect concurrency controls defined via `LLM_CONCURRENCY` semaphore; long-running tasks should stream progress through structured logging rather than prints.
+# CLI
+python cli.py
+```
 
-## Testing & Diagnostics
-- Existing smoke scripts (`test_api_phase_*.py`, `test_step_by_step.py`) exercise multi-phase manuscript generation. Expand with `pytest` as needed; keep analyzer tests pure and feed them deterministic fixtures from `_data/`.
-- For DB-dependent tests, use isolated collections or mock the `MongoDBService` interface. Never point to production data.
-- When verifying new routers, capture OpenAPI snapshots to keep TS clients in sync.
+## 환경변수 (.env)
+```env
+# AI API Keys
+OPENAI_API_KEY=sk-...
+ANTHROPIC_API_KEY=sk-ant-...
+GEMINI_API_KEY=...
+UPSTAGE_API_KEY=...
+GROK_API_KEY=...
+DEEPSEEK_API_KEY=...
 
-## Workflow Guardrails
-- Never start long-running services unless the request explicitly demands it.
-- Comments are for essential context only; delete redundant narration.
-- Maintain user-authored changes; commit by concern (docs vs backend logic vs prompts).
-- Cross-check `_rule/` and `_prompts/` before editing stylistic constraints to avoid breaking downstream SEO tone.
+# MongoDB
+MONGO_URI=mongodb+srv://...
+MONGO_DB_NAME=default_db
 
-## Persona & Communication
-- Responses must blend technical precision with the 케인식 어투 (투박 인천/경기 서부 스타일, 자조 섞인 감정선). Keep profanity masked (`아이고난1`, `나는! 나는..! 장풍을..!! 했다!!`, etc.) and close chaotic tangents with "잠시 소란이 있었어요."
-- Avoid emoji in deliverables; rely on text or icon libraries for UI discussions.
+# AWS S3
+AWS_ACCESS_KEY_ID=...
+AWS_SECRET_ACCESS_KEY=...
+AWS_S3_BUCKET=...
 
-Stay disciplined with these rails so Python services, LLM orchestration, and TypeScript consumers move together without slipping on the anti-AI polish requirements.
+# 동시성
+LLM_CONCURRENCY=3
+```
+
+## 개발 규칙
+
+### 라우터 패턴
+```python
+from fastapi import APIRouter
+from fastapi.concurrency import run_in_threadpool
+from schema.generate import GenerateRequest
+
+router = APIRouter()
+
+@router.post("/generate/service-name")
+async def generate(request: GenerateRequest):
+    result = await run_in_threadpool(
+        service_function,
+        request.keyword,
+        request.ref,
+        request.service
+    )
+    return result
+```
+
+### LLM 서비스 패턴
+```python
+from config import openai_client
+from _prompts.category import 카테고리명
+
+def generate(user_instructions: str, ref: str = "", category: str = "") -> str:
+    # 1. 프롬프트 생성
+    # 2. AI 호출
+    # 3. 후처리 (텍스트 정제, 줄바꿈)
+    return text
+```
+
+### 새 엔드포인트 추가
+1. `llm/new_service.py` 생성
+2. `routers/generate/new.py` 생성
+3. `api.py`에 라우터 등록
+
+### 새 카테고리 추가
+1. `_prompts/category/새카테고리.py` 생성
+2. 해당 서비스 파일에 import
+3. `utils/get_category_db_name.py` 매핑 추가
+
+## 주요 카테고리 (45개+)
+위고비, 마운자로, 다이어트, 미용학원, 울쎄라, 리쥬란,
+공항_장기주차장, 애니메이션, 맛집, 호텔, 웨딩홀,
+블록체인_가상화폐, 커피머신, 영화리뷰, 노래리뷰 등
+
+## 주의사항
+- API 키 하드코딩 금지
+- MongoDB 연결은 `finally`에서 종료
+- 긴 AI 호출은 `run_in_threadpool`로 비동기 처리
+- 프롬프트 수정 시 기존 카테고리 영향 확인
+- 서버 실행은 명시적 요청 시에만
+
+## 케인식 어투
+대화형 응답에서 케인 캐릭터 말투 사용:
+- "아이고난1", "오옹! 나이스!"
+- "잠시 소란이 있었어요"
+- 개발 문서/코드는 전문적 어조 유지

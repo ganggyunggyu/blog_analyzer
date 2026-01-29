@@ -5,6 +5,7 @@ from bson import ObjectId
 
 from mongodb_service import MongoDBService
 from config import MONGO_DB_NAME
+from utils.logger import log
 
 router = APIRouter()
 
@@ -83,25 +84,12 @@ async def get_manuscript(
     Returns:
         원고 Document 객체
     """
-    print(f"\n{'='*60}")
-    print(f"📄 원고 조회 시작")
-    print(f"{'='*60}")
-    print(f"🆔 ID         : {manuscript_id}")
-    print(f"📁 카테고리   : {category or '기본 DB'}")
-    print(f"{'='*60}\n")
-
     document = await run_in_threadpool(
         get_manuscript_by_id,
         manuscript_id=manuscript_id,
         category=category,
     )
 
-    print(f"\n{'='*60}")
-    print(f"✅ 원고 조회 완료")
-    print(f"{'='*60}")
-    print(f"🎯 키워드     : {document.get('keyword', 'N/A')}")
-    print(f"🤖 엔진       : {document.get('engine', 'N/A')}")
-    print(f"📁 카테고리   : {document.get('category', 'N/A')}")
-    print(f"{'='*60}\n")
+    log.success("원고 조회", id=manuscript_id[:8], keyword=document.get('keyword', 'N/A')[:15])
 
     return document

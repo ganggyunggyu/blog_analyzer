@@ -7,6 +7,7 @@ from mongodb_service import MongoDBService
 from schema.search import KeywordSearchRequest
 from config import MONGO_URI
 from _constants.categories import CATEGORIES
+from utils.logger import log
 
 router = APIRouter()
 
@@ -144,15 +145,6 @@ async def search_keyword(request: KeywordSearchRequest):
 
     skip = (request.page - 1) * request.limit
 
-    print(f"\n{'='*60}")
-    print(f"🔍 원고 검색 시작")
-    print(f"{'='*60}")
-    print(f"📌 검색어     : {query}")
-    print(f"📁 카테고리   : {request.category or '전체'}")
-    print(f"📄 페이지     : {request.page}")
-    print(f"📊 결과 수    : {request.limit}개")
-    print(f"{'='*60}\n")
-
     result = await run_in_threadpool(
         search_manuscripts_by_keyword,
         query=query,
@@ -160,12 +152,6 @@ async def search_keyword(request: KeywordSearchRequest):
         skip=skip,
         limit=request.limit,
     )
-
-    print(f"\n{'='*60}")
-    print(f"✅ 검색 완료")
-    print(f"{'='*60}")
-    print(f"📊 전체 결과  : {result['total']}개")
-    print(f"📄 반환 결과  : {len(result['documents'])}개")
-    print(f"{'='*60}\n")
+    log.success("원고 검색", query=query[:15], total=result['total'])
 
     return result

@@ -45,10 +45,7 @@ SYSTEM_PROMPT = """
 # Output Format
 
 ## 일반 카테고리 구조
-제목
-제목
-제목
-제목
+프롬프트에 제공된 제목
 
 1. 소제목
 
@@ -62,7 +59,7 @@ SYSTEM_PROMPT = """
 
 본문 내용
 
-4. 소제목
+4. 소제목1
 
 본문 내용
 
@@ -73,10 +70,8 @@ SYSTEM_PROMPT = """
 마무리 멘트 (2~3문장)
 
 ## 맛집 카테고리 구조
-제목
-제목
-제목
-제목
+
+프롬프트에 제공된 제목
 
 서론
 
@@ -186,6 +181,7 @@ URL: http https www .com .co.kr 등
 4. 마크다운, HTML, 특수문자, 외국어를 사용하지 않는다
 5. 글자수 피드백이나 메타 설명을 출력하지 않는다
 6. 공백 제외 2,000단어 이상 작성한다
+6. 외국어 금지
 """
 
 USER_PROMPT_TEMPLATE = """
@@ -249,6 +245,5 @@ def gpt_ver3_clean_gen(
     text = _normalize_repeated_titles(text)
 
     length_no_space = len(re.sub(r"\s+", "", text))
-
 
     return text

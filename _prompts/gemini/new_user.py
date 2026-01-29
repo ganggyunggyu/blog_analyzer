@@ -43,6 +43,12 @@ def get_gemini_new_user_prompt(
 
 ## Output
 제목과 본문만 출력하세요.
+```
+하단 형식 금지
+
+어쩌고저쩌고:
+어쩌고저쩌고 
+```
 """
 
     return prompt.strip()

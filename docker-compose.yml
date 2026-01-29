@@ -1,0 +1,33 @@
+services:
+  # FastAPI 앱
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - ./manuscripts:/app/manuscripts
+    env_file:
+      - .env
+    environment:
+      - MONGO_URI=mongodb://mongo:27017
+      - MONGO_DB_NAME=text_gen_hub
+    depends_on:
+      - mongo
+    # Playwright 크래시 방지
+    shm_size: '2gb'
+    security_opt:
+      - seccomp=unconfined
+
+  # MongoDB (로컬 개발용)
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:

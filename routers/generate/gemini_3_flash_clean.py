@@ -24,29 +24,31 @@ async def generator_gemini_3_flash_clean(request: GenerateRequest):
     keyword = request.keyword.strip()
     ref = request.ref
 
-    category = await get_category_db_name(keyword=keyword + ref)
     c_elapsed = time.time() - start_ts
+
+    kw_clean = keyword.replace("\n", " ").replace("  ", " ").strip()
+    kw_display = kw_clean[:50] + "..." if len(kw_clean) > 50 else kw_clean
 
     print("\n" + "=" * 60)
     print(f"🚀 GEMINI-3-FLASH-CLEAN 원고 생성 시작")
     print("=" * 60)
     print(f"📌 서비스    : {service.upper()}")
-    print(f"🎯 키워드    : {keyword}")
-    print(f"📁 카테고리  : {category}")
+    print(f"🎯 키워드    : {kw_display}")
     print(f"🤖 모델      : {MODEL_NAME}")
     print(f"📝 참조원고  : {'✅ 있음' if len(ref) != 0 else '❌ 없음'}")
     print(f"⏱️  분류시간  : {c_elapsed:.2f}s")
     print("=" * 60 + "\n")
 
     db_service = MongoDBService()
-    db_service.set_db_name(db_name=category)
 
     is_ref = len(ref) != 0
 
     try:
-        with progress(label=f"{service}:{MODEL_NAME}:{keyword}"):
+        with progress(label=f"{service}:{MODEL_NAME}:{kw_display}"):
             generated_manuscript = await run_in_threadpool(
-                gemini_3_flash_clean_gen, user_instructions=keyword, ref=ref, category=category
+                gemini_3_flash_clean_gen,
+                user_instructions=keyword,
+                ref=ref,
             )
 
         if generated_manuscript:
@@ -58,7 +60,6 @@ async def generator_gemini_3_flash_clean(request: GenerateRequest):
                 "createdAt": datetime.now(),
                 "engine": MODEL_NAME,
                 "service": f"{service}_gemini_3_flash_clean",
-                "category": category,
                 "keyword": keyword,
                 "ref": ref if ref else "",
             }
@@ -76,8 +77,7 @@ async def generator_gemini_3_flash_clean(request: GenerateRequest):
                 print("\n" + "=" * 60)
                 print(f"✅ GEMINI-3-FLASH-CLEAN 원고 생성 완료")
                 print("=" * 60)
-                print(f"🎯 키워드       : {keyword}")
-                print(f"📁 카테고리     : {category}")
+                print(f"🎯 키워드       : {kw_display}")
                 print(f"⏱️  총 소요시간  : {elapsed:.2f}s")
                 print(f"💾 DB 저장      : ✅ 성공")
                 print("=" * 60 + "\n")
@@ -91,7 +91,9 @@ async def generator_gemini_3_flash_clean(request: GenerateRequest):
                 detail="GEMINI-3-FLASH-CLEAN 원고 생성에 실패했습니다.",
             )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"GEMINI-3-FLASH-CLEAN 원고 생성 중 오류 발생: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"GEMINI-3-FLASH-CLEAN 원고 생성 중 오류 발생: {e}"
+        )
     finally:
         if db_service:
             db_service.close_connection()

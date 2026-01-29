@@ -7,6 +7,7 @@ from schema.search import SearchRequest
 from config import MONGO_URI
 from pymongo import MongoClient
 from _constants.categories import CATEGORIES
+from utils.logger import log
 
 router = APIRouter()
 
@@ -66,7 +67,7 @@ def search_all(keyword: str, limit: int = 20) -> List[Dict[str, Any]]:
 
             except Exception as e:
                 # 해당 카테고리 DB가 없거나 오류가 나도 계속 진행
-                print(f"카테고리 '{category}' 검색 중 오류: {e}")
+                log.warning(f"카테고리 검색 오류", category=category)
                 continue
 
         # 점수로 정렬하고 상위 결과만 반환
@@ -116,24 +117,8 @@ async def search_all_endpoint(body: SearchRequest):
             detail=f"검색어가 너무 깁니다. (최대 {MAX_QUERY_LENGTH}자)"
         )
 
-    print(f"\n{'='*70}")
-    print(f"🔍 통합 검색 시작".center(70))
-    print(f"{'='*70}")
-    print(f"📌 검색어        : {query}")
-    print(f"📊 결과 제한     : {body.limit}개")
-    print(f"📁 검색 대상     : {len(COLLECTION_LIST)}개 카테고리")
-    print(f"{'='*70}\n")
-
     docs = await run_in_threadpool(search_all, query, body.limit)
-
-    print(f"\n{'='*70}")
-    print(f"✅ 통합 검색 완료".center(70))
-    print(f"{'='*70}")
-    print(f"📊 결과 수       : {len(docs)}개")
-    if docs:
-        print(f"🎯 상위 카테고리 : {docs[0].get('__category', 'N/A')}")
-        print(f"⭐ 최고 점수     : {docs[0].get('__score', 0)}")
-    print(f"{'='*70}\n")
+    log.success("통합 검색", query=query[:20], count=len(docs))
 
     return {
         "query": query,

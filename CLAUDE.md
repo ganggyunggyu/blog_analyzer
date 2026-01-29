@@ -1,4 +1,4 @@
-# Blog Analyzer 프로젝트 규칙
+# Text Gen Hub 프로젝트 규칙
 
 ## 프로젝트 개요
 이 프로젝트는 **FastAPI 기반의 멀티 AI 엔진 블로그 콘텐츠 생성 플랫폼**입니다.
@@ -22,7 +22,7 @@
 ## 프로젝트 구조
 
 ```
-blog_analyzer/
+text-gen-hub/
 ├── api.py                      # FastAPI 애플리케이션 진입점
 ├── cli.py                      # CLI 인터페이스
 ├── config.py                   # 환경변수 및 AI 클라이언트 설정 (GPT, Claude, Gemini, SOLAR, Grok)
@@ -405,6 +405,60 @@ print(f"토큰: in={in_tokens}, out={out_tokens}")
 - **`utils/text_cleaner.py`**: 텍스트 정제 (HTML, 마크다운, 특수문자 제거)
 - **`utils/query_parser.py`**: 키워드 쿼리 파싱
 - **`ai_lib/line_break_service.py`**: 줄바꿈 규칙 적용
+
+## 외부 연동 API
+
+### Google Sheet 연동 서버 (포트 3000)
+구글 시트 데이터를 MongoDB와 동기화하는 별도 서버
+
+**엔드포인트: `/api/restaurant-test`**
+
+| Method | 설명 |
+|--------|------|
+| GET | 모든 데이터 조회 (number 오름차순) |
+| POST | 구글 시트 → DB 동기화 |
+
+**GET 응답 예시:**
+```json
+{
+  "count": 501,
+  "data": [
+    {
+      "_id": "...",
+      "number": 1,
+      "name": "밍글스",
+      "address": "서울 강남구 청담동 118-17",
+      "hours": "12:00-22:00 (일휴무)",
+      "menu1": "한식코스",
+      "menu2": "디저트",
+      "keyword": "청담동 연예인맛집",
+      "fullText": "밍글스 서울 강남구 청담동 118-17 12:00-22:00 (일휴무) 한식코스 디저트 청담동 연예인맛집",
+      "createdAt": "2025-01-21T...",
+      "updatedAt": "2025-01-21T..."
+    }
+  ]
+}
+```
+
+**POST 응답 예시:**
+```json
+{
+  "message": "DB 저장 완료",
+  "count": 501
+}
+```
+
+**사용 예시:**
+```python
+import requests
+
+# 데이터 조회
+response = requests.get("http://localhost:3000/api/restaurant-test")
+data = response.json()
+
+# 시트 동기화
+response = requests.post("http://localhost:3000/api/restaurant-test")
+```
 
 ---
 

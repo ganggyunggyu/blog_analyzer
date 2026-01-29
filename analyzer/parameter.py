@@ -8,6 +8,7 @@ import re
 from mongodb_service import MongoDBService
 from utils.ai_client_factory import call_ai
 from analyzer.config import ANALYZER_MODEL
+from utils.logger import log
 
 
 def parameter_gen(
@@ -27,8 +28,7 @@ def parameter_gen(
             "parameters", {"file_name": file_name.strip()}
         )
         if existing_params:
-            print(f"이미 분석된 파일입니다: {file_name}")
-            print("기존 파라미터를 반환합니다. (AI 요청 없음 - 비용 절약!)")
+            log.debug(f"이미 분석된 파일: {file_name} (캐시 사용)")
 
             # 기존 데이터를 dict 형태로 재구성해서 반환
             result_dict = {}
@@ -44,7 +44,7 @@ def parameter_gen(
             db_service.close_connection()
             return result_dict
 
-    print(f"새로운 파일 분석 시작: {file_name or '파일명 없음'}")
+    log.debug(f"파라미터 추출 시작: {file_name or '파일명 없음'}")
 
     system = """
 You are an expert in Named Entity Recognition and text analysis. Extract key entities and group them semantically. Return ONLY JSON.
@@ -97,16 +97,13 @@ You are an expert in Named Entity Recognition and text analysis. Extract key ent
             result = db_service.upsert_many_documents(
                 "parameters", docs_to_save, ["category", "parameter"]
             )
-            print(
-                f"신규 파라미터: {result['upserted']}개, 중복 제외: {result['matched']}개"
-            )
+            log.info(f"파라미터 저장", 신규=result['upserted'], 중복=result['matched'])
         except Exception as e:
-            print(f"파라미터 저장 중 오류 (계속 진행): {e}")
+            log.warning(f"파라미터 저장 오류 (계속 진행)", error=str(e))
             result = {"upserted": 0, "matched": 0}
 
     elapsed = time.time() - start_ts
-    print(f"{category}-파라미터 추출 소요시간: {elapsed:.2f}s")
-    print(f"추출된 파라미터: {len(docs_to_save)}개")
+    log.info(f"파라미터 추출 완료", 소요시간=f"{elapsed:.1f}s", 개수=len(docs_to_save))
 
     db_service.close_connection()
 

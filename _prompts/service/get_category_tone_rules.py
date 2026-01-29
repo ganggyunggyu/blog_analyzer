@@ -20,7 +20,6 @@ from _prompts.category.공항_장기주차장_주차대행 import (
 from _prompts.category.미용학원 import 미용학원
 from _prompts.category.다이어트 import 다이어트
 from _prompts.category.멜라논크림 import 멜라논크림
-from _prompts.category.위고비 import 위고비
 from _prompts.category.질분비물 import 질분비물
 from _prompts.category.정기청소 import 정기청소
 
@@ -64,8 +63,7 @@ TONE_RULES_MAP = {
     "맛집": 맛집,
     "알파CD": 알파CD,
     "wedding": wedding,
-    "위고비": 위고비,
-    "마운자로": 마운자로.마운자로_스블,
+    "위고비_마운자로": 마운자로.마운자로_인기글,
     "다이어트": 다이어트,
     "다이어트보조제": 다이어트,
     "브로멜라인": 브로멜라인,
