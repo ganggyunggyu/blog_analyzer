@@ -3,7 +3,10 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from xai_sdk import Client
 
-load_dotenv()
+# 환경에 따라 .env 파일 로드
+ENV = os.getenv("ENV", "local")
+env_file = f".env.{ENV}" if os.path.exists(f".env.{ENV}") else ".env"
+load_dotenv(env_file)
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 MONGO_URI = os.getenv("MONGO_URI")
