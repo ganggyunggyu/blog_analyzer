@@ -15,6 +15,7 @@ router = APIRouter()
 
 class XPostRequest(BaseModel):
     keyword: str  # 그린 대상 (캐릭터명, 주제, 설명)
+    context: str = ""  # 일상 멘트/상황 (첫 포스트, 날씨, 컨디션 등)
 
 
 class XPostResponse(BaseModel):
@@ -43,7 +44,7 @@ async def generate_x_post(request: XPostRequest):
     try:
         with progress(label=f"x-illustrator:{MODEL_NAME}:{keyword}"):
             generated_post = await run_in_threadpool(
-                x_illustrator_gen, keyword=keyword
+                x_illustrator_gen, keyword=keyword, context=request.context
             )
 
         elapsed = time.time() - start_ts
