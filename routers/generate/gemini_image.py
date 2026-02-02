@@ -115,29 +115,29 @@ async def generate_image(request: ImageGenerateRequest):
     log.kv("키워드", keyword)
 
     try:
-        # 1. S3 이미지 서버 먼저 확인
-        with progress(label=f"s3-check:{keyword}"):
-            s3_images, s3_found = await run_in_threadpool(
-                _try_s3_images, keyword, count
-            )
+        # # 1. S3 이미지 서버 먼저 확인 (임시 비활성화)
+        # with progress(label=f"s3-check:{keyword}"):
+        #     s3_images, s3_found = await run_in_threadpool(
+        #         _try_s3_images, keyword, count
+        #     )
+        #
+        # if s3_found and s3_images:
+        #     elapsed = time.time() - start_ts
+        #     log.divider()
+        #     log.success(
+        #         "IMAGE 완료 (S3)",
+        #         성공=f"{len(s3_images)}장",
+        #         시간=f"{elapsed:.1f}s",
+        #         비용="$0.00 (S3)"
+        #     )
+        #
+        #     return ImageGenerateResponse(
+        #         images=[ImageItem(url=img["url"]) for img in s3_images],
+        #         total=len(s3_images),
+        #         failed=0,
+        #     )
 
-        if s3_found and s3_images:
-            elapsed = time.time() - start_ts
-            log.divider()
-            log.success(
-                "IMAGE 완료 (S3)",
-                성공=f"{len(s3_images)}장",
-                시간=f"{elapsed:.1f}s",
-                비용="$0.00 (S3)"
-            )
-
-            return ImageGenerateResponse(
-                images=[ImageItem(url=img["url"]) for img in s3_images],
-                total=len(s3_images),
-                failed=0,
-            )
-
-        # 2. S3에 없으면 AI 생성
+        # AI 이미지 생성
         poses = get_random_poses(count)
         log.kv("모델", MODEL_NAME)
         log.kv("포즈", f"{len(poses)}개 선택")
