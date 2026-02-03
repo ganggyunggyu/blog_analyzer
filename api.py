@@ -30,6 +30,7 @@ from routers.generate import (
     cafe_total,
     blog_filler,
     blog_filler_pet,
+    hanryeo,
 )
 
 # 라우터 - 분석
@@ -115,6 +116,7 @@ app.include_router(update_restaurant.router)
 app.include_router(cafe_total.router)
 app.include_router(blog_filler.router)
 app.include_router(blog_filler_pet.router)
+app.include_router(hanryeo.router)
 
 # 분석
 app.include_router(keyword.router)
