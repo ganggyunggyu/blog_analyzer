@@ -22,11 +22,16 @@ def get_ai_images(
 
     Returns:
         {
-            "success": bool,
-            "found": bool,
-            "images": [{"url": "data:image/webp;base64,..."}],
+            "images": {
+                "body": ["https://...URL"],
+                "individual": [], "slide": [], "collage": [],
+                "excludeLibrary": [], "excludeLibraryLink": []
+            },
+            "metadata": {},
             "keyword": str,
-            "matchedFolder": str | None,
+            "blogId": str,
+            "category": str,
+            "folder": str,
             "total": int,
             "failed": int
         }
