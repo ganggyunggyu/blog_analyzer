@@ -31,6 +31,7 @@ from routers.generate import (
     blog_filler,
     blog_filler_pet,
     hanryeo,
+    nyangnyang,
 )
 
 # 라우터 - 분석
@@ -117,6 +118,7 @@ app.include_router(cafe_total.router)
 app.include_router(blog_filler.router)
 app.include_router(blog_filler_pet.router)
 app.include_router(hanryeo.router)
+app.include_router(nyangnyang.router)
 
 # 분석
 app.include_router(keyword.router)
