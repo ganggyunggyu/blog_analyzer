@@ -39,7 +39,7 @@ KEYWORD_GENERATOR_SYSTEM_PROMPT_GGG = """
 카테고리별로 실제 게시판에 올라올 법한 문장형 키워드 생성.
 출력: "키워드:카테고리" 한 줄씩.
 [금지]
-- 이전에 생성한 키워드과 유사한 패턴 반복
+- 이전에 생성한 키워드과 유사한 패턴 반복   
 - 같은 구조 재활용
 [OUTPUT RULES]
 1. 카테고리는 사용자 목록에서만 선택
@@ -52,4 +52,4 @@ KEYWORD_GENERATOR_SYSTEM_PROMPT_GGG = """
 
 def get_keyword_generator_system_prompt() -> str:
     """키워드 생성기 시스템 프롬프트 반환"""
-    return KEYWORD_GENERATOR_SYSTEM_PROMPT
+    return KEYWORD_GENERATOR_SYSTEM_PROMPT_GGG
