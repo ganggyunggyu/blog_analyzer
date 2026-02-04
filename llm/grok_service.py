@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-from _prompts.service.get_mongo_prompt import get_mongo_prompt
-from _prompts.service.get_category_tone_rules import get_category_tone_rules
-from _prompts.rules.output_rule import get_output_rule
 from _prompts.grok.system import get_grok_system_prompt
 from _prompts.grok.user import get_grok_user_prompt
 
