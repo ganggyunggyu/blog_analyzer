@@ -24,7 +24,7 @@ def blog_filler_gen(user_instructions: str, ref: str = "", category: str = "") -
     if not keyword:
         raise ValueError("키워드가 없습니다.")
 
-    system = get_blog_filler_system_prompt()
+    system = get_blog_filler_system_prompt(category=category)
     user = get_blog_filler_user_prompt(
         keyword=keyword,
         category=category,

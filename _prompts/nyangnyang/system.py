@@ -7,6 +7,7 @@ from _prompts.rules.length_rule import LENGTH_RULE
 from _prompts.rules.output_rule import OUTPUT_RULE_DEFAULT
 from _prompts.rules.taboo_rules import TABOO_RULES
 from _prompts.rules.write_rule import WRITE_RULE
+from _prompts.nyangnyang.category.ophthalmology import OPHTHALMOLOGY_GUIDE
 
 
 NYANG_INTROS = [
@@ -68,6 +69,14 @@ NYANG_INTROS = [
 ]
 
 
+def _get_category_guide(category: str) -> str:
+    """카테고리별 가이드 반환"""
+    category_guides = {
+        "안과": OPHTHALMOLOGY_GUIDE,
+    }
+    return category_guides.get(category, "")
+
+
 def get_nyangnyang_system_prompt(
     keyword: str,
     category: str,
@@ -75,6 +84,17 @@ def get_nyangnyang_system_prompt(
     """냥냥돌쇠 시스템 프롬프트 생성"""
 
     intro = random.choice(NYANG_INTROS)
+    category_guide = _get_category_guide(category)
+
+    category_section = ""
+    if category_guide:
+        category_section = f"""
+---
+
+# CATEGORY GUIDE ({category})
+
+{category_guide}
+"""
 
     return f"""
 # ROLE INSTRUCTIONS
@@ -171,7 +191,7 @@ def get_nyangnyang_system_prompt(
 # USER INPUT
 - 키워드: {keyword}
 - 카테고리: {category}
-
+{category_section}
 ---
 
 # PROHIBITED CONTENT

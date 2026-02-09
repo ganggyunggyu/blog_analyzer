@@ -11,6 +11,7 @@ xAI Prompt Engineering Best Practices:
 import random
 
 from _prompts.rules import line_break_rules
+from _prompts.nyangnyang.category.ophthalmology import OPHTHALMOLOGY_GUIDE
 
 
 # 원고 유형 정의
@@ -49,26 +50,16 @@ ARTICLE_TYPES: dict[str, str] = {
 
 # 도입부 스타일 정의
 INTRO_STYLES: dict[str, str] = {
-    "1": """정의 직접형: 주제를 바로 정의하며 시작
-[주제]는 [성분명] 성분의 [형태]입니다.
-원래 [원래 목적]으로 개발됐지만, 최근 [새로운 효과]로 주목받고 있어요.
-[주제]의 효과부터 주의점까지 핵심만 정리해드릴게요.""",
-    "2": """질문 유도형: 독자 고민으로 시작
-[관련 고민], 혹시 겪고 계신가요?
-최근 [주제]가 [효과]로 화제가 되고 있어요.
-실제로 효과가 있는지, 주의할 점은 뭔지 꼼꼼히 살펴볼게요.""",
-    "3": """수치 제시형: 임상 데이터로 시작
-임상시험에서 평균 [수치]%의 [효과]가 보고됐습니다.
-[주제]가 "[별칭]"으로 불리는 이유예요.
-효과만큼 알아야 할 주의점도 함께 정리했어요.""",
-    "4": """트렌드형: 화제성으로 시작
-요즘 [분야]에서 가장 주목받는 이름, [주제].
-기존 [대안]과 뭐가 다르길래 이렇게 화제일까요?
-효과, 비용, 부작용까지 한 번에 정리해드릴게요.""",
-    "5": """공감형: 기존 대안 실패 경험으로 시작
-[기존 대안 1], [기존 대안 2] 써봤는데 효과가 없었다면?
-[주제]는 기존과 [차별점]이 다른 [분류]예요.
-나에게 맞는지, 주의할 점은 뭔지 확인해보세요.""",
+    "1": """핵심 정보 직입형
+(키워드)는 (핵심 사실/정의 한 줄). 그런데 많은 분들이 (흔한 오해)라고 생각해요. 실제로는 (올바른 관점) 기준으로 봐야 해요. 그 내용을 정리해볼게요.""",
+    "2": """문제 제기형
+(키워드)를 검색하면 정보가 너무 많아요. 문제는 (잘못된 정보/혼란 포인트)예요. (올바른 기준) 중심으로 정리해볼게요.""",
+    "3": """수치 제시형
+(구체적 수치/통계) – (키워드)를 단순하게만 보면 안 되는 이유예요. 핵심만 정리해드릴게요.""",
+    "4": """기준 제시형
+(키워드)를 고를 때 가장 먼저 봐야 할 건 (핵심 기준)이에요. 이걸 모르면 (문제점). 하나씩 짚어볼게요.""",
+    "5": """오해 교정형
+(키워드)에 대해 (흔한 오해)라고 알고 계신 분 많죠. 실제로는 달라요. 제대로 정리해드릴게요.""",
 }
 
 # 제목 스타일 정의
@@ -171,7 +162,7 @@ def _get_base_prompt(article_type: str, intro_style: str, title_style: str) -> s
 # CONSTRAINTS
 
 ## 분량 규칙
-- 총 분량: 1,500~1,600단어 (공백 제외)
+- 총 분량: 1,300~1,500단어 (공백 제외)
 - 섹션 수: 5개 고정
 - 섹션당 분량: 250~320단어
 - 부제 형식: "1. [부제]" ~ "5. [부제]"
@@ -305,9 +296,31 @@ def _get_base_prompt(article_type: str, intro_style: str, title_style: str) -> s
 """
 
 
-def get_blog_filler_system_prompt() -> str:
+def _get_category_guide(category: str) -> str:
+    """카테고리별 가이드 반환"""
+    category_guides = {
+        "안과": OPHTHALMOLOGY_GUIDE,
+    }
+    return category_guides.get(category, "")
+
+
+def get_blog_filler_system_prompt(category: str = "") -> str:
     """Blog Filler 시스템 프롬프트 반환 (랜덤 타입/스타일 선택)"""
     article_type = random.choice(list(ARTICLE_TYPES.keys()))
     intro_style = random.choice(list(INTRO_STYLES.keys()))
     title_style = random.choice(list(TITLE_STYLES.keys()))
-    return _get_base_prompt(article_type, intro_style, title_style).strip()
+
+    base_prompt = _get_base_prompt(article_type, intro_style, title_style)
+
+    category_guide = _get_category_guide(category)
+    if category_guide:
+        base_prompt += f"""
+
+---
+
+# CATEGORY GUIDE ({category})
+
+{category_guide}
+"""
+
+    return base_prompt.strip()
