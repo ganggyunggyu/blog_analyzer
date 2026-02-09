@@ -13,7 +13,7 @@ def get_grok_user_prompt(keyword: str, note: str, ref: str) -> str:
 
 키워드: {keyword}
 ---
-추가 요청: ({note}) 한 문장 끝마다 냥을 붙여 ~~했다냥 했음냥 했습니다냥 했어요냥 
+추가 요청: ({note}) 
 
 # 줄바꿈 지침
 {line_break_rules}

@@ -49,10 +49,10 @@ def hanryeo_gen(user_instructions: str, ref: str = "", category: str = "") -> st
     )
 
     # ✔ 보존 (remove_markdown이 체크 이모지를 제거하므로 임시 치환)
-    _CHECK = "%%CHECK%%"
-    text = text.replace("✔", _CHECK)
-    text = remove_markdown(text)
+    # _CHECK = "%%CHECK%%"
+    # text = text.replace("✔", _CHECK)
+    # text = remove_markdown(text)
     text = comprehensive_text_clean(text)
-    text = text.replace(_CHECK, "✔")
+    # text = text.replace(_CHECK, "✔")
 
     return text
