@@ -17,6 +17,7 @@ class KeywordGeneratorRequest(BaseModel):
     exclude_keywords: list[str] | None = Field(default=None, description="제외해야 할 키워드 목록")
     shuffle: bool = Field(default=True, description="카테고리 뒤죽박죽 섞기")
     note: str = Field(default="", description="추가 요청사항")
+    prompt_profile: str = Field(default="default", description="프롬프트 프로필 (default | ggg)")
 
 
 class KeywordItem(BaseModel):
@@ -46,6 +47,7 @@ async def generate_keywords_endpoint(request: KeywordGeneratorRequest):
     - **exclude_keywords**: 제외해야 할 키워드 목록
     - **shuffle**: 카테고리 뒤죽박죽 섞기 (기본 True)
     - **note**: 추가 요청사항
+    - **prompt_profile**: 프롬프트 프로필 (기본 default)
     """
     from llm.keyword_generator_service import generate_keywords
 
@@ -58,6 +60,7 @@ async def generate_keywords_endpoint(request: KeywordGeneratorRequest):
             exclude_keywords=request.exclude_keywords,
             shuffle=request.shuffle,
             note=request.note,
+            prompt_profile=request.prompt_profile,
         )
 
         return KeywordGeneratorResponse(

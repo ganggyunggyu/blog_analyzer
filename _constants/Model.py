@@ -17,6 +17,7 @@ class Model:
     GEMINI_3_FLASH_PREVIEW = "gemini-3-flash-preview"
 
     CLAUDE_SONNET_4_5 = "claude-sonnet-4-5-20250929"
+    CLAUDE_SONNET_4_6 = "claude-sonnet-4-6"
     CLAUDE_OPUS_4_5 = "claude-opus-4-5-20251101"
 
     SOLAR_PRO = "solar-pro"

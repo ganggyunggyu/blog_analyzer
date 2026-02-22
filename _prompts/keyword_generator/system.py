@@ -50,6 +50,9 @@ KEYWORD_GENERATOR_SYSTEM_PROMPT_GGG = """
 """
 
 
-def get_keyword_generator_system_prompt() -> str:
+def get_keyword_generator_system_prompt(profile: str = "default") -> str:
     """키워드 생성기 시스템 프롬프트 반환"""
+    normalized_profile = (profile or "default").strip().lower()
+    if normalized_profile in {"ggg", "qwzx16"}:
+        return KEYWORD_GENERATOR_SYSTEM_PROMPT_GGG
     return KEYWORD_GENERATOR_SYSTEM_PROMPT

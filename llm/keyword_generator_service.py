@@ -17,12 +17,13 @@ def generate_keywords(
     exclude_keywords: list[str] | None = None,
     shuffle: bool = True,
     note: str = "",
+    prompt_profile: str = "default",
 ) -> dict:
     """카테고리별 키워드 매핑 생성"""
     if not categories:
         raise ValueError("카테고리 목록이 필요합니다.")
 
-    system_prompt = get_keyword_generator_system_prompt()
+    system_prompt = get_keyword_generator_system_prompt(prompt_profile)
 
     # 유저 프롬프트 구성
     include_section = f"\n[포함 키워드]\n{', '.join(include_keywords)} (10~30% 빈도로 섞어서)" if include_keywords else ""
