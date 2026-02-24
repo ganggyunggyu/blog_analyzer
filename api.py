@@ -16,7 +16,7 @@ from routers.generate import (
     gemini_3_pro, gemini_3_flash, gemini_3_flash_clean, gemini_image, gemini_new, gemini_cafe, gemini_cafe_daily,
     gemini_ceo, gpt_ceo,
     gpt4o, chatgpt4o, gpt_ver3_clean, gpt_5_2, kkk,
-    grok, grok_new, grok_ver3_clean, grok_hanryeo, keigo, x_illustrator,
+    grok, grok_new, grok_ver3_clean, grok_hanryeo, keigo, x_illustrator, kimdongpal,
     openai_new, solar, solar_ver3_clean,
     batch as generate_batch,
     stream as generate_stream,
@@ -120,6 +120,7 @@ app.include_router(blog_filler.router)
 app.include_router(blog_filler_pet.router)
 app.include_router(hanryeo.router)
 app.include_router(nyangnyang.router)
+app.include_router(kimdongpal.router)
 
 # 분석
 app.include_router(keyword.router)
