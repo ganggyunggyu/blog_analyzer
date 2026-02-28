@@ -10,10 +10,8 @@ from _prompts.viral.post_prompt import (
 
 from _prompts.viral.comment_prompt import (
     COMMENT_SYSTEM_PROMPT,
-    COMMENT_PERSONAS,
     get_comment_system_prompt,
     get_comment_user_prompt,
-    get_comment_persona,
 )
 
 from _prompts.viral.recomment_prompt import (
@@ -31,10 +29,8 @@ __all__ = [
     "get_persona",
     # 댓글 작성
     "COMMENT_SYSTEM_PROMPT",
-    "COMMENT_PERSONAS",
     "get_comment_system_prompt",
     "get_comment_user_prompt",
-    "get_comment_persona",
     # 대댓글 작성
     "RECOMMENT_SYSTEM_PROMPT",
     "get_recomment_system_prompt",

@@ -54,8 +54,11 @@ def generate_keywords(
     }
 
 
+VALID_TYPES = {"일상", "자사키워드"}
+
+
 def _parse_output(text: str, valid_categories: list[str]) -> list[dict]:
-    """출력 파싱: 키워드:카테고리 형태 추출"""
+    """출력 파싱: 키워드:카테고리:종류 형태 추출"""
     results = []
     seen_keywords = set()
 
@@ -64,23 +67,23 @@ def _parse_output(text: str, valid_categories: list[str]) -> list[dict]:
         if not line or ":" not in line:
             continue
 
-        # 콜론으로 분리 (첫 번째 콜론 기준)
-        parts = line.split(":", 1)
-        if len(parts) != 2:
+        parts = line.split(":")
+        if len(parts) < 2:
             continue
 
         keyword = parts[0].strip()
         category = parts[1].strip()
+        keyword_type = parts[2].strip() if len(parts) >= 3 else "일상"
 
-        # 유효성 검사
         if not keyword or not category:
             continue
 
-        # 카테고리 유효성 검사
         if category not in valid_categories:
             continue
 
-        # 중복 키워드 제거
+        if keyword_type not in VALID_TYPES:
+            keyword_type = "일상"
+
         if keyword in seen_keywords:
             continue
 
@@ -89,6 +92,7 @@ def _parse_output(text: str, valid_categories: list[str]) -> list[dict]:
             {
                 "keyword": keyword,
                 "category": category,
+                "type": keyword_type,
             }
         )
 

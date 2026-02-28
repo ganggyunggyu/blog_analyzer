@@ -31,7 +31,7 @@ from _prompts.rules.line_example_rule import line_example_rule
 from _prompts.rules.line_break_rules import line_break_rules
 
 
-model_name: str = Model.GEMINI_3_PRO
+model_name: str = Model.GEMINI_3_1_PRO
 
 
 if model_name.startswith("gemini"):

@@ -25,6 +25,7 @@ class KeywordItem(BaseModel):
 
     keyword: str
     category: str
+    type: str = "일상"
 
 
 class KeywordGeneratorResponse(BaseModel):

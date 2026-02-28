@@ -8,7 +8,7 @@ from utils.ai_client_factory import call_ai
 from utils.logger import log
 
 
-MODEL_NAME: str = Model.GEMINI_3_PRO
+MODEL_NAME: str = Model.GEMINI_3_1_PRO
 
 
 SYSTEM_PROMPT = """

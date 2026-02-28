@@ -34,7 +34,7 @@ async def create_cafe_total(request: CafeTotalRequest):
 
     - keyword: 키워드/지시사항 (필수)
     - ref: 참조 원고 (선택)
-    - model: 사용할 모델명 (선택, 기본값: gemini-3-pro-preview)
+    - model: 사용할 모델명 (선택, 기본값: gemini-3.1-pro-preview)
     """
     start_ts = time.time()
     keyword = request.keyword.strip()
