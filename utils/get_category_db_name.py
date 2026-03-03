@@ -24,6 +24,12 @@ CATEGORY_SYSTEM_PROMPT = """
     <principle_4>
       프롬프트에 카테고리가 명시되어 있으면 그걸 우선 반환
     </principle_4>
+
+    <principle_5>
+      안과/치과처럼 혼동되기 쉬운 의료 키워드는 시술 대상 부위 기준으로 구분
+      - 눈, 시력교정, 각막, 렌즈삽입, 백내장 관련이면 반드시 "안과"
+      - 치아, 잇몸, 치과 시술 관련이면 "라미네이트" 우선 검토
+    </principle_5>
   </core_principles>
 
   <output_format>
@@ -46,6 +52,22 @@ def build_category_prompt(keyword: str) -> str:
   <categories>
 {categories_str}
   </categories>
+
+  <disambiguation_guide>
+    안과 시술 예시:
+    - 라식, 라섹, 투데이라섹, 스마일라식, 스마일프로
+    - 렌즈삽입술, ICL, 백내장수술, 노안교정, 드림렌즈
+    - 안구건조증 치료, 시력교정, 각막/망막/안압 검사
+
+    치과 시술 예시:
+    - 라미네이트, 치아미백, 치아교정, 임플란트
+    - 충치치료, 신경치료, 잇몸치료, 스케일링
+
+    중요 구분:
+    - "라섹"은 치과가 아니라 안과 시술
+    - 키워드가 안과 시력교정 문맥이면 "안과"를 반환
+    - 키워드가 치과/치아 미용 문맥이면 "라미네이트"를 우선 검토
+  </disambiguation_guide>
   
   <instruction>
     위 키워드가 어느 카테고리에 해당하는지 분석하고,
