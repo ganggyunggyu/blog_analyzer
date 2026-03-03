@@ -68,7 +68,6 @@ def remove_markdown(text: str) -> str:
     - 인라인 코드 (`code`)
     - 링크 [text](url)
     - 이미지 ![alt](url)
-    - 체크박스 이모지 (✔, ✅, ❌, ⚠️, ❗, →)
     - 제로 너비 공백 (​)
     """
     if not text:
@@ -102,9 +101,6 @@ def remove_markdown(text: str) -> str:
 
     # 이미지 제거 ![alt](url) -> alt
     text = re.sub(r"!\[([^\]]*)\]\([^)]+\)", r"\1", text)
-
-    # 체크 이모지 제거
-    text = re.sub(r"[✔✅❌⚠️❗→]", "", text)
 
     # 구분선 제거 (---, ___, ***)
     text = re.sub(r"^[-_*]{3,}$", "", text, flags=re.MULTILINE)
