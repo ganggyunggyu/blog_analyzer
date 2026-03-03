@@ -10,8 +10,10 @@ xAI Prompt Engineering Best Practices:
 
 import random
 
+from _prompts.blog_filler.ophthalmology import (
+    get_blog_filler_ophthalmology_system_prompt,
+)
 from _prompts.rules import line_break_rules
-from _prompts.nyangnyang.category.ophthalmology import OPHTHALMOLOGY_GUIDE
 
 
 # 원고 유형 정의
@@ -295,32 +297,15 @@ def _get_base_prompt(article_type: str, intro_style: str, title_style: str) -> s
 - 마크다운, HTML, 특수문자 없이 순수 텍스트만
 """
 
-
-def _get_category_guide(category: str) -> str:
-    """카테고리별 가이드 반환"""
-    category_guides = {
-        "안과": OPHTHALMOLOGY_GUIDE,
-    }
-    return category_guides.get(category, "")
-
-
-def get_blog_filler_system_prompt(category: str = "") -> str:
+def get_blog_filler_system_prompt(category: str = "", keyword: str = "") -> str:
     """Blog Filler 시스템 프롬프트 반환 (랜덤 타입/스타일 선택)"""
+    normalized_category = category.strip()
+
+    if normalized_category == "안과":
+        return get_blog_filler_ophthalmology_system_prompt(keyword=keyword)
+
     article_type = random.choice(list(ARTICLE_TYPES.keys()))
     intro_style = random.choice(list(INTRO_STYLES.keys()))
     title_style = random.choice(list(TITLE_STYLES.keys()))
 
-    base_prompt = _get_base_prompt(article_type, intro_style, title_style)
-
-    category_guide = _get_category_guide(category)
-    if category_guide:
-        base_prompt += f"""
-
----
-
-# CATEGORY GUIDE ({category})
-
-{category_guide}
-"""
-
-    return base_prompt.strip()
+    return _get_base_prompt(article_type, intro_style, title_style).strip()
