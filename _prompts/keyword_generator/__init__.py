@@ -2,10 +2,12 @@
 
 from _prompts.keyword_generator.system import (
     KEYWORD_GENERATOR_SYSTEM_PROMPT,
+    get_keyword_generator_example_keywords,
     get_keyword_generator_system_prompt,
 )
 
 __all__ = [
     "KEYWORD_GENERATOR_SYSTEM_PROMPT",
+    "get_keyword_generator_example_keywords",
     "get_keyword_generator_system_prompt",
 ]

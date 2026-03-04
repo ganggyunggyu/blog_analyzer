@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 from _constants.Model import Model
-from _prompts.keyword_generator import get_keyword_generator_system_prompt
+from _prompts.keyword_generator import (
+    get_keyword_generator_example_keywords,
+    get_keyword_generator_system_prompt,
+)
 from utils.ai_client_factory import call_ai
 
 
@@ -22,6 +25,10 @@ def generate_keywords(
     """카테고리별 키워드 매핑 생성"""
     if not categories:
         raise ValueError("카테고리 목록이 필요합니다.")
+
+    example_keywords = _get_example_keyword_set()
+    if not example_keywords:
+        raise ValueError("예시 키워드 목록이 비어 있습니다.")
 
     system_prompt = get_keyword_generator_system_prompt(prompt_profile)
 
@@ -44,7 +51,7 @@ def generate_keywords(
     )
 
     # 파싱: "키워드:카테고리" 형태만 추출
-    keywords = _parse_output(raw_output, categories)
+    keywords = _parse_output(raw_output, categories, example_keywords)
 
     return {
         "keywords": keywords,
@@ -54,10 +61,19 @@ def generate_keywords(
     }
 
 
-VALID_TYPES = {"일상", "자사키워드"}
+VALID_TYPES = {"일상", "자사키워드", "광고"}
 
 
-def _parse_output(text: str, valid_categories: list[str]) -> list[dict]:
+def _get_example_keyword_set() -> set[str]:
+    """예시 키워드 목록"""
+    return {keyword for keyword in get_keyword_generator_example_keywords() if keyword}
+
+
+def _parse_output(
+    text: str,
+    valid_categories: list[str],
+    allowed_keywords: set[str],
+) -> list[dict]:
     """출력 파싱: 키워드:카테고리:종류 형태 추출"""
     results = []
     seen_keywords = set()
@@ -83,6 +99,9 @@ def _parse_output(text: str, valid_categories: list[str]) -> list[dict]:
 
         if keyword_type not in VALID_TYPES:
             keyword_type = "일상"
+
+        if keyword not in allowed_keywords:
+            continue
 
         if keyword in seen_keywords:
             continue
