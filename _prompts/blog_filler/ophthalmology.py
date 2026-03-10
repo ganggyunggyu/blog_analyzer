@@ -70,6 +70,7 @@ def get_blog_filler_ophthalmology_system_prompt(keyword: str = "") -> str:
 
 ■ 제목 작성 추가 규칙
 
+- 제목은 반드시 1줄로 출력할 것 (줄바꿈 없이 한 줄로 완결)
 - 이전과 동일하거나 유사한 제목 구조는 반드시 피할 것
 - 제목에 메인 키워드를 포함하되,
   수식어·조사·문장 형태를 매번 다르게 변형할 것
