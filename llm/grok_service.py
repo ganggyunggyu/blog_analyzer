@@ -9,7 +9,7 @@ from utils.text_cleaner import comprehensive_text_clean
 from utils.ai_client_factory import call_ai
 
 
-MODEL_NAME: str = Model.GROK_4_1_NON_RES
+MODEL_NAME: str = Model.GROK_4_NON_RES
 
 
 def grok_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
@@ -30,6 +30,7 @@ def grok_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
         model_name=MODEL_NAME,
         system_prompt=system,
         user_prompt=user,
+        max_tokens=16384,
     )
 
     text = comprehensive_text_clean(text)
