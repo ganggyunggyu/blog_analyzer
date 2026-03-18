@@ -19,7 +19,7 @@ router = APIRouter()
 
 @router.post("/generate/blog-filler")
 async def generator_blog_filler(request: GenerateRequest):
-    """블로그 글밥 쌓기 전용 생성기 (Gemini 3 Flash Preview)"""
+    """블로그 글밥 쌓기 전용 생성기 (Claude Sonnet 4.6)"""
     start_ts = time.time()
     service = request.service.lower()
     keyword = request.keyword.strip()
