@@ -12,8 +12,7 @@ from utils.logger import log
 DEFAULT_MODEL: str = Model.GEMINI_3_1_PRO
 
 
-SYSTEM_PROMPT = """
-"""
+SYSTEM_PROMPT = ""
 
 USER_PROMPT_TEMPLATE = """{keyword}"""
 

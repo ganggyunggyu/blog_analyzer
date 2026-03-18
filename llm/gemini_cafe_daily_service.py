@@ -13,10 +13,10 @@ from _constants.Model import Model
 from utils.query_parser import parse_query
 from utils.text_cleaner import comprehensive_text_clean
 from utils.ai_client_factory import call_ai
-from utils.logger import log
+from utils.logger import log, truncate
 
 
-MODEL_NAME: str = Model.GEMINI_3_1_PRO
+MODEL_NAME: str = Model.GPT5_4_MINI
 
 
 def gemini_cafe_daily_gen(
@@ -48,8 +48,8 @@ def gemini_cafe_daily_gen(
         persona_id=used_id,
     )
 
-    log.info(f"[DEBUG] keyword={keyword!r}, persona={persona['name']!r}")
-    log.info(f"[DEBUG] user_prompt 길이={len(user)}")
+    log.info("[DEBUG] 카페 데일리 입력", keyword=truncate(keyword, 60), persona=persona["name"])
+    log.info("[DEBUG] user_prompt 길이", length=len(user))
 
     text = call_ai(
         model_name=MODEL_NAME,
@@ -57,11 +57,7 @@ def gemini_cafe_daily_gen(
         user_prompt=user,
     )
 
-    log.info(
-        f"[DEBUG] 응답 원문: {text[:200]!r}..."
-        if len(text) > 200
-        else f"[DEBUG] 응답 원문: {text!r}"
-    )
+    log.info("[DEBUG] 응답 미리보기", preview=truncate(text, 120))
 
     text = comprehensive_text_clean(text)
 

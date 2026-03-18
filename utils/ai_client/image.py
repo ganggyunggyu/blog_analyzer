@@ -5,6 +5,7 @@ from typing import Any, Dict, Optional
 from google import genai
 from google.genai import types
 
+from _constants.Model import Model
 from config import GEMINI_API_KEY, GROK_API_KEY, RECRAFT_API_KEY
 from utils.logger import console
 
@@ -198,6 +199,16 @@ def _generate_single_gemini_flash_image(
         return None
 
 
+def _get_gemini_flash_image_cost(model_name: str) -> float:
+    if model_name == Model.GEMINI_3_1_FLASH_IMAGE_PREVIEW:
+        return 0.067
+
+    if model_name == Model.GEMINI_2_5_FLASH_IMAGE:
+        return 0.039
+
+    return 0.067
+
+
 def _generate_single_recraft_image(
     api_key: str,
     model_name: str,
@@ -315,7 +326,7 @@ def call_image_ai(
 
         s3_url = _generate_single_gemini_flash_image(client, model_name, prompt, keyword, 1)
         if s3_url:
-            return {"url": s3_url, "cost": 0.039}
+            return {"url": s3_url, "cost": _get_gemini_flash_image_cost(model_name)}
         return None
 
     elif service_type == "recraft":

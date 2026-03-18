@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+from anthropic import Anthropic
 from openai import OpenAI
 from xai_sdk import Client
 
@@ -26,6 +27,7 @@ GROK_API_KEY = os.getenv("GROK_API_KEY")
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
 RECRAFT_API_KEY = os.getenv("RECRAFT_API_KEY")
 MOONSHOT_API_KEY = os.getenv("MOONSHOT_API_KEY")
+MINIMAX_API_KEY = os.getenv("MINIMAX_API_KEY")
 
 deepseek_client = OpenAI(
     api_key=DEEPSEEK_API_KEY,
@@ -42,6 +44,11 @@ moonshot_client = OpenAI(
     api_key=MOONSHOT_API_KEY,
     base_url="https://api.moonshot.ai/v1",
 )
+
+minimax_client = Anthropic(
+    api_key=MINIMAX_API_KEY,
+    base_url="https://api.minimax.io/anthropic",
+) if MINIMAX_API_KEY else None
 
 # AWS S3
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")

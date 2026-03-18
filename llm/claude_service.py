@@ -15,7 +15,7 @@ from utils.ai_client_factory import call_ai
 from utils.logger import log
 
 
-MODEL_NAME: str = Model.CLAUDE_OPUS_4_5
+MODEL_NAME: str = Model.CLAUDE_SONNET_4_6
 
 
 def claude_gen(user_instructions: str, ref: str = "", category: str = "") -> str:

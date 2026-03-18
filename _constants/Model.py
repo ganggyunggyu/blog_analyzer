@@ -2,6 +2,7 @@ class Model:
     GPT5 = "gpt-5-2025-08-07"
     GPT5_1 = "gpt-5.1-2025-11-13"
     GPT5_2 = "gpt-5.2-2025-12-11"
+    GPT5_4_MINI = "gpt-5.4-mini-2026-03-17"
     GPT5_MINI = "gpt-5-mini-2025-08-07"
     GPT5_NANO = "gpt-5-nano-2025-08-07"
     GPT5_CHAT = "gpt-5-chat-latest"
@@ -12,6 +13,7 @@ class Model:
 
     GEMINI_2_5_PRO = "gemini-2.5-pro"
     GEMINI_2_5_FLASH_IMAGE = "gemini-2.5-flash-image"
+    GEMINI_3_1_FLASH_IMAGE_PREVIEW = "gemini-3.1-flash-image-preview"
     IMAGEN_4 = "imagen-4.0-generate-001"
     GEMINI_3_PRO = "gemini-3-pro-preview"
     GEMINI_3_1_PRO = "gemini-3.1-pro-preview"
@@ -37,5 +39,11 @@ class Model:
 
     KIMI_K2 = "kimi-k2-0711-preview"
     KIMI_K2_5 = "kimi-k2.5"
+
+    MINIMAX_M2_5 = "MiniMax-M2.5"
+    MINIMAX_M2_5_FAST = "MiniMax-M2.5-highspeed"
+    MINIMAX_M2_1 = "MiniMax-M2.1"
+    MINIMAX_M2_1_FAST = "MiniMax-M2.1-highspeed"
+    MINIMAX_M2 = "MiniMax-M2"
 
     RECRAFT_V3 = "recraft-v3"
