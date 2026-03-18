@@ -13,7 +13,7 @@ from utils.ai_client_factory import call_ai
 from utils.logger import log
 
 
-MODEL_NAME: str = Model.GPT5_4_MINI
+MODEL_NAME: str = Model.CLAUDE_SONNET_4_6
 TEMPERATURE: float = 0.85
 
 # ── 프롬프트 언어 설정 ──────────────────────────────
