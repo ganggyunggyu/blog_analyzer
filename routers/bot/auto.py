@@ -12,6 +12,7 @@ from pydantic import BaseModel
 from llm.gemini_new_service import gemini_new_gen
 from routers.auth.naver import naver_login_with_playwright
 from routers.generate.batch import generate_images_parallel, save_to_pending
+from routers.generate.gemini_image import _try_s3_images
 from utils.get_category_db_name import get_category_db_name
 from utils.logger import log
 
@@ -83,10 +84,16 @@ async def auto_bot(request: AutoBotRequest):
 
             image_urls = []
             if request.generate_images:
-                images = await run_in_threadpool(
-                    generate_images_parallel, keyword, request.image_count
+                s3_images, s3_found = await run_in_threadpool(
+                    _try_s3_images, keyword, request.image_count
                 )
-                image_urls = [img["url"] for img in images if img.get("url")]
+                if s3_found and s3_images:
+                    image_urls = [img["url"] for img in s3_images]
+                else:
+                    images = await run_in_threadpool(
+                        generate_images_parallel, keyword, request.image_count, category
+                    )
+                    image_urls = [img["url"] for img in images if img.get("url")]
 
             manuscript_id = await save_to_pending(keyword, content, image_urls)
             generated_ids.append(manuscript_id)

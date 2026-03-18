@@ -33,6 +33,7 @@ console = Console()
 
 # 긴 텍스트 함축 설정
 MAX_DISPLAY_LENGTH = 30
+MAX_KV_DISPLAY_LENGTH = 80
 
 
 def truncate(text: str, max_len: int = MAX_DISPLAY_LENGTH) -> str:
@@ -94,7 +95,8 @@ class Logger:
 
     def kv(self, key: str, value: Any, key_style: str = "cyan"):
         """키-값 출력"""
-        self.console.print(f"  [{key_style}]{key}[/{key_style}]: {value}")
+        display_value = truncate(str(value), MAX_KV_DISPLAY_LENGTH)
+        self.console.print(f"  [{key_style}]{key}[/{key_style}]: {display_value}")
 
     def table(self, title: str, data: dict[str, Any]):
         """테이블 형태로 데이터 출력"""

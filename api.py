@@ -30,6 +30,7 @@ from routers.generate import (
     cafe_total,
     blog_filler,
     blog_filler_pet,
+    blog_filler_restaurant,
     hanryeo,
     nyangnyang,
 )
@@ -118,6 +119,7 @@ app.include_router(update_restaurant.router)
 app.include_router(cafe_total.router)
 app.include_router(blog_filler.router)
 app.include_router(blog_filler_pet.router)
+app.include_router(blog_filler_restaurant.router)
 app.include_router(hanryeo.router)
 app.include_router(nyangnyang.router)
 app.include_router(kimdongpal.router)

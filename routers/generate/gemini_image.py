@@ -1,6 +1,7 @@
 """이미지 생성 라우터"""
 
 import time
+import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from fastapi import HTTPException, APIRouter
 from fastapi.concurrency import run_in_threadpool
@@ -37,8 +38,14 @@ def _try_s3_images(keyword: str, count: int) -> tuple[list, bool]:
         log.info(f"S3 이미지 없음: {keyword}")
         return [], False
 
+    except requests.exceptions.HTTPError as e:
+        if e.response is not None and e.response.status_code == 404:
+            log.info(f"S3 이미지 소스 부족: {keyword} (AI 생성으로 전환)")
+        else:
+            log.warning(f"S3 서버 오류: {e}")
+        return [], False
     except Exception as e:
-        log.warning(f"S3 서버 오류 (AI 생성으로 fallback): {e}")
+        log.warning(f"S3 서버 오류: {e}")
         return [], False
 
 

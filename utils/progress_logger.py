@@ -4,14 +4,17 @@ from __future__ import annotations
 
 import time
 from contextlib import contextmanager
-from utils.logger import console
+from utils.logger import console, truncate
+
+
+MAX_PROGRESS_LABEL_LENGTH = 80
 
 
 class ProgressPrinter:
     """Rich spinner 기반 프로그래스 프린터"""
 
     def __init__(self, label: str = "처리 중..."):
-        self.label = label
+        self.label = truncate(label, MAX_PROGRESS_LABEL_LENGTH)
         self._start_ts = 0.0
         self._status = None
 

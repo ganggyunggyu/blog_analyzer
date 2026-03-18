@@ -18,7 +18,7 @@ from _constants.Model import Model
 from llm.image_service import build_image_prompt, get_random_pose
 from utils.s3_uploader import upload_image_to_s3
 
-MODEL_NAME = Model.GEMINI_2_5_FLASH_IMAGE
+MODEL_NAME = Model.GEMINI_3_1_FLASH_IMAGE_PREVIEW
 COUNT_PER_KEYWORD = 5
 PET_DIR = os.path.join(os.path.dirname(__file__), "..", "애견")
 CATEGORY = "애견동물_반려동물_분양"
