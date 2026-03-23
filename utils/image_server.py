@@ -46,7 +46,7 @@ def get_ai_images(
         "distort": str(distort).lower(),
     }
 
-    response = requests.get(url, params=params, timeout=30)
+    response = requests.get(url, params=params, timeout=600)
     response.raise_for_status()
 
     return response.json()
