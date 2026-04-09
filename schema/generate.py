@@ -6,6 +6,7 @@ class GenerateRequest(BaseModel):
     service: str
     keyword: str
     ref: str = ""
+    category: str = ""
     persona_id: Optional[str] = None  # 페르소나 ID (우선)
     persona_index: Optional[int] = None  # 페르소나 인덱스 (하위호환)
 
