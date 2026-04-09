@@ -5,6 +5,10 @@ from __future__ import annotations
 from _prompts.blog_filler.system import get_blog_filler_system_prompt
 from _prompts.blog_filler.user import get_blog_filler_user_prompt
 from _constants.Model import Model
+from llm.blog_filler_diet_v2_service import (
+    KEYWORD_FAMILY_MAP as DIET_V2_KEYWORD_FAMILY_MAP,
+    blog_filler_diet_v2_gen,
+)
 from utils.query_parser import parse_query
 from utils.text_cleaner import comprehensive_text_clean, remove_markdown
 from utils.ai_client_factory import call_ai
@@ -12,6 +16,21 @@ from utils.logger import log
 
 
 MODEL_NAME: str = Model.CLAUDE_SONNET_4_6
+DIET_V2_BLOG_FILLER_CATEGORIES: set[str] = {
+    "다이어트",
+    "다이어트보조제",
+    "브로멜라인",
+}
+
+
+def should_use_diet_v2_blog_filler(keyword: str, category: str) -> bool:
+    normalized_keyword = (keyword or "").strip()
+    normalized_category = (category or "").strip()
+
+    if normalized_keyword in DIET_V2_KEYWORD_FAMILY_MAP:
+        return True
+
+    return normalized_category in DIET_V2_BLOG_FILLER_CATEGORIES
 
 
 def blog_filler_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
@@ -23,6 +42,14 @@ def blog_filler_gen(user_instructions: str, ref: str = "", category: str = "") -
 
     if not keyword:
         raise ValueError("키워드가 없습니다.")
+
+    if should_use_diet_v2_blog_filler(keyword=keyword, category=category):
+        log.info(f"diet_v2_blog_filler 라우팅 keyword={keyword} category={category}")
+        result = blog_filler_diet_v2_gen(
+            user_instructions=user_instructions,
+            category=category or "다이어트",
+        )
+        return str(result["manuscript"])
 
     system = get_blog_filler_system_prompt(category=category, keyword=keyword)
     user = get_blog_filler_user_prompt(

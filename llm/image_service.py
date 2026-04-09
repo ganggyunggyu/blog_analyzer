@@ -8,7 +8,7 @@ from _constants.Model import Model
 from utils.ai_client_factory import call_image_ai
 
 
-MODEL_NAME: str = Model.GEMINI_3_1_FLASH_IMAGE_PREVIEW
+MODEL_NAME: str = Model.GEMINI_2_5_FLASH_IMAGE
 
 # 애견 관련 포즈/동작
 DOG_POSES = [

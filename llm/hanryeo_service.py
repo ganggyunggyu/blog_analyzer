@@ -7,6 +7,8 @@ from _prompts.hanryeo.system_en import get_hanryeo_system_prompt_en
 from _prompts.hanryeo.user import get_hanryeo_user_prompt
 from _prompts.hanryeo.user_en import get_hanryeo_user_prompt_en
 from _constants.Model import Model
+from llm.hanryeo_output_cleanup import sanitize_hanryeo_output
+from services.naver_blog_reference_service import build_naver_blog_reference_bundle
 from utils.query_parser import parse_query
 from utils.text_cleaner import comprehensive_text_clean, remove_markdown
 from utils.ai_client_factory import call_ai
@@ -50,11 +52,15 @@ def hanryeo_gen(
 
     builders = PROMPT_BUILDERS.get(PROMPT_LANG, PROMPT_BUILDERS["ko"])
     system = builders["system"]()
+    reference_bundle = build_naver_blog_reference_bundle(
+        query=keyword,
+        manual_ref=ref,
+    )
     user = builders["user"](
         keyword=keyword,
         category=category,
         note=note,
-        ref=ref,
+        ref=reference_bundle,
     )
 
     log.info(f"[{PROMPT_LANG}] 프롬프트 sys={len(system)} user={len(user)}")
@@ -75,5 +81,6 @@ def hanryeo_gen(
     )
 
     text = comprehensive_text_clean(text)
+    text = sanitize_hanryeo_output(text)
 
     return text

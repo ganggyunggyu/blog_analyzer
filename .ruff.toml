@@ -1,0 +1,8 @@
+include = [
+    "llm/blog_filler_pet_v2_service.py",
+    "routers/generate/blog_filler_pet.py",
+    "scripts/generate_pet_title_compare.py",
+    "scripts/generate_pet_titles_only.py",
+    "tests/conftest.py",
+    "tests/test_blog_filler_pet_v2_title_contract.py",
+]

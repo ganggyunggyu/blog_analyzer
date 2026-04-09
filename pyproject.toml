@@ -21,34 +21,28 @@ dependencies = [
     "fastapi",
     "uvicorn",
     "python-multipart",
-
     # Database
     "pymongo",
-
     # AI SDKs
     "openai",
     "anthropic",
     "google-genai",
     "xai-sdk",
-
     # AWS
     "boto3",
-
     # NLP
     "kss",
-
     # CLI & Utils
     "click",
     "python-dotenv",
     "rich",
     "tqdm",
     "requests",
-
     # Browser Automation
     "playwright",
-
     # Image Processing
     "Pillow",
+    "gspread>=6.2.1",
 ]
 
 [project.optional-dependencies]
@@ -62,3 +56,11 @@ blog-analyzer = "cli:cli"
 
 [tool.setuptools.packages.find]
 include = ["llm*", "routers*", "schema*", "utils*", "analyzer*", "ai_lib*", "_prompts*", "_constants*"]
+
+[dependency-groups]
+dev = [
+    "coverage>=7.13.5",
+    "mypy>=1.19.1",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.15.8",
+]

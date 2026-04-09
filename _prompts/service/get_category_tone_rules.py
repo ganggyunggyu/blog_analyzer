@@ -2,7 +2,6 @@
 
 from _prompts.category.다이어트보조제 import 다이어트보조제
 from _prompts.category.무지외반증 import 무지외반증
-from _prompts.category.브로멜라인 import 브로멜라인
 from _prompts.category.스위치온다이어트 import 스위치온다이어트
 from _prompts.category.알파CD import 알파CD
 
@@ -42,7 +41,7 @@ from _prompts.category.텔레그램사기 import 텔레그램사기
 from _prompts.category.틱톡부업사기 import 틱톡부업사기
 from _prompts.category.beauty_treatment import beauty_treatment
 
-from _prompts.category import 웨딩홀, 김장, 전자담배, 마운자로, 가구, 인테리어
+from _prompts.category import 웨딩홀, 김장, 전자담배, 가구, 인테리어
 
 
 BASE_TONE = """
@@ -63,10 +62,10 @@ TONE_RULES_MAP = {
     "맛집": 맛집,
     "알파CD": 알파CD,
     "wedding": wedding,
-    "위고비_마운자로": 마운자로.마운자로_인기글,
+    "위고비_마운자로": 다이어트,
     "다이어트": 다이어트,
     "다이어트보조제": 다이어트,
-    "브로멜라인": 브로멜라인,
+    "브로멜라인": 다이어트,
     "애견동물_반려동물_분양": 애견동물_반려동물_분양,
     "외국어교육": 외국어교육,
     "외국어교육_학원": 외국어교육_학원,

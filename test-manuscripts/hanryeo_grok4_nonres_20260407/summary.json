@@ -1,0 +1,10 @@
+{
+  "model_name": "grok-4-fast-non-reasoning",
+  "source_session": "grok-api-batch-20260407",
+  "prompt_basis": "hanryeo-title-mix-20260407-v2",
+  "row_count": 30,
+  "total_input_tokens": 555561,
+  "total_output_tokens": 45032,
+  "total_estimated_cost_usd": 0.13363,
+  "failures": []
+}

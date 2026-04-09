@@ -20,7 +20,7 @@ from _constants.Model import Model
 from llm.image_service import build_image_prompt
 from utils.s3_uploader import upload_image_to_s3
 
-MODEL_NAME = Model.GEMINI_3_1_FLASH_IMAGE_PREVIEW
+MODEL_NAME = Model.GEMINI_2_5_FLASH_IMAGE
 COUNT_PER_KEYWORD = 5
 BASE_DIR = os.path.join(os.path.dirname(__file__), "..", "키워드")
 

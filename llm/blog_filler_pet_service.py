@@ -5,13 +5,19 @@ from __future__ import annotations
 import random
 
 from _constants.Model import Model
+from llm.blog_filler_pet_v2_service import (
+    SYSTEM_PROMPT as V2_SYSTEM_PROMPT,
+    USER_PROMPT as V2_USER_PROMPT,
+    build_keyword_intent_prompt,
+    clean_generated_text,
+    resolve_target_keyword,
+)
 from utils.query_parser import parse_query
-from utils.text_cleaner import comprehensive_text_clean, remove_markdown
 from utils.ai_client_factory import call_ai
 from utils.logger import log
 
 
-MODEL_NAME: str = Model.GROK_4_1_RES
+MODEL_NAME: str = Model.CLAUDE_SONNET_4_6
 
 PEN_NAMES: list[str] = [
     "초파맘",
@@ -1002,10 +1008,144 @@ SYSTEM_PROMPT = """
 알아보았는데, 도움이 되셨길 바라요.
 보호자님들 행복한 반려 생활 되세요.
 </example>
+
+=== TITLE EXAMPLES (100 patterns - pick one that matches the keyword) ===
+
+[정보총정리형]
+말티즈분양 비용 성격 건강관리 총정리
+토이푸들 성격 털빠짐 유전병 분양가 총정리
+비숑프리제 분양가 성격 미용비 한눈에 보기
+포메라니안 성격 크기 수명 분양 전 체크리스트
+시츄 분양가 성격 키우기 현실 완전 분석
+렉돌 분양가 성격 유전병 캐터리 선택 안내
+러시안블루 성격 수명 분양가 입양 전 체크포인트
+메인쿤 성격 크기 수명 분양가 입문 안내
+페르시안 고양이 성격 털관리 분양가 한눈에
+사모예드 성격 털빠짐 운동량 분양 전 필독
+
+[체험후기형]
+토이푸들, 3년 키워보니 이런 점은 몰랐어요
+말티즈 7년 키운 사람이 솔직하게 다 말해줄게요
+비숑프리제 4년 차 견주의 현실 후기
+포메라니안 데려온 지 3년, 지금 느끼는 것들
+시바견 5년 키운 사람의 솔직한 고백
+골든리트리버 2년 키워보니 예상과 달랐던 것들
+렉돌 3년 키운 집사가 알려주는 현실
+노르웨이숲 고양이 1년 차, 생각보다 손이 많이 가요
+치와와 6년 키우면서 가장 힘들었던 순간
+유기견 데려온 지 1년, 달라진 우리 집 이야기
+
+[비교형]
+비숑프리제 vs 말티즈, 어떤 견종이 나한테 맞을까요?
+토이푸들 vs 말티푸, 뭐가 다른지 비교해봤어요
+포메라니안 vs 스피츠, 헷갈리는 두 견종 차이점
+시츄 vs 말티즈, 초보 견주한테 더 맞는 쪽은?
+렉돌 vs 브리티시숏헤어, 성격이 이렇게 달라요
+코숏 vs 러시안블루, 입양 전 비교해봐요
+골든리트리버 vs 래브라도, 어떤 차이가 있을까요?
+메인쿤 vs 노르웨이숲, 대형 고양이 어디가 다를까요?
+시바견 vs 진돗개, 독립적인 견종 비교
+웰시코기 펨브록 vs 카디건, 같은 코기 다른 매력
+
+[숫자리스트형]
+포메라니안분양 전 반드시 확인할 5가지
+말티즈 입양 전 꼭 체크해야 할 7가지
+토이푸들 처음 키울 때 모르면 당황하는 6가지
+비숑프리제 분양 후 첫 달 실수하기 쉬운 4가지
+렉돌분양 전 캐터리에서 꼭 물어봐야 할 3가지
+골든리트리버 입양 전 준비해야 할 10가지
+시바견 훈련할 때 절대 하면 안 되는 4가지
+웰시코기 허리 건강 지키는 생활 수칙 7가지
+유기견 입양 후 성공적인 적응을 위한 체크리스트
+페르시안 고양이 입양 전 꼭 알아야 할 8가지
+
+[비용정보형]
+렉돌분양 비용, 캐터리 선택부터 월 유지비까지
+말티즈 키우는 데 한 달에 얼마나 들까요?
+토이푸들 분양가부터 월 유지비까지 현실 공개
+비숑프리제 미용비만 1년에 얼마? 비용 공개
+포메라니안 분양비 외에 숨은 비용들 모음
+골든리트리버 월 유지비, 대형견은 이만큼 들어요
+시바견 분양가 현실과 매달 나가는 비용
+웰시코기 분양가부터 미용비 의료비까지 총비용
+아비시니안 분양가와 월 유지비 솔직 공개
+사모예드 키우는 비용, 대형견의 현실
+
+[역발상/의문형]
+시바견, 정말 키우기 힘든 견종일까요?
+말티즈가 순하다는 말, 진짜일까요?
+토이푸들 털 안 빠진다는 말 믿어도 될까요?
+비숑프리제가 초보한테 쉬운 견종이라고요?
+렉돌이 정말 인형처럼 순할까요?
+골든리트리버 아파트에서 키울 수 있을까요?
+포메라니안 짖음, 아파트에서 감당 가능할까요?
+유기견은 문제가 있어서 버려진 걸까요?
+러시안블루, 정말 사람을 싫어하는 고양이일까요?
+닥스훈트 허리가 약하다는 말, 어느 정도인가요?
+
+[경험담/서사형]
+유기견입양 2년 차 견주가 전하는 현실 이야기
+보호소에서 만난 복실이, 우리 가족이 되기까지
+말티즈 솜이가 슬개골 수술을 받던 날
+비숑 몽이의 첫 미용 날, 진짜 당황했던 이야기
+시바견 코코가 처음으로 꼬리를 흔든 날
+골든리트리버 루비와 5년, 매일이 새로워요
+포메라니안 하루의 분리불안 극복기
+메인쿤 빅보이를 데려오기로 결심한 이유
+웰시코기 감자의 허리 위기를 넘긴 이야기
+보더콜리와 함께한 산책 일기, 운동량의 진실
+
+[권유형]
+골든리트리버 키우기 전 꼭 읽어보세요
+말티즈 처음이라면 이것만은 알고 시작하세요
+토이푸들 분양 전에 이 글 한 번만 봐주세요
+렉돌 입양 결심했다면 캐터리 선택법부터 확인하세요
+유기견 입양 망설이고 있다면 이것부터 체크하세요
+시바견 키우려면 이 성격부터 이해하세요
+웰시코기 데려오기 전에 집 환경부터 점검하세요
+러시안블루 처음 맞이한다면 이 글 먼저 보세요
+닥스훈트 분양 전에 허리 관리법 꼭 알아두세요
+비숑 처음인 분들께 꼭 전하고 싶은 이야기
+
+[특징심층형]
+웰시코기 털빠짐 현실과 허리 건강 관리법
+말티즈 눈물자국 원인과 실전 관리 꿀팁
+토이푸들 분리불안 증상과 극복 훈련법
+포메라니안 짖음 줄이는 실전 훈련 방법
+시바견 고집과 독립성, 알면 달라지는 훈련법
+골든리트리버 고관절 이형성증 예방과 관리
+렉돌 HCM 유전병 검사가 필수인 이유
+비숑프리제 피부 알레르기 원인과 사료 선택법
+스코티시폴드 골연골이형성증 증상과 관리
+허스키 탈출 본능과 운동량, 현실적인 관리 방법
+
+[적응기형]
+러시안블루 입양 후 낯가림 극복까지 걸린 시간
+유기견 입양 후 신뢰가 생기기까지의 여정
+렉돌 새 집에 온 첫 주, 이렇게 대처했어요
+시바견 퍼피 적응기, 첫 한 달의 기록
+말티즈 새끼 데려온 첫 주 생존기
+토이푸들 입양 후 배변 훈련 3주 기록
+비숑프리제 퍼피 사회화 훈련 2개월 일지
+페르시안 고양이 입양 후 털 관리 적응기
+골든리트리버 퍼피 성장기, 3개월의 변화
+아비시니안 입양 후 활동량에 놀란 이야기
 """
 
-USER_PROMPT = """키워드: {keyword}
-필명: {pen_name}"""
+V2_LENGTH_OVERRIDE_PROMPT = """<length_override>
+- 기존 길이 규칙보다 이 블로그필러 펫 서비스의 길이 규칙을 더 우선합니다.
+- 최종 원고는 공백 제외 1300자 이상 2000자 이하로 맞춥니다.
+- 가장 안정적인 목표 길이는 공백 제외 1450자 이상 1800자 이하입니다.
+- 내용이 짧아 보여도 억지로 늘리지 말고, 2000자를 넘길 것 같으면 문장을 압축해 밀도를 높입니다.
+- 번호 소제목은 기본 5개로 유지하되, 1300~2000자 범위 안에서 각 섹션 길이를 자연스럽게 조절합니다.
+- 최종 출력 전 공백 제외 글자 수가 1300~2000자인지 스스로 확인한 뒤 답합니다.
+</length_override>"""
+
+SYSTEM_PROMPT = "\n\n".join(
+    [V2_SYSTEM_PROMPT.strip(), V2_LENGTH_OVERRIDE_PROMPT.strip()]
+)
+
+USER_PROMPT = V2_USER_PROMPT
 
 
 def blog_filler_pet_gen(
@@ -1021,11 +1161,26 @@ def blog_filler_pet_gen(
         raise ValueError("키워드가 없습니다.")
 
     pen_name = random.choice(PEN_NAMES)
+    target_keyword = resolve_target_keyword(keyword=keyword, note=note)
+    intent_prompt = build_keyword_intent_prompt(
+        keyword=keyword,
+        note=note,
+        target_keyword=target_keyword,
+    )
 
     system = SYSTEM_PROMPT
-    user = USER_PROMPT.format(keyword=keyword, pen_name=pen_name)
+    user = USER_PROMPT.format(
+        keyword=keyword,
+        target_keyword=target_keyword,
+        pen_name=pen_name,
+        intent_prompt=intent_prompt,
+    )
 
-    log.info(f"프롬프트 sys={len(system)} user={len(user)}")
+    log.info(
+        f"프롬프트 sys={len(system)} user={len(user)}"
+        f" | keyword={keyword}"
+        f" | target={target_keyword}"
+    )
 
     try:
         text = call_ai(
@@ -1041,7 +1196,6 @@ def blog_filler_pet_gen(
         f"응답 len={len(text)}" + (f" | {text[:50]!r}..." if len(text) < 100 else "")
     )
 
-    text = comprehensive_text_clean(text)
-    text = remove_markdown(text)
+    text = clean_generated_text(text)
 
     return text

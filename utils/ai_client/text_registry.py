@@ -89,7 +89,7 @@ def get_ai_client(ai_service_type: str) -> Optional[Any]:
     elif ai_service_type == "gemini":
         return genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
     elif ai_service_type == "claude":
-        return Anthropic(api_key=CLAUDE_API_KEY) if CLAUDE_API_KEY else None
+        return Anthropic(api_key=CLAUDE_API_KEY, timeout=600.0) if CLAUDE_API_KEY else None
     elif ai_service_type == "minimax":
         return minimax_client
     elif ai_service_type == "solar":

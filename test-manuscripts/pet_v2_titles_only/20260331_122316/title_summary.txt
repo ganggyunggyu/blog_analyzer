@@ -1,0 +1,27 @@
+01. 시바견분양 실제 키워보니 어땠을까 솔직 후기 | angle=owner_story | opening=question_opening | retry=1 | sim=0.000 | issues=PASS
+02. 시바견분양 먼저 확인할 기본 정보 체크리스트 | angle=basics_guide | opening=imperative_opening | retry=1 | sim=0.375 | issues=PASS
+03. 시바견분양 독립심 강한 성격 초보자 키울 수 있을까 | angle=reality_question | opening=fact_opening | retry=1 | sim=0.423 | issues=PASS
+04. 시바견분양 성격보다 중요한 가격 정보 완전 정리 | angle=price_summary | opening=contrast_opening | retry=1 | sim=0.520 | issues=PASS
+05. 시바견분양 유지비 매달 드는 사료비와 병원비 | angle=must_read | opening=maintenance_opening | retry=1 | sim=0.417 | issues=PASS
+06. 시바견분양 가격대별 꼭 확인할 8가지 체크포인트 | angle=checklist | opening=price_opening | retry=1 | sim=0.600 | issues=PASS
+07. 시바견분양 받아보니 드러난 분양가 외 초기비용 실태 | angle=hidden_cost | opening=story_opening | retry=1 | sim=0.481 | issues=PASS
+08. 시바견분양 5가지 성격 포인트로 고집과 독립성 파악하기 | angle=temperament_focus | opening=list_opening | retry=1 | sim=0.448 | issues=PASS
+09. 시바견분양 초보자라면 유전병 털빠짐 주의사항부터 | angle=health_warning | opening=beginner_opening | retry=1 | sim=0.444 | issues=PASS
+10. 시바견분양 나랑 맞을까 후회 없는 체크리스트 7가지 | angle=mistake_prevention | opening=fit_opening | retry=1 | sim=0.577 | issues=PASS
+
+PAIRWISE TITLE SIMILARITY TOP 15
+0.600 | 시바견분양 먼저 확인할 기본 정보 체크리스트 || 시바견분양 가격대별 꼭 확인할 8가지 체크포인트
+0.577 | 시바견분양 먼저 확인할 기본 정보 체크리스트 || 시바견분양 나랑 맞을까 후회 없는 체크리스트 7가지
+0.520 | 시바견분양 먼저 확인할 기본 정보 체크리스트 || 시바견분양 성격보다 중요한 가격 정보 완전 정리
+0.519 | 시바견분양 독립심 강한 성격 초보자 키울 수 있을까 || 시바견분양 성격보다 중요한 가격 정보 완전 정리
+0.481 | 시바견분양 성격보다 중요한 가격 정보 완전 정리 || 시바견분양 받아보니 드러난 분양가 외 초기비용 실태
+0.481 | 시바견분양 가격대별 꼭 확인할 8가지 체크포인트 || 시바견분양 나랑 맞을까 후회 없는 체크리스트 7가지
+0.462 | 시바견분양 실제 키워보니 어땠을까 솔직 후기 || 시바견분양 받아보니 드러난 분양가 외 초기비용 실태
+0.448 | 시바견분양 독립심 강한 성격 초보자 키울 수 있을까 || 시바견분양 5가지 성격 포인트로 고집과 독립성 파악하기
+0.444 | 시바견분양 독립심 강한 성격 초보자 키울 수 있을까 || 시바견분양 초보자라면 유전병 털빠짐 주의사항부터
+0.429 | 시바견분양 성격보다 중요한 가격 정보 완전 정리 || 시바견분양 5가지 성격 포인트로 고집과 독립성 파악하기
+0.429 | 시바견분양 가격대별 꼭 확인할 8가지 체크포인트 || 시바견분양 5가지 성격 포인트로 고집과 독립성 파악하기
+0.423 | 시바견분양 유지비 매달 드는 사료비와 병원비 || 시바견분양 받아보니 드러난 분양가 외 초기비용 실태
+0.423 | 시바견분양 유지비 매달 드는 사료비와 병원비 || 시바견분양 나랑 맞을까 후회 없는 체크리스트 7가지
+0.423 | 시바견분양 실제 키워보니 어땠을까 솔직 후기 || 시바견분양 독립심 강한 성격 초보자 키울 수 있을까
+0.423 | 시바견분양 실제 키워보니 어땠을까 솔직 후기 || 시바견분양 나랑 맞을까 후회 없는 체크리스트 7가지

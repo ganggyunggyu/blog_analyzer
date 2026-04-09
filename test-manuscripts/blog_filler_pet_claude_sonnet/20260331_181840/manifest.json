@@ -1,0 +1,72 @@
+[
+  {
+    "index": 1,
+    "keyword": "시바견",
+    "pen_name": "시바견러버",
+    "input_path": "test-manuscripts/blog_filler_pet_claude_sonnet/20260331_181840/input_01.txt",
+    "output_path": "test-manuscripts/blog_filler_pet_claude_sonnet/20260331_181840/01_시바견.txt"
+  },
+  {
+    "index": 2,
+    "keyword": "시바견",
+    "pen_name": "초파맘",
+    "input_path": "test-manuscripts/blog_filler_pet_claude_sonnet/20260331_181840/input_02.txt",
+    "output_path": "test-manuscripts/blog_filler_pet_claude_sonnet/20260331_181840/02_시바견.txt"
+  },
+  {
+    "index": 3,
+    "keyword": "시바견",
+    "pen_name": "펫러버",
+    "input_path": "test-manuscripts/blog_filler_pet_claude_sonnet/20260331_181840/input_03.txt",
+    "output_path": "test-manuscripts/blog_filler_pet_claude_sonnet/20260331_181840/03_시바견.txt"
+  },
+  {
+    "index": 4,
+    "keyword": "시바견",
+    "pen_name": "댕댕이맘",
+    "input_path": "test-manuscripts/blog_filler_pet_claude_sonnet/20260331_181840/input_04.txt",
+    "output_path": "test-manuscripts/blog_filler_pet_claude_sonnet/20260331_181840/04_시바견.txt"
+  },
+  {
+    "index": 5,
+    "keyword": "시바견",
+    "pen_name": "몽이맘",
+    "input_path": "test-manuscripts/blog_filler_pet_claude_sonnet/20260331_181840/input_05.txt",
+    "output_path": "test-manuscripts/blog_filler_pet_claude_sonnet/20260331_181840/05_시바견.txt"
+  },
+  {
+    "index": 6,
+    "keyword": "시바견",
+    "pen_name": "해피독",
+    "input_path": "test-manuscripts/blog_filler_pet_claude_sonnet/20260331_181840/input_06.txt",
+    "output_path": "test-manuscripts/blog_filler_pet_claude_sonnet/20260331_181840/06_시바견.txt"
+  },
+  {
+    "index": 7,
+    "keyword": "시바견",
+    "pen_name": "꼬리흔드는집",
+    "input_path": "test-manuscripts/blog_filler_pet_claude_sonnet/20260331_181840/input_07.txt",
+    "output_path": "test-manuscripts/blog_filler_pet_claude_sonnet/20260331_181840/07_시바견.txt"
+  },
+  {
+    "index": 8,
+    "keyword": "시바견",
+    "pen_name": "진돗개사랑",
+    "input_path": "test-manuscripts/blog_filler_pet_claude_sonnet/20260331_181840/input_08.txt",
+    "output_path": "test-manuscripts/blog_filler_pet_claude_sonnet/20260331_181840/08_시바견.txt"
+  },
+  {
+    "index": 9,
+    "keyword": "시바견",
+    "pen_name": "삽살이네",
+    "input_path": "test-manuscripts/blog_filler_pet_claude_sonnet/20260331_181840/input_09.txt",
+    "output_path": "test-manuscripts/blog_filler_pet_claude_sonnet/20260331_181840/09_시바견.txt"
+  },
+  {
+    "index": 10,
+    "keyword": "시바견",
+    "pen_name": "웰시코기댁",
+    "input_path": "test-manuscripts/blog_filler_pet_claude_sonnet/20260331_181840/input_10.txt",
+    "output_path": "test-manuscripts/blog_filler_pet_claude_sonnet/20260331_181840/10_시바견.txt"
+  }
+]

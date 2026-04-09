@@ -35,3 +35,6 @@ manuscripts/
 
 # Scripts
 run
+
+# Blog account credentials
+blog_accounts.json

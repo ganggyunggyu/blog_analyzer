@@ -1,0 +1,1 @@
+{"type": "object", "properties": {"manuscripts": {"type": "array", "minItems": 10, "maxItems": 10, "items": {"type": "object", "properties": {"index": {"type": "integer"}, "title": {"type": "string"}, "manuscript": {"type": "string"}}, "required": ["index", "title", "manuscript"], "additionalProperties": false}}}, "required": ["manuscripts"], "additionalProperties": false}

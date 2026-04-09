@@ -1,37 +1,11 @@
-"""한려담원 - User Prompt v4.1
+"""한려담원 - User Prompt v4.3
 
-키워드 + 제목 스타일 랜덤 주입
-제목 변주 시스템: 8가지 스타일에서 매번 랜덤 선택
+키워드 + 네이버 뷰탭 기반 제목 변수 믹스 주입
 """
 
 import random
 
-TITLE_STYLES = {
-    "미완성형": """문장 끝을 열어두어 클릭 유도
-예시: "소음인 체질 특징은", "십전대보탕 효능 알아보니"
-패턴: [키워드] [미완성 어미]""",
-    "숫자형": """구체적 숫자로 정보량 어필
-예시: "소음인 건강 관리 5가지", "피로회복영양제 고를 때 3가지"
-패턴: [키워드] N가지""",
-    "권유형": """독자에게 직접 말 걸듯 권유
-예시: "소음인 체질 고민이라면 읽어보세요", "손끝저림 원인 궁금하다면 확인해보세요"
-패턴: [키워드] [상황]이라면 [권유]""",
-    "비교형": """두 가지 이상을 비교하는 구조
-예시: "소음인 태음인 차이 비교", "철분제 종류별 차이점"
-패턴: [키워드] [비교대상] 차이/비교""",
-    "대상형": """특정 대상을 명시하여 타겟팅
-예시: "소음인 체질 중년 건강 관리", "임산부 유산균 고르는 법"
-패턴: [키워드] [대상]을 위한""",
-    "이유형": """왜 알아야 하는지 이유 제시
-예시: "소음인 관리 지금 시작해야 하는 이유", "감초 주목받는 이유"
-패턴: [키워드] [행동]해야 하는 이유""",
-    "질문형": """독자의 궁금증을 질문으로 던지기
-예시: "소음인 체질 어떻게 관리할까", "면역력 높이는 음식 뭐가 좋을까"
-패턴: [키워드] [질문]""",
-    "핵심형": """반드시 알아야 할 핵심 강조
-예시: "소음인 체질 꼭 알아야 할 핵심", "변비없는 철분제 선택 핵심"
-패턴: [키워드] 꼭 알아야 할 [내용]""",
-}
+from _prompts.hanryeo.title_variables import build_title_pattern_mix_block
 
 
 def get_hanryeo_user_prompt(
@@ -39,11 +13,13 @@ def get_hanryeo_user_prompt(
     category: str = "",
     note: str = "",
     ref: str = "",
+    rng: random.Random | None = None,
 ) -> str:
-    """한려담원 유저 프롬프트 생성 (v4.1)"""
+    """한려담원 유저 프롬프트 생성 (v4.3)"""
 
-    style_name, style_desc = random.choice(list(TITLE_STYLES.items()))
-    no_comma = random.random() < 0.7
+    rng = rng or random.Random()
+    title_style_block = build_title_pattern_mix_block(keyword=keyword, rng=rng)
+    no_comma = rng.random() < 0.7
 
     comma_rule = (
         "제목에 쉼표(,)를 사용하지 마세요."
@@ -55,8 +31,7 @@ def get_hanryeo_user_prompt(
 [키워드]: {keyword}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-[이번 원고의 제목 스타일]: {style_name}
-{style_desc}
+{title_style_block}
 
 [제목 추가 규칙]
 {comma_rule}"""
@@ -65,6 +40,11 @@ def get_hanryeo_user_prompt(
         prompt += f"\n\n[추가 요청사항]\n{note}"
 
     if ref:
-        prompt += f"\n\n[참조 원고]\n{ref}"
+        prompt += (
+            "\n\n[참조 원고]\n"
+            "아래 자료는 참고용입니다. 문장을 그대로 베끼지 말고,"
+            " 정보 흐름과 마무리 리듬만 참고하세요.\n\n"
+            f"{ref}"
+        )
 
     return prompt.strip()

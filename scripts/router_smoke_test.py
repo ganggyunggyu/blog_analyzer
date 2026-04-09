@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 from collections.abc import Callable
+from contextlib import nullcontext
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -17,6 +18,7 @@ from fastapi.testclient import TestClient
 from routers.auth import blog_write
 from routers.bot import router as bot_router
 from routers.bot.common_models import QueueInfo
+from routers.generate import blog_filler_pet
 from routers.search import manage as search_manage
 
 
@@ -89,6 +91,102 @@ def check_blog_router() -> None:
         health_response.json() == {"status": "ok", "service": "blog-write"},
         "/blog/health 응답 불일치",
     )
+
+
+def check_blog_filler_pet_router_contract() -> None:
+    client = build_client(blog_filler_pet.router)
+    manuscript = "말티즈분양 현실 체크 포인트\n\n안녕하세요 테스트집사입니다.\n"
+
+    def build_db_service() -> MagicMock:
+        db_service = MagicMock()
+
+        def insert_document(collection: str, document: dict) -> None:
+            if collection == "manuscripts" and "_id" not in document:
+                document["_id"] = "pet-doc-1"
+
+        db_service.insert_document.side_effect = insert_document
+        return db_service
+
+    scenarios = [
+        {
+            "service": "pet",
+            "model_name": "legacy-model",
+        },
+        {
+            "service": "pet-v2",
+            "model_name": "v2-model",
+        },
+    ]
+
+    for scenario in scenarios:
+        generator = MagicMock()
+        run_in_threadpool = AsyncMock(return_value=manuscript)
+
+        with (
+            patch(
+                "routers.generate.blog_filler_pet.resolve_blog_filler_pet_runtime",
+                return_value=(generator, scenario["model_name"]),
+            ),
+            patch(
+                "routers.generate.blog_filler_pet.run_in_threadpool",
+                run_in_threadpool,
+            ),
+            patch(
+                "routers.generate.blog_filler_pet.MongoDBService",
+                side_effect=lambda: build_db_service(),
+            ),
+            patch(
+                "routers.generate.blog_filler_pet.progress",
+                side_effect=lambda **kwargs: nullcontext(),
+            ),
+            patch(
+                "routers.generate.blog_filler_pet.parse_query",
+                return_value={"keyword": "말티즈분양"},
+            ),
+        ):
+            response = client.post(
+                "/generate/blog-filler-pet",
+                json={
+                    "service": scenario["service"],
+                    "keyword": "말티즈분양",
+                    "ref": "",
+                },
+            )
+
+        assert_condition(
+            response.status_code == 200,
+            f"/generate/blog-filler-pet 실패({scenario['service']}): {response.text}",
+        )
+        payload = response.json()
+        assert_condition(
+            set(payload.keys())
+            == {"_id", "content", "createdAt", "engine", "service", "category", "keyword"},
+            f"응답 키 불일치({scenario['service']}): {sorted(payload.keys())}",
+        )
+        assert_condition(
+            payload["content"] == manuscript,
+            f"content 포맷 불일치({scenario['service']})",
+        )
+        assert_condition(
+            payload["engine"] == scenario["model_name"],
+            f"engine 불일치({scenario['service']})",
+        )
+        assert_condition(
+            payload["service"] == f"{scenario['service']}_blog_filler_pet",
+            f"service 필드 불일치({scenario['service']})",
+        )
+        assert_condition(
+            payload["category"] == blog_filler_pet.DB_NAME,
+            f"category 불일치({scenario['service']})",
+        )
+        assert_condition(
+            payload["keyword"] == "말티즈분양",
+            f"keyword 불일치({scenario['service']})",
+        )
+        assert_condition(
+            run_in_threadpool.await_count == 1,
+            f"run_in_threadpool 호출 누락({scenario['service']})",
+        )
 
 
 def check_search_router() -> None:
@@ -200,6 +298,7 @@ def main() -> None:
     checks = [
         ("api-route-registration", check_api_route_registration),
         ("blog-router", check_blog_router),
+        ("blog-filler-pet-router-contract", check_blog_filler_pet_router_contract),
         ("search-router", check_search_router),
         ("bot-router", check_bot_router),
     ]
