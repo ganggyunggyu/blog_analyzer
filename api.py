@@ -1,9 +1,5 @@
-# 표준 라이브러리
-import os
-import asyncio
-
 # 외부 라이브러리
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 # 라우터 - 기본
@@ -57,9 +53,10 @@ from routers.auth import blog_write as auth_blog_write
 
 # 라우터 - 봇
 from routers.bot import router as bot_router
-
-LLM_CONCURRENCY = int(os.getenv("LLM_CONCURRENCY", "3"))
-llm_semaphore = asyncio.Semaphore(LLM_CONCURRENCY)
+from utils.llm_concurrency import (
+    is_llm_path,
+    run_with_llm_concurrency_limit,
+)
 
 app = FastAPI()
 
@@ -71,6 +68,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def limit_llm_generation_requests(request: Request, call_next):
+    if not is_llm_path(request.url.path):
+        return await call_next(request)
+
+    return await run_with_llm_concurrency_limit(lambda: call_next(request))
 
 # 기본
 app.include_router(ingest.router)
