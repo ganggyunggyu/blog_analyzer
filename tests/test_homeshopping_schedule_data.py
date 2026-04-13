@@ -67,3 +67,6 @@ def test_normalize_product_name_uses_clean_sheet_style() -> None:
     assert normalize_product_name("[락토핏] (방송에서만) 락토핏 맥스19 유산균 12통 (24개월분)") == "락토핏 맥스19 유산균"
     assert normalize_product_name("★전고객 5만원★ 비에날 씬 프로 9개월 + 롯데상품권 5만원 + 프로틴 14포 + 텀블러") == "비에날 씬 프로"
     assert normalize_product_name("[삼육두유]검은콩과볶은귀리48팩+검은콩호두아몬드32팩+검은콩흑임자32팩(총112팩)") == "삼육두유 검은콩 혼합세트"
+    assert normalize_product_name("[주영엔에스 단백질 저분자 유청펩타이드 HW-3] 12주(84포)") == "주영엔에스 단백질 저분자 유청펩타이드 HW-3"
+    assert normalize_product_name("여에스더 리포좀글루타치온 울트라 9X 12+1박스+맥주효모2박스") == "여에스더 리포좀글루타치온 울트라 9X"
+    assert normalize_product_name("[방송에서만]지니라이프 듀얼 맥스 콘드로이친1200MBP 6+6박스") == "지니라이프 듀얼 맥스 콘드로이친1200MBP"
