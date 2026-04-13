@@ -167,7 +167,7 @@ def main() -> None:
     keyword_prices: dict[str, list[int]] = defaultdict(list)
 
     for row in data:
-        date_value, channel, _time, product, _category, price, keywords = row
+        date_value, channel, _time, product, _category, price, keywords, _focus_keyword = row
         keyword_name = classify_item(product, keywords)
         keyword_count[keyword_name] += 1
         keyword_channels[keyword_name].add(channel)

@@ -68,7 +68,7 @@ def main() -> None:
                     "startRowIndex": 0,
                     "endRowIndex": 1,
                     "startColumnIndex": 0,
-                    "endColumnIndex": 7,
+                    "endColumnIndex": 8,
                 },
                 "cell": {
                     "userEnteredFormat": {
@@ -105,7 +105,7 @@ def main() -> None:
                                 "startRowIndex": block_start,
                                 "endRowIndex": index + 1,
                                 "startColumnIndex": 0,
-                                "endColumnIndex": 7,
+                                "endColumnIndex": 8,
                             },
                             "cell": {"userEnteredFormat": {"backgroundColor": background_color}},
                             "fields": "userEnteredFormat.backgroundColor",
@@ -130,7 +130,7 @@ def main() -> None:
                         "startRowIndex": block_start,
                         "endRowIndex": len(data) + 1,
                         "startColumnIndex": 0,
-                        "endColumnIndex": 7,
+                        "endColumnIndex": 8,
                     },
                     "cell": {"userEnteredFormat": {"backgroundColor": background_color}},
                     "fields": "userEnteredFormat.backgroundColor",
@@ -220,6 +220,18 @@ def main() -> None:
                     "endIndex": 7,
                 },
                 "properties": {"pixelSize": 250},
+                "fields": "pixelSize",
+            }
+        },
+        {
+            "updateDimensionProperties": {
+                "range": {
+                    "sheetId": int(MAIN_WORKSHEET_GID),
+                    "dimension": "COLUMNS",
+                    "startIndex": 7,
+                    "endIndex": 8,
+                },
+                "properties": {"pixelSize": 180},
                 "fields": "pixelSize",
             }
         },

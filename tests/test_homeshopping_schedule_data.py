@@ -3,6 +3,7 @@ from datetime import date
 from scripts.homeshopping_schedule_data import (
     build_collection_dates,
     classify_health_category,
+    extract_focus_keyword,
     extract_keywords,
     format_korean_date_range,
     is_health_product,
@@ -70,3 +71,10 @@ def test_normalize_product_name_uses_clean_sheet_style() -> None:
     assert normalize_product_name("[주영엔에스 단백질 저분자 유청펩타이드 HW-3] 12주(84포)") == "주영엔에스 단백질 저분자 유청펩타이드 HW-3"
     assert normalize_product_name("여에스더 리포좀글루타치온 울트라 9X 12+1박스+맥주효모2박스") == "여에스더 리포좀글루타치온 울트라 9X"
     assert normalize_product_name("[방송에서만]지니라이프 듀얼 맥스 콘드로이친1200MBP 6+6박스") == "지니라이프 듀얼 맥스 콘드로이친1200MBP"
+
+
+def test_extract_focus_keyword_uses_core_phrase_style() -> None:
+    assert extract_focus_keyword("윤방부박사의 넘버원 알부민 당제로", "알부민") == "알부민 당제로"
+    assert extract_focus_keyword("여에스더 리포좀 글루타치온 울트라9X", "글루타치온") == "리포좀 글루타치온"
+    assert extract_focus_keyword("주영엔에스 단백질 저분자 유청펩타이드 HW-3", "단백질") == "유청펩타이드 HW-3"
+    assert extract_focus_keyword("닥터 픽 생유산균", "유산균") == "생유산균"

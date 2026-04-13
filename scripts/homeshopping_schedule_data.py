@@ -14,13 +14,13 @@ from typing import Any
 
 API_URL = "https://api.hsmoa.net/v1/schedule"
 CACHE_PATH = Path("/tmp/homeshopping_health_collection.json")
-CACHE_VERSION = 2
+CACHE_VERSION = 3
 
 SPREADSHEET_ID = "1HErumqLrDcuCDlxnAlbB9efClvIVPihZq12kcUQzP2k"
 MAIN_WORKSHEET_GID = "1306070881"
 SUMMARY_WORKSHEET_TITLE = "키워드요약"
 
-HEADERS = ["날짜", "채널", "방송시간", "상품명", "건강카테고리", "가격(원)", "키워드"]
+HEADERS = ["날짜", "채널", "방송시간", "상품명", "건강카테고리", "가격(원)", "키워드", "추출키워드"]
 
 COLLECTION_PAST_DAYS = 4
 COLLECTION_FUTURE_DAYS = 2
@@ -173,6 +173,26 @@ PRODUCT_NAME_OVERRIDES = {
     "[베지밀] *담백한 베지밀A 검은콩두유 190ml*80팩": "담백한 베지밀A 검은콩두유",
     "★전고객 5만원★ 비에날 씬 프로 9개월 + 롯데상품권 5만원 + 프로틴 14포 + 텀블러": "비에날 씬 프로",
     "한미사이언스 완 전두유 더진한 렌틸콩 무가당 190㎖ 80팩": "한미사이언스 완 전두유 더진한 렌틸콩 무가당",
+}
+
+FOCUS_KEYWORD_OVERRIDES = {
+    "방송에서만 반값세일+복부마사지기 골드 파로효소 캡슐레이션": "파로효소",
+    "비에날씬프로": "비에날씬",
+    "지니라이프 듀얼 맥스 콘드로이친1200MBP": "콘드로이친 MBP",
+    "여에스더 리포좀글루타치온 울트라 9X": "리포좀 글루타치온",
+    "여에스더 리포좀 글루타치온 울트라9X": "리포좀 글루타치온",
+    "BNR17 다이어트 유산균 비에날씬": "BNR17 유산균",
+    "위&장 매스틱 유산균": "매스틱 유산균",
+    "콘드로이친 킹 1200 12박스에 추가구성 아스타루지": "콘드로이친 킹",
+    "비에날씬(BNR17)유산균": "비에날씬 유산균",
+    "비에날씬 프로틴": "비에날씬 프로틴",
+    "뉴트리디데이 시그니처 콜라겐 비오틴": "콜라겐 비오틴",
+    "에버콜라겐 레티놀 A": "레티놀 A",
+    "윤방부박사의 넘버원 알부민 당제로": "알부민 당제로",
+    "닥터 픽 생유산균": "생유산균",
+    "닥터린 발아 카무트® 브랜드밀 효소 S": "카무트 효소",
+    "유기농 레몬즙 순수100": "레몬즙",
+    "주영엔에스 단백질 저분자 유청펩타이드 HW-3": "유청펩타이드 HW-3",
 }
 
 
@@ -352,6 +372,7 @@ def build_row(
     product_name = normalize_product_name(str(product.get("name") or "").strip())
     health_category = classify_health_category(product)
     keywords = ", ".join(extract_keywords(product, health_category))
+    focus_keyword = extract_focus_keyword(product_name, keywords)
     return [
         broadcast_date,
         channel_name,
@@ -360,6 +381,7 @@ def build_row(
         health_category,
         format_price(product),
         keywords,
+        focus_keyword,
     ]
 
 
@@ -447,6 +469,17 @@ def extract_keywords(product: dict[str, Any], health_category: str) -> list[str]
 
     category_fallback = str(product.get("category3") or product.get("category2") or "건강식품").strip()
     return [category_fallback]
+
+
+def extract_focus_keyword(product_name: str, keywords: str) -> str:
+    if product_name in FOCUS_KEYWORD_OVERRIDES:
+        return FOCUS_KEYWORD_OVERRIDES[product_name]
+
+    keyword_parts = [part.strip() for part in keywords.split(",") if part.strip()]
+    if keyword_parts:
+        return keyword_parts[0]
+
+    return product_name
 
 
 def format_time(value: Any) -> str:
