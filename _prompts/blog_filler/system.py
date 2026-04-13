@@ -235,6 +235,7 @@ def _get_base_prompt(article_type: str, intro_style: str, title_style: str) -> s
 - 20~25자 이내
 - 순수 텍스트 (특수문자 금지)
 - 본문 내용과 일치
+- 제목에 알리바바가 들어가면 반드시 알리바바 닷컴으로 표기하고 알리바바 단독 표기는 금지
 
 ---
 
