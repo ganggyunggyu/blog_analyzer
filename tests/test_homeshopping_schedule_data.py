@@ -71,10 +71,19 @@ def test_normalize_product_name_uses_clean_sheet_style() -> None:
     assert normalize_product_name("[주영엔에스 단백질 저분자 유청펩타이드 HW-3] 12주(84포)") == "주영엔에스 단백질 저분자 유청펩타이드 HW-3"
     assert normalize_product_name("여에스더 리포좀글루타치온 울트라 9X 12+1박스+맥주효모2박스") == "여에스더 리포좀글루타치온 울트라 9X"
     assert normalize_product_name("[방송에서만]지니라이프 듀얼 맥스 콘드로이친1200MBP 6+6박스") == "지니라이프 듀얼 맥스 콘드로이친1200MBP"
+    assert normalize_product_name("♥[유난희 건강톡톡 패키지] 팔레오 고단백 프로틴") == "팔레오 고단백 프로틴"
+    assert normalize_product_name("○[방송에서만][6+4박스] 홍삼진고 데일리스틱 (10g*30포*10박스)") == "홍삼진고 데일리스틱"
+    assert normalize_product_name("카무트® 영양견과바 420g(21gx20개입) x 4박스 / 총 80개") == "카무트 영양견과바"
+    assert normalize_product_name("(무)정관장 홍삼활력플러스업 6+3박스(총 9박스)+쇼핑백 9장") == "정관장 홍삼활력플러스업"
+    assert normalize_product_name("D_미녀의 석류 콜라겐 (25g)") == "미녀의 석류 콜라겐"
+    assert normalize_product_name("[정식품] 베지밀 총 90팩 (검은콩 고칼슘두유 190ml x 45팩 + 검은콩 아몬드호두 두유 190ml x 45팩)") == "베지밀"
+    assert normalize_product_name("구수한맛 밸런스업 총 144팩 (230ml X 24팩 X 6박스)") == "구수한맛 밸런스업"
 
 
-def test_extract_focus_keyword_uses_core_phrase_style() -> None:
+def test_extract_focus_keyword_prefers_short_product_name() -> None:
     assert extract_focus_keyword("윤방부박사의 넘버원 알부민 당제로", "알부민") == "알부민 당제로"
     assert extract_focus_keyword("여에스더 리포좀 글루타치온 울트라9X", "글루타치온") == "리포좀 글루타치온"
     assert extract_focus_keyword("주영엔에스 단백질 저분자 유청펩타이드 HW-3", "단백질") == "유청펩타이드 HW-3"
-    assert extract_focus_keyword("닥터 픽 생유산균", "유산균") == "생유산균"
+    assert extract_focus_keyword("팔레오 고단백 프로틴", "단백질, 콘드로이친") == "팔레오 고단백 프로틴"
+    assert extract_focus_keyword("카무트 영양견과바", "카무트") == "카무트 영양견과바"
+    assert extract_focus_keyword("", "유산균") == "유산균"

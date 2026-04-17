@@ -207,6 +207,48 @@ TITLE_ANGLE_RULES: list[dict[str, str]] = [
         "rule": "제목은 후기, 경험담, 실제 키워보니 같은 체험형으로 씁니다.",
         "example": "시바견분양 고민하다 직접 키워본 현실 후기",
     },
+    {
+        "id": "subversion",
+        "label": "반전 매력형",
+        "rule": "제목은 일반적인 기대를 뒤집는 반전 구조로 써서 궁금증을 유발합니다.",
+        "example": "시바견 순한 줄 알았지 실제 키워보면 보이는 성격",
+    },
+    {
+        "id": "difficulty_reveal",
+        "label": "난이도 공개형",
+        "rule": "제목은 키우기 난이도나 예상 밖 어려움을 앞세워 현실감을 줍니다.",
+        "example": "시바견 이거 모르고 키우면 진짜 힘듭니다",
+    },
+    {
+        "id": "breed_comparison",
+        "label": "품종 비교형",
+        "rule": "제목은 두 품종이나 두 특성을 비교하는 구조로 씁니다.",
+        "example": "포메라니안 vs 스피츠 성격 외모 차이 비교",
+    },
+    {
+        "id": "attribute_listing",
+        "label": "속성 나열형",
+        "rule": "제목은 성격 수명 털빠짐처럼 핵심 속성 키워드를 나열하는 구조로 씁니다.",
+        "example": "시바견 성격 수명 털빠짐 미용 총정리",
+    },
+    {
+        "id": "years_experience",
+        "label": "N년차 경험형",
+        "rule": "제목은 구체적 경험 연수를 넣어 신뢰감을 주는 체험형으로 씁니다.",
+        "example": "말티푸 4년 키워보며 느낀 성격 분양 털빠짐",
+    },
+    {
+        "id": "price_gap",
+        "label": "가격 의문형",
+        "rule": "제목은 가격 차이의 원인이나 의외성을 물어보는 구조로 씁니다.",
+        "example": "브리티쉬숏헤어 분양가 왜 이렇게 차이 날까",
+    },
+    {
+        "id": "how_to_find",
+        "label": "탐색 질문형",
+        "rule": "제목은 어디서 어떻게 알아보는지 탐색 과정을 물어보는 구조로 씁니다.",
+        "example": "말티푸분양 어디서 어떻게 알아보세요",
+    },
 ]
 
 INFO_PRIMARY_TITLE_ANGLE_IDS: tuple[str, ...] = (
@@ -302,6 +344,36 @@ TITLE_OPENING_RULES: list[dict[str, str]] = [
         "rule": "제목은 핵심 키워드 뒤에 나랑 맞을까, 어떤 사람에게 맞을까처럼 적합도 판단형으로 시작합니다.",
         "example": "시바견분양 나랑 맞을까 성격과 난이도 정리",
     },
+    {
+        "id": "surprise_opening",
+        "label": "반전 리드형",
+        "rule": "제목은 핵심 키워드 뒤에 순한 줄 알았지, 쉬운 줄 알았지, 인형인 줄 알았는데처럼 기대를 뒤집는 리듬으로 시작합니다.",
+        "example": "시바견 순한 줄 알았지 실제 성격 반전",
+    },
+    {
+        "id": "years_experience_opening",
+        "label": "N년차 리드형",
+        "rule": "제목은 핵심 키워드 뒤에 N년 키워보며, N년차 느낀처럼 구체적 경험 연수를 넣어 시작합니다.",
+        "example": "시바견 4년 키워보며 느낀 현실 정리",
+    },
+    {
+        "id": "attribute_list_opening",
+        "label": "속성 나열 리드형",
+        "rule": "제목은 핵심 키워드 뒤에 성격 수명 털빠짐처럼 핵심 속성을 짧게 나열하며 시작합니다.",
+        "example": "시바견 성격 수명 털빠짐 키우기 전 필수 정보",
+    },
+    {
+        "id": "where_how_opening",
+        "label": "탐색 리드형",
+        "rule": "제목은 핵심 키워드 뒤에 어디서 어떻게, 어떤 기준으로처럼 탐색형 질문으로 시작합니다.",
+        "example": "시바견분양 어디서 어떻게 알아보는 게 맞을까",
+    },
+    {
+        "id": "difficulty_opening",
+        "label": "난이도 리드형",
+        "rule": "제목은 핵심 키워드 뒤에 생각보다 힘든, 이거 모르면처럼 예상 밖 난이도를 환기하는 리듬으로 시작합니다.",
+        "example": "시바견 이거 모르고 키우면 진짜 힘듭니다",
+    },
 ]
 
 INFO_PRIMARY_OPENING_IDS: tuple[str, ...] = (
@@ -366,6 +438,24 @@ TITLE_ENDING_RULES: list[dict[str, str]] = [
         "label": "체크 마무리형",
         "rule": "제목 마무리는 '~체크해보세요', '~확인하세요', '~점검 포인트' 같은 행동 유도형으로 닫습니다.",
         "example": "길고양이 입양 전 이것만 체크해보세요",
+    },
+    {
+        "id": "reveal_ending",
+        "label": "공개 마무리형",
+        "rule": "제목 마무리는 '~솔직 공개', '~팩트 체크', '~현실 공개' 같은 공개형으로 닫습니다.",
+        "example": "말티즈 성격 털빠짐 9년차 솔직 공개",
+    },
+    {
+        "id": "attribute_ending",
+        "label": "속성 마무리형",
+        "rule": "제목 마무리는 '~성격 특징 가격', '~수명 미용 관리', '~성격 털빠짐' 같은 속성 나열형으로 닫습니다.",
+        "example": "브리티쉬숏헤어 골드 실버 종류 특징 성격",
+    },
+    {
+        "id": "difficulty_ending",
+        "label": "난이도 마무리형",
+        "rule": "제목 마무리는 '~힘든 이유', '~힘듭니다', '~어려운 이유' 같은 난이도 환기형으로 닫습니다.",
+        "example": "사모예드 키우기 전 꼭 알아야 할 어려운 이유",
     },
 ]
 
@@ -1275,6 +1365,19 @@ def get_few_shot_title_example_suffixes(keyword: str) -> list[str]:
                 "신청 흐름과 준비 포인트",
                 "공고 보기 전에 볼 현실 기준",
                 "보호자 입장에서 보는 체크 포인트",
+                "방법 반려견과 이별 전 알아야 할 것들",
+                "100% 안전한 방법 정리",
+            ]
+        )
+    elif any(term in normalized for term in ("무료분양", "유기견", "유기묘")):
+        suffixes.extend(
+            [
+                "절차 조건 책임비 주의사항",
+                "보호소 선택부터 적응 방법까지",
+                "성견 입양이 오히려 좋은 이유",
+                "입양 전 반드시 체크할 준비사항",
+                "사지 말고 입양해야 하는 이유",
+                "무료 분양 사기 절대 당하지 마세요",
             ]
         )
     elif "분양가" in normalized:
@@ -1283,6 +1386,9 @@ def get_few_shot_title_example_suffixes(keyword: str) -> list[str]:
                 "숨은 비용까지 보는 현실 기준",
                 "예산 잡을 때 볼 건강 포인트",
                 "초기비용과 분양 체크 포인트",
+                "왜 이렇게 차이 나는지 현실 정리",
+                "평균 시세와 건강한 선택 기준",
+                "분양가 거품 걷어내기 현실 비용",
             ]
         )
     elif "분양" in normalized:
@@ -1291,6 +1397,13 @@ def get_few_shot_title_example_suffixes(keyword: str) -> list[str]:
                 "초보자 기준으로 보는 현실 체크",
                 "성격과 준비 먼저 보는 기준",
                 "후회 줄이는 준비 포인트",
+                "어디서 어떻게 알아보는 게 맞을까",
+                "받고 한 달 키워본 솔직 후기",
+                "직접 방문 후 느낀 현실 기준",
+                "전 필수로 따져봐야 할 5가지 조건",
+                "입양 전 필독 성격 특징 수명",
+                "가격 차이 나는 이유 정리",
+                "펫샵 말고 어디서 입양 경로 정리",
             ]
         )
     elif any(term in normalized for term in ("품종", "견종", "종류")):
@@ -1299,6 +1412,18 @@ def get_few_shot_title_example_suffixes(keyword: str) -> list[str]:
                 "초보자 기준으로 보는 선택 포인트",
                 "성격과 관리 난이도 비교 포인트",
                 "생활 패턴에 맞는 선택 기준",
+                "초보자도 키우기 쉬운 추천 정리",
+                "성격 좋은 반려동물 추천 가이드",
+                "생각보다 돈 많이 드는 품종 정보",
+            ]
+        )
+    elif any(term in normalized for term in ("키우기", "키우는")):
+        suffixes.extend(
+            [
+                "전 꼭 알아야 할 현실 정보",
+                "생각보다 힘든 이유 5가지",
+                "초보 보호자가 놓치기 쉬운 포인트",
+                "쉽지 않은 현실 육아 이유",
             ]
         )
     else:
@@ -1307,6 +1432,14 @@ def get_few_shot_title_example_suffixes(keyword: str) -> list[str]:
                 "성격과 관리 먼저 볼 기준",
                 "건강과 준비 포인트",
                 "보호자 기준으로 보는 현실 정보",
+                "성격 수명 털빠짐 키우기 전 필수 정보",
+                "실제 키워보니 알게 된 현실",
+                "귀여움만 보면 놓치는 성격 반전",
+                "초보 보호자가 꼭 알아야 할 특징",
+                "이거 모르고 키우면 진짜 힘듭니다",
+                "성격 특징 분양가 한눈에 보기",
+                "입양 전 성격부터 건강까지 체크",
+                "N년 키워보며 느낀 현실 포인트",
             ]
         )
 
@@ -1519,6 +1652,15 @@ def get_exact_match_fallback_suffixes(keyword: str) -> list[str]:
             "절차와 준비 포인트",
             "공고 확인 전에 볼 현실 기준",
             "신청 흐름과 체크 포인트",
+            "급하게 결정하기 전 꼭 확인할 기준",
+        ]
+
+    if any(term in normalized for term in ("무료분양", "유기견", "유기묘")):
+        return [
+            "절차 조건 주의사항 정리",
+            "보호소에서 가족 만나는 현실 기준",
+            "입양 전 꼭 체크할 준비사항",
+            "책임비와 절차 현실 정리",
         ]
 
     if "분양가" in normalized:
@@ -1526,6 +1668,8 @@ def get_exact_match_fallback_suffixes(keyword: str) -> list[str]:
             "가격보다 먼저 볼 숨은 비용",
             "비용과 건강 체크 포인트",
             "초기비용까지 보는 현실 기준",
+            "왜 이렇게 차이 나는지 현실 정리",
+            "평균 시세와 건강한 선택 기준",
         ]
 
     if "분양" in normalized:
@@ -1533,6 +1677,10 @@ def get_exact_match_fallback_suffixes(keyword: str) -> list[str]:
             "현실 기준과 체크 포인트",
             "성격과 비용 먼저 보는 기준",
             "후회 줄이는 준비 포인트",
+            "어디서 어떻게 알아보는 게 맞을까",
+            "직접 방문 후 느낀 현실 기준",
+            "입양 전 필독 성격 특징 수명",
+            "가격 왜 이렇게 차이 나는지 정리",
         ]
 
     if any(term in normalized for term in ("품종", "견종", "종류")):
@@ -1540,12 +1688,33 @@ def get_exact_match_fallback_suffixes(keyword: str) -> list[str]:
             "선택 기준과 현실 포인트",
             "초보자 기준으로 보는 비교 포인트",
             "성격과 관리 난이도 정리",
+            "초보자도 키우기 쉬운 추천 가이드",
+            "성격 좋은 반려동물 추천 정리",
+        ]
+
+    if any(term in normalized for term in ("키우기", "키우는")):
+        return [
+            "전 꼭 알아야 할 현실 정보",
+            "생각보다 힘든 이유와 대처법",
+            "초보 보호자가 놓치기 쉬운 포인트",
+            "쉽지 않은 현실 육아 이유",
+        ]
+
+    if any(term in normalized for term in ("입양", "데려")):
+        return [
+            "전 확인할 5가지 현실 체크",
+            "보호자 기준으로 보는 준비 포인트",
+            "성격부터 건강까지 체크 기준",
         ]
 
     return [
         "성격과 현실 체크 포인트",
         "관리 전에 볼 핵심 기준",
         "보호자 기준으로 보는 현실 정보",
+        "성격 수명 털빠짐 키우기 전 필수 정보",
+        "실제 키워보니 알게 된 현실",
+        "귀여움만 보면 놓치는 성격 반전",
+        "초보 보호자가 꼭 알아야 할 특징",
     ]
 
 
@@ -2943,10 +3112,18 @@ Your persona must feel REAL, not template-based:
 - When relevant, use high-intent modifiers common in Naver VIEW: 현실, 비용, 절차, 체크리스트, 준비물, 주의사항, 성격, 특징, 털빠짐, 수명, 유전병
 - Never repeat the main keyword twice in the title or stack it again inside a follow-up phrase
 
-Title patterns:
+Title patterns (mix these diversely, never repeat the same pattern):
 - Info type: "말티즈분양 비용 성격 건강관리 총정리"
 - Must-read type: "비숑프리제 분양 전 꼭 알아야 할 현실"
 - Question type: "렉돌 성격 정말 순할까 3년 키운 후기"
+- Subversion type: "포메라니안 인형인 줄 알았는데 아무도 안 알려준 것들"
+- Experience type: "말티푸 4년 키워보며 느낀 성격 분양 털빠짐"
+- Attribute listing type: "시바견 성격 수명 털빠짐 미용 총정리"
+- Difficulty type: "웰시코기 이거 모르고 키우면 진짜 힘듭니다"
+- Comparison type: "포메라니안 vs 스피츠 성격 외모 비교"
+- Price reveal type: "브리티쉬숏헤어 분양가 왜 이렇게 차이 날까"
+- How-to type: "말티푸분양 어디서 어떻게 알아보세요"
+- Review type: "골든리트리버 분양 받고 한 달 솔직 후기"
 
 === LENGTH (CRITICAL - MUST MEET) ===
 

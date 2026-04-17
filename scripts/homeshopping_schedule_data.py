@@ -14,7 +14,7 @@ from typing import Any
 
 API_URL = "https://api.hsmoa.net/v1/schedule"
 CACHE_PATH = Path("/tmp/homeshopping_health_collection.json")
-CACHE_VERSION = 3
+CACHE_VERSION = 4
 
 SPREADSHEET_ID = "1HErumqLrDcuCDlxnAlbB9efClvIVPihZq12kcUQzP2k"
 MAIN_WORKSHEET_GID = "1306070881"
@@ -194,6 +194,11 @@ FOCUS_KEYWORD_OVERRIDES = {
     "유기농 레몬즙 순수100": "레몬즙",
     "주영엔에스 단백질 저분자 유청펩타이드 HW-3": "유청펩타이드 HW-3",
 }
+
+LEADING_PRODUCT_DECORATIONS = (
+    "최신상",
+    "프리미엄",
+)
 
 
 @dataclass(slots=True)
@@ -392,17 +397,42 @@ def normalize_product_name(name: str) -> str:
     normalized_name = name
 
     while True:
-        cleaned_name = re.sub(r"^(?:\[[^\]]+\]|\([^)]*\)|★[^★]+★|\*[^*]+\*)\s*", "", normalized_name).strip()
+        cleaned_name = re.sub(
+            r"^[○●♥♡□■△▲▷▶◇◆\s]*(?:\[[^\]]+\]|\([^)]*\)|★[^★]+★|\*[^*]+\*)\s*",
+            "",
+            normalized_name,
+        ).strip()
         if cleaned_name == normalized_name:
             break
         normalized_name = cleaned_name
 
+    normalized_name = re.sub(r"^[○●♥♡□■△▲▷▶◇◆\s]+", "", normalized_name).strip()
+    normalized_name = re.sub(r"^[A-Z]_", "", normalized_name).strip()
+
+    for decoration in LEADING_PRODUCT_DECORATIONS:
+        normalized_name = re.sub(rf"^{re.escape(decoration)}\s+", "", normalized_name).strip()
+
+    normalized_name = re.sub(r"^\((?:무|무료|특가)\)\s*", "", normalized_name).strip()
+    normalized_name = re.sub(r"\s*\([^)]*(?:총|개월분|개월|주분|박스|통|포|팩|병|캔|개|g|kg|ml|㎖)[^)]*\)", "", normalized_name)
     normalized_name = re.sub(r"\s+\+\s+.*$", "", normalized_name)
+    normalized_name = re.sub(r"\s*/\s*총.*$", "", normalized_name)
     normalized_name = re.sub(r"\s*\(총[^)]*\)", "", normalized_name)
     normalized_name = re.sub(r"\s*\([^)]*(?:개월분|박스|포|팩|병|캔|개)[^)]*\)", "", normalized_name)
-    normalized_name = re.sub(r"\s*(총\s*)?\d+\s*(?:개월분|개월|주분|박스|통|포|팩|병|캔|개)\b.*$", "", normalized_name)
-    normalized_name = re.sub(r"\s*\d+\s*(?:ml|㎖|g|kg)\s*(?:x|\*)\s*\d+\s*(?:병|팩|포|개)\b.*$", "", normalized_name, flags=re.IGNORECASE)
+    normalized_name = re.sub(
+        r"\s+\d+(?:\+\d+)?\s*(?:개월분|개월|주분|박스|통|포|팩|병|캔|장|개)\b.*$",
+        "",
+        normalized_name,
+    )
+    normalized_name = re.sub(
+        r"\s+\d+(?:\.\d+)?\s*(?:ml|㎖|g|kg)\s*(?:x|\*)\s*\d+.*$",
+        "",
+        normalized_name,
+        flags=re.IGNORECASE,
+    )
+    normalized_name = re.sub(r"\s+\d+(?:\.\d+)?\s*(?:ml|㎖|g|kg)\b.*$", "", normalized_name, flags=re.IGNORECASE)
+    normalized_name = normalized_name.replace("®", " ")
     normalized_name = re.sub(r"[\*\u2605\u2606]+", "", normalized_name)
+    normalized_name = re.sub(r"\s+총$", "", normalized_name)
     normalized_name = re.sub(r"\s+", " ", normalized_name)
     return normalized_name.strip().rstrip("+").strip()
 
@@ -472,14 +502,19 @@ def extract_keywords(product: dict[str, Any], health_category: str) -> list[str]
 
 
 def extract_focus_keyword(product_name: str, keywords: str) -> str:
-    if product_name in FOCUS_KEYWORD_OVERRIDES:
-        return FOCUS_KEYWORD_OVERRIDES[product_name]
+    normalized_name = normalize_product_name(product_name)
+
+    if normalized_name in FOCUS_KEYWORD_OVERRIDES:
+        return FOCUS_KEYWORD_OVERRIDES[normalized_name]
+
+    if normalized_name and len(normalized_name) >= 2:
+        return normalized_name
 
     keyword_parts = [part.strip() for part in keywords.split(",") if part.strip()]
     if keyword_parts:
         return keyword_parts[0]
 
-    return product_name
+    return normalized_name or product_name
 
 
 def format_time(value: Any) -> str:
