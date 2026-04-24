@@ -16,7 +16,7 @@ from utils.ai_client_factory import call_ai
 from utils.logger import log
 
 
-MODEL_NAME: str = Model.CLAUDE_SONNET_4_6
+MODEL_NAME: str = Model.DEEPSEEK_V4_FLASH
 NAVER_TITLE_EXAMPLE_LIMIT = 8
 DIET_V2_BLOG_FILLER_CATEGORIES: set[str] = {
     "다이어트",

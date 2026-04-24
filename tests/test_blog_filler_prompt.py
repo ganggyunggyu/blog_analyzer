@@ -1,7 +1,22 @@
 from _prompts.blog_filler.system import get_blog_filler_system_prompt
 from _prompts.blog_filler.user import get_blog_filler_user_prompt
-from llm import blog_filler_service
+from _constants.Model import Model
+from llm import (
+    blog_filler_diet_v2_service,
+    blog_filler_pet_service,
+    blog_filler_pet_v2_service,
+    blog_filler_restaurant_service,
+    blog_filler_service,
+)
 from services import naver_blog_reference_service
+
+
+def test_blog_filler_services_use_deepseek_v4_flash() -> None:
+    assert blog_filler_service.MODEL_NAME == Model.DEEPSEEK_V4_FLASH
+    assert blog_filler_diet_v2_service.MODEL_NAME == Model.DEEPSEEK_V4_FLASH
+    assert blog_filler_pet_service.MODEL_NAME == Model.DEEPSEEK_V4_FLASH
+    assert blog_filler_pet_v2_service.MODEL_NAME == Model.DEEPSEEK_V4_FLASH
+    assert blog_filler_restaurant_service.MODEL_NAME == Model.DEEPSEEK_V4_FLASH
 
 
 def test_blog_filler_system_prompt_requires_alibaba_dot_com_title() -> None:

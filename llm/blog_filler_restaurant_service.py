@@ -1,4 +1,4 @@
-"""Blog Filler Restaurant - 맛집/관광지 블로그 원고 서비스 (grok급 SEO)"""
+"""Blog Filler Restaurant - 맛집/관광지 블로그 원고 서비스 (DeepSeek Flash)"""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ from utils.ai_client_factory import call_ai
 from utils.logger import log
 
 
-MODEL_NAME: str = Model.CLAUDE_SONNET_4_6
+MODEL_NAME: str = Model.DEEPSEEK_V4_FLASH
 
 
 def blog_filler_restaurant_gen(user_instructions: str, ref: str = "", category: str = "") -> str:

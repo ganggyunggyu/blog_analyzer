@@ -17,7 +17,7 @@ from utils.ai_client_factory import call_ai
 from utils.logger import log
 
 
-MODEL_NAME: str = Model.CLAUDE_SONNET_4_6
+MODEL_NAME: str = Model.DEEPSEEK_V4_FLASH
 
 PEN_NAMES: list[str] = [
     "초파맘",

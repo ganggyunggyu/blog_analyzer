@@ -1,4 +1,4 @@
-"""Structured Sonnet 4.6 service for diet/health keyword manuscripts."""
+"""Structured DeepSeek Flash service for diet/health keyword manuscripts."""
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ from utils.query_parser import parse_query
 from utils.text_cleaner import comprehensive_text_clean, remove_markdown
 
 
-MODEL_NAME: str = Model.CLAUDE_SONNET_4_6
+MODEL_NAME: str = Model.DEEPSEEK_V4_FLASH
 TITLE_MAX_ATTEMPTS = 5
 MANUSCRIPT_MAX_ATTEMPTS = 2
 TARGET_CATEGORY = "다이어트"
