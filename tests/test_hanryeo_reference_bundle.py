@@ -110,6 +110,10 @@ def test_system_prompt_requires_closing_block_and_reference_usage() -> None:
     assert "소제목에는 줄 길이 규칙을 적용하지 않는다" in prompt
     assert "[실천 항목], [Q&A], [정리], [제품 연결] 같은 대괄호 라벨을 본문에 출력하지 않는다" in prompt
     assert '본문 전체에서 "냥"' in prompt
+    assert "1. 도입부" not in prompt
+    assert "1. 저밀도 콜레스테롤" not in prompt
+    assert "4. 실천 가이드 + Q&A" not in prompt
+    assert "5. 마무리 요약 + 제품 연결" not in prompt
 
 
 def test_sanitize_hanryeo_output_rewrites_meta_subtitles() -> None:
@@ -179,3 +183,58 @@ def test_hanryeo_gen_injects_crawled_reference_bundle(monkeypatch) -> None:
     assert result == "소음인남자 관리 포인트\n\n5. 끝으로 정리해보면"
     assert "[참조 원고]" in captured["user_prompt"]
     assert "[네이버 뷰탭 자동 참조원고]" in captured["user_prompt"]
+
+
+def test_hanryeo_gen_retries_when_subtitle_structure_is_invalid(monkeypatch) -> None:
+    captured_prompts: list[str] = []
+    responses = [
+        """수족냉증 관리법
+
+1. 수족냉증이란 무엇인가
+
+2. 혈액순환이 약해지는 이유
+
+3. 생활 속 관리 방법
+
+4. 마무리와 제품 연결""",
+        """수족냉증 관리법
+
+1. 수족냉증이란 무엇인가
+
+2. 혈액순환이 약해지는 이유
+
+3. 생활 속 관리 방법
+
+4. 실천할 때 확인할 점
+
+5. 끝으로 정리해보면""",
+    ]
+
+    monkeypatch.setattr(
+        hanryeo_service,
+        "build_naver_blog_reference_bundle",
+        lambda query, manual_ref="": "[네이버 뷰탭 자동 참조원고]\n본문",
+    )
+    monkeypatch.setattr(
+        hanryeo_service,
+        "comprehensive_text_clean",
+        lambda text: text,
+    )
+
+    def fake_call_ai(
+        model_name: str,
+        system_prompt: str,
+        user_prompt: str,
+        temperature: float,
+    ) -> str:
+        captured_prompts.append(user_prompt)
+        return responses.pop(0)
+
+    monkeypatch.setattr(hanryeo_service, "call_ai", fake_call_ai)
+
+    result = hanryeo_service.hanryeo_gen(user_instructions="수족냉증")
+
+    assert len(captured_prompts) == 2
+    assert "[재작성 강제 조건]" in captured_prompts[1]
+    assert "4번에서 글을 끝내지 말고 반드시 5번 소제목과 본문까지 작성하세요" in captured_prompts[1]
+    assert "5. 끝으로 정리해보면" in result
