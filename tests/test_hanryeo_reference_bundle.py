@@ -101,7 +101,11 @@ def test_system_prompt_requires_closing_block_and_reference_usage() -> None:
     assert "금지 예: 도입부, 핵심 개념, 실천 가이드, Q&A, 마무리 요약, 제품 연결, 관리 제안" in prompt
     assert "소제목은 정확히 5개만 작성한다" in prompt
     assert "4번을 마지막 소제목으로 끝내는 것 금지" in prompt
+    assert "5번 소제목이 없으면 원고 전체가 실패다" in prompt
+    assert "4번 소제목에는 마무리, 결론, 제품 연결, 정리 역할을 절대 넣지 않는다" in prompt
     assert '"6."으로 시작하는 추가 소제목은 절대 출력하지 않는다' in prompt
+    assert "본문 안에서는 \"1.\", \"2.\", \"3.\" 같은 번호 목록을 절대 쓰지 않는다" in prompt
+    assert "본문 내부의 단계 설명이나 목록에는 숫자 번호를 쓰지 말고 반드시 ✔ 기호만 사용한다" in prompt
     assert "소제목은 반드시 한 줄로 입력하듯 작성한다" in prompt
     assert "소제목에는 줄 길이 규칙을 적용하지 않는다" in prompt
     assert "[실천 항목], [Q&A], [정리], [제품 연결] 같은 대괄호 라벨을 본문에 출력하지 않는다" in prompt
