@@ -9,6 +9,7 @@ from llm.blog_filler_diet_v2_service import (
     KEYWORD_FAMILY_MAP as DIET_V2_KEYWORD_FAMILY_MAP,
     blog_filler_diet_v2_gen,
 )
+from services.naver_blog_reference_service import collect_naver_view_titles
 from utils.query_parser import parse_query
 from utils.text_cleaner import comprehensive_text_clean, remove_markdown
 from utils.ai_client_factory import call_ai
@@ -16,6 +17,7 @@ from utils.logger import log
 
 
 MODEL_NAME: str = Model.CLAUDE_SONNET_4_6
+NAVER_TITLE_EXAMPLE_LIMIT = 8
 DIET_V2_BLOG_FILLER_CATEGORIES: set[str] = {
     "다이어트",
     "다이어트보조제",
@@ -33,6 +35,25 @@ def should_use_diet_v2_blog_filler(keyword: str, category: str) -> bool:
     return normalized_category in DIET_V2_BLOG_FILLER_CATEGORIES
 
 
+def get_naver_title_examples(keyword: str) -> list[str]:
+    try:
+        titles = collect_naver_view_titles(
+            keyword,
+            limit=NAVER_TITLE_EXAMPLE_LIMIT,
+        )
+    except Exception as exc:
+        log.warning(
+            "네이버 검색 제목 수집 실패",
+            keyword=keyword,
+            error=str(exc),
+        )
+        return []
+
+    if titles:
+        log.info("네이버 검색 제목 수집 완료", keyword=keyword, count=len(titles))
+    return titles
+
+
 def blog_filler_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     """블로그 글밥 생성"""
 
@@ -43,10 +64,13 @@ def blog_filler_gen(user_instructions: str, ref: str = "", category: str = "") -
     if not keyword:
         raise ValueError("키워드가 없습니다.")
 
+    naver_title_examples = get_naver_title_examples(keyword)
+
     if should_use_diet_v2_blog_filler(keyword=keyword, category=category):
         log.info(f"diet_v2_blog_filler 라우팅 keyword={keyword} category={category}")
         result = blog_filler_diet_v2_gen(
             user_instructions=user_instructions,
+            live_view_titles=naver_title_examples,
             category=category or "다이어트",
         )
         return str(result["manuscript"])
@@ -57,6 +81,7 @@ def blog_filler_gen(user_instructions: str, ref: str = "", category: str = "") -
         category=category,
         note=note,
         ref=ref,
+        naver_title_examples=naver_title_examples,
     )
 
     log.info(f"프롬프트 sys={len(system)} user={len(user)}")

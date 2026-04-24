@@ -34,6 +34,8 @@ class Model:
     GROK_CODE = "grok-code-fast-1-0825"
     GROK_IMAGE = "grok-2-image"
 
+    DEEPSEEK_V4_FLASH = "deepseek-v4-flash"
+    DEEPSEEK_V4_PRO = "deepseek-v4-pro"
     DEEPSEEK_CHAT = "deepseek-chat"
     DEEPSEEK_RES = "deepseek-reasoner"
 

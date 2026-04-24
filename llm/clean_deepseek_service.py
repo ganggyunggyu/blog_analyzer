@@ -1,8 +1,6 @@
 """프롬프트 없는 Clean DeepSeek 서비스"""
 
 from __future__ import annotations
-import re
-import time
 
 from _constants.Model import Model
 from _prompts.category import 맛집
@@ -11,7 +9,8 @@ from utils.text_cleaner import comprehensive_text_clean
 from utils.ai_client_factory import call_ai
 
 
-MODEL_NAME: str = Model.DEEPSEEK_CHAT
+MODEL_NAME: str = Model.DEEPSEEK_V4_FLASH
+MAX_TOKENS = 8192
 
 
 def clean_deepseek_gen(
@@ -75,25 +74,14 @@ def clean_deepseek_gen(
 """.strip()
 
     try:
-        start_time = time.time()
-
-
-
-
         generated_text = call_ai(
             model_name=MODEL_NAME,
             system_prompt=system_prompt,
             user_prompt=user_prompt,
+            max_tokens=MAX_TOKENS,
         )
 
         cleaned_text = comprehensive_text_clean(generated_text)
-
-        char_count_no_space = len(re.sub(r"\s+", "", cleaned_text))
-        elapsed_time = time.time() - start_time
-
-
-
-
 
         return cleaned_text
 

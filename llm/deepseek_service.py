@@ -1,5 +1,4 @@
 from __future__ import annotations
-import re
 
 from _prompts.service.get_mongo_prompt import get_mongo_prompt
 from _prompts.service.get_category_tone_rules import get_category_tone_rules
@@ -13,7 +12,8 @@ from utils.text_cleaner import comprehensive_text_clean
 from utils.ai_client_factory import call_ai
 
 
-MODEL_NAME: str = Model.DEEPSEEK_RES
+MODEL_NAME: str = Model.DEEPSEEK_V4_PRO
+MAX_TOKENS = 8192
 
 
 def deepseek_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
@@ -37,19 +37,12 @@ def deepseek_gen(user_instructions: str, ref: str = "", category: str = "") -> s
 
     user = get_deepseek_user_prompt(keyword=keyword, note=note, ref=ref)
 
-
-
-
-
     text = call_ai(
         model_name=MODEL_NAME,
         system_prompt=system,
         user_prompt=user,
+        max_tokens=MAX_TOKENS,
     )
 
     text = comprehensive_text_clean(text)
-    length_no_space = len(re.sub(r"\s+", "", text))
-
-
-
     return text

@@ -120,6 +120,7 @@ def call_chat_completion_text(
     provider_name: str,
     max_tokens: Optional[int] = None,
     reasoning_effort: Optional[str] = None,
+    extra_body: Optional[dict[str, Any]] = None,
 ) -> TextCallResult:
     request: dict[str, Any] = {
         "model": model_name,
@@ -129,6 +130,8 @@ def call_chat_completion_text(
         request["max_tokens"] = max_tokens
     if reasoning_effort is not None:
         request["reasoning_effort"] = reasoning_effort
+    if extra_body is not None:
+        request["extra_body"] = extra_body
 
     response = client.chat.completions.create(**request)
     return _extract_chat_completion_result(response, provider_name)
@@ -208,6 +211,8 @@ def stream_chat_completion_text(
     system_prompt: str,
     user_prompt: str,
     max_tokens: Optional[int] = None,
+    reasoning_effort: Optional[str] = None,
+    extra_body: Optional[dict[str, Any]] = None,
 ) -> Generator[str, None, None]:
     request: dict[str, Any] = {
         "model": model_name,
@@ -216,6 +221,10 @@ def stream_chat_completion_text(
     }
     if max_tokens is not None:
         request["max_tokens"] = max_tokens
+    if reasoning_effort is not None:
+        request["reasoning_effort"] = reasoning_effort
+    if extra_body is not None:
+        request["extra_body"] = extra_body
 
     stream = client.chat.completions.create(**request)
     for chunk in stream:

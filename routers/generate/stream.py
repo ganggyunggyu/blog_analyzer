@@ -28,7 +28,7 @@ async def generate_stream(request: StreamRequest):
     - OpenAI: gpt-4o, gpt-4-turbo (네이티브 스트리밍)
     - Claude: claude-sonnet-4-5 등 (네이티브 스트리밍)
     - Gemini: gemini-2.0-flash 등 (네이티브 스트리밍)
-    - DeepSeek: deepseek-chat (네이티브 스트리밍)
+    - DeepSeek: deepseek-v4-pro, deepseek-v4-flash (네이티브 스트리밍)
     - Solar: solar-pro (네이티브 스트리밍)
     - Grok: grok-4 등 (시뮬레이션)
     - GPT-5: gpt-5 등 (시뮬레이션)

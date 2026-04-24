@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import html
+import json
 import re
 import subprocess
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -21,6 +22,7 @@ MOBILE_POST_URL_TEMPLATE = (
     "?blogId={blog_id}&logNo={log_no}&proxyReferer=https%3A%2F%2Fm.blog.naver.com%2F"
 )
 DEFAULT_REFERENCE_LIMIT = 8
+DEFAULT_TITLE_EXAMPLE_LIMIT = 8
 DEFAULT_FETCH_TIMEOUT_SECONDS = 20
 MIN_REFERENCE_BODY_LENGTH = 120
 
@@ -35,6 +37,53 @@ MOBILE_BLOG_POST_URL_PATTERN = re.compile(
 TITLE_SUFFIX_PATTERN = re.compile(r"\s*:\s*네이버 블로그\s*$")
 WHITESPACE_PATTERN = re.compile(r"\s+")
 ZERO_WIDTH_PATTERN = re.compile(r"[\u200b\u2060\ufeff]")
+REVIEW_BLOCK_PATTERN = re.compile(
+    r'data-block-id="review/prs_template_v2_review_blog_rra_desk\.ts".*?<script>(.*?)</script>',
+    re.S,
+)
+REVIEW_TITLE_PATTERN = re.compile(
+    r'"title":"(.*?)","titleEllipsis":\d+.*?"type":"searchBasic"',
+    re.S,
+)
+GENERIC_JSON_TITLE_PATTERN = re.compile(r'"title":"(.*?)"', re.S)
+HTML_TITLE_PATTERNS: tuple[re.Pattern[str], ...] = (
+    re.compile(
+        r'<a[^>]*class="title_link"[^>]*>\s*<strong[^>]*class="title"[^>]*>(.*?)</strong>',
+        re.S,
+    ),
+    re.compile(
+        r'<a[^>]*class="api_txt_lines total_tit"[^>]*>(.*?)</a>',
+        re.S,
+    ),
+)
+MARK_TAG_PATTERN = re.compile(r"</?mark>")
+HTML_TAG_PATTERN = re.compile(r"<[^>]+>")
+TITLE_NOISE_PATTERNS: tuple[re.Pattern[str], ...] = (
+    re.compile(r"네이버 검색"),
+    re.compile(r"관련 브랜드 콘텐츠"),
+    re.compile(r"네이버 클립"),
+    re.compile(r"함께 많이 찾는"),
+    re.compile(r"님의 블로그$"),
+    re.compile(r"^\d{2,4}[─-]\d{3,4}[─-]\d{4}"),
+    re.compile(r"(?:나무위키|위키백과|시사상식사전|화학백과|요리백과|의약품 정보|약학용어사전)"),
+    re.compile(r"(?:동영상)$"),
+)
+COMMENTY_TITLE_PATTERNS: tuple[re.Pattern[str], ...] = (
+    re.compile(r"저도"),
+    re.compile(r"죄송"),
+    re.compile(r"부탁"),
+    re.compile(r"계신가요"),
+    re.compile(r"가입합니다"),
+    re.compile(r"해주세요"),
+    re.compile(r"\^\^"),
+    re.compile(r"ㅠ"),
+    re.compile(r"ㅜ"),
+    re.compile(r";;"),
+    re.compile(r"궁금해요"),
+    re.compile(r"걱정되는데"),
+    re.compile(r"[ㄷㅋㅎ]{2,}"),
+)
+NOISE_TITLES = {"더보기", "이미지"}
 
 NOISE_LINES = {
     "공감",
@@ -96,6 +145,64 @@ def _clean_text(text: str) -> str:
     return WHITESPACE_PATTERN.sub(" ", cleaned).strip()
 
 
+def _decode_naver_json_text(raw_text: str) -> str:
+    decoded = json.loads(f'"{raw_text}"')
+    decoded = html.unescape(decoded)
+    decoded = MARK_TAG_PATTERN.sub("", decoded)
+    return WHITESPACE_PATTERN.sub(" ", decoded).strip()
+
+
+def _clean_html_fragment(raw_text: str) -> str:
+    cleaned = html.unescape(raw_text)
+    cleaned = HTML_TAG_PATTERN.sub("", cleaned)
+    return WHITESPACE_PATTERN.sub(" ", cleaned).strip()
+
+
+def _normalize_title_match(text: str) -> str:
+    return re.sub(r"[^0-9A-Za-z가-힣]+", "", text or "").lower()
+
+
+def _build_query_clues(query: str) -> set[str]:
+    clues: set[str] = set()
+    normalized_query = _normalize_title_match(query)
+    if normalized_query:
+        clues.add(normalized_query)
+
+    for token in re.findall(r"[가-힣A-Za-z0-9\-]+", query):
+        normalized_token = _normalize_title_match(token)
+        if len(normalized_token) >= 2:
+            clues.add(normalized_token)
+
+    return clues
+
+
+def _is_relevant_naver_view_title(
+    raw_title: str,
+    title: str,
+    query_clues: set[str],
+) -> bool:
+    normalized_title = _normalize_title_match(title)
+    if not normalized_title or title in NOISE_TITLES:
+        return False
+
+    if len(title) < 6 or len(title) > 60:
+        return False
+
+    if any(pattern.search(title) for pattern in TITLE_NOISE_PATTERNS):
+        return False
+
+    if any(pattern.search(title) for pattern in COMMENTY_TITLE_PATTERNS):
+        return False
+
+    if "<mark>" in raw_title.lower():
+        return True
+
+    if not query_clues:
+        return True
+
+    return any(clue in normalized_title for clue in query_clues)
+
+
 def _extract_blog_identity(url: str) -> tuple[str, str] | None:
     for pattern in (DIRECT_BLOG_POST_URL_PATTERN, MOBILE_BLOG_POST_URL_PATTERN):
         match = pattern.search(url)
@@ -153,6 +260,78 @@ def extract_naver_blog_urls(
                 return urls
 
     return urls
+
+
+def extract_naver_view_titles(
+    html_text: str,
+    query: str = "",
+    limit: int = DEFAULT_TITLE_EXAMPLE_LIMIT,
+) -> list[str]:
+    primary_candidates: list[tuple[str, str]] = []
+    fallback_candidates: list[tuple[str, str]] = []
+    review_blocks = REVIEW_BLOCK_PATTERN.findall(html_text)
+    query_clues = _build_query_clues(query)
+
+    for review_block in review_blocks:
+        for raw_title in REVIEW_TITLE_PATTERN.findall(review_block):
+            primary_candidates.append(("json", raw_title))
+
+    if not primary_candidates:
+        for raw_title in REVIEW_TITLE_PATTERN.findall(html_text):
+            primary_candidates.append(("json", raw_title))
+
+    for raw_title in GENERIC_JSON_TITLE_PATTERN.findall(html_text):
+        fallback_candidates.append(("json", raw_title))
+
+    for pattern in HTML_TITLE_PATTERNS:
+        for raw_title in pattern.findall(html_text):
+            fallback_candidates.append(("html", raw_title))
+
+    titles: list[str] = []
+    seen: set[str] = set()
+
+    def collect_titles(raw_candidates: list[tuple[str, str]]) -> None:
+        for source_type, raw_title in raw_candidates:
+            try:
+                title = (
+                    _decode_naver_json_text(raw_title)
+                    if source_type == "json"
+                    else _clean_html_fragment(raw_title)
+                )
+            except Exception:
+                continue
+
+            normalized = _normalize_title_match(title)
+            if not normalized or normalized in seen:
+                continue
+
+            if not _is_relevant_naver_view_title(
+                raw_title=raw_title,
+                title=title,
+                query_clues=query_clues,
+            ):
+                continue
+
+            titles.append(title)
+            seen.add(normalized)
+
+            if len(titles) >= limit:
+                return
+
+    collect_titles(primary_candidates)
+
+    if len(titles) < limit:
+        collect_titles(fallback_candidates)
+
+    return titles[:limit]
+
+
+def collect_naver_view_titles(
+    query: str,
+    limit: int = DEFAULT_TITLE_EXAMPLE_LIMIT,
+) -> list[str]:
+    html_text = fetch_naver_view_html(query)
+    return extract_naver_view_titles(html_text, query=query, limit=limit)
 
 
 def _extract_title(soup: BeautifulSoup) -> str:

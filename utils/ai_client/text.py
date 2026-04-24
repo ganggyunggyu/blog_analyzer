@@ -15,13 +15,32 @@ from utils.ai_client.text_providers import (
     stream_openai_text,
 )
 from utils.ai_client.text_registry import (
-    MODEL_PRICING,
+    MODEL_PRICING as MODEL_PRICING,
     get_ai_client,
     get_ai_service_type,
     get_model_pricing,
     print_token_cost,
     validate_api_key,
 )
+
+
+def get_deepseek_request_options(model_name: str) -> dict[str, object]:
+    if model_name == "deepseek-v4-pro":
+        return {
+            "reasoning_effort": "high",
+            "extra_body": {"thinking": {"type": "enabled"}},
+        }
+
+    if model_name in {"deepseek-v4-flash", "deepseek-chat"}:
+        return {"extra_body": {"thinking": {"type": "disabled"}}}
+
+    if model_name == "deepseek-reasoner":
+        return {
+            "reasoning_effort": "high",
+            "extra_body": {"thinking": {"type": "enabled"}},
+        }
+
+    return {}
 
 
 def call_ai(
@@ -113,12 +132,20 @@ def call_ai(
         )
 
     elif ai_service_type == "deepseek":
+        deepseek_options = get_deepseek_request_options(model_name)
+        reasoning_effort = deepseek_options.get("reasoning_effort")
+        extra_body = deepseek_options.get("extra_body")
         text, input_tokens, output_tokens = call_chat_completion_text(
             client=client,
             model_name=model_name,
             system_prompt=system_prompt,
             user_prompt=user_prompt,
             provider_name="DeepSeek",
+            max_tokens=max_tokens,
+            reasoning_effort=(
+                reasoning_effort if isinstance(reasoning_effort, str) else None
+            ),
+            extra_body=extra_body if isinstance(extra_body, dict) else None,
         )
 
     elif ai_service_type == "kimi":
@@ -204,11 +231,19 @@ def call_ai_stream(
         )
 
     elif ai_service_type == "deepseek":
+        deepseek_options = get_deepseek_request_options(model_name)
+        reasoning_effort = deepseek_options.get("reasoning_effort")
+        extra_body = deepseek_options.get("extra_body")
         yield from stream_chat_completion_text(
             client=client,
             model_name=model_name,
             system_prompt=system_prompt,
             user_prompt=user_prompt,
+            max_tokens=max_tokens,
+            reasoning_effort=(
+                reasoning_effort if isinstance(reasoning_effort, str) else None
+            ),
+            extra_body=extra_body if isinstance(extra_body, dict) else None,
         )
 
     elif ai_service_type == "kimi":
@@ -243,6 +278,7 @@ __all__ = [
     "call_ai",
     "call_ai_stream",
     "get_ai_client",
+    "get_deepseek_request_options",
     "get_ai_service_type",
     "get_model_pricing",
     "print_token_cost",

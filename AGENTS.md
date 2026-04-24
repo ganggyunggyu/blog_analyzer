@@ -92,7 +92,7 @@ POST /generate/{engine}
 | Gemini | `genai.Client()` | gemini-3-pro, gemini-3-flash, gemini-2.5-pro | `ai_client/text.py` |
 | SOLAR | `solar_client` (OpenAI compat) | solar-pro, solar-pro2 | `config.py:18` |
 | Grok | `grok_client` (xai_sdk) | grok-4-fast-reasoning | `config.py:36` |
-| DeepSeek | `deepseek_client` (OpenAI compat) | deepseek-chat, deepseek-reasoner | `config.py` |
+| DeepSeek | `deepseek_client` (OpenAI compat) | deepseek-v4-pro, deepseek-v4-flash | `config.py` |
 | Kimi | `moonshot_client` (OpenAI compat) | kimi-k2.5 | `config.py` |
 
 ## CONVENTIONS (THIS PROJECT ONLY)
