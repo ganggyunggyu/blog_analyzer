@@ -99,6 +99,12 @@ def test_system_prompt_requires_closing_block_and_reference_usage() -> None:
     assert "체질 / 증상 / 임신·산후 / 영양·섭취" in prompt
     assert "6-9. 참조 원고 활용 규칙" in prompt
     assert "금지 예: 도입부, 핵심 개념, 실천 가이드, Q&A, 마무리 요약, 제품 연결, 관리 제안" in prompt
+    assert "소제목은 정확히 5개만 작성한다" in prompt
+    assert "4번을 마지막 소제목으로 끝내는 것 금지" in prompt
+    assert '"6."으로 시작하는 추가 소제목은 절대 출력하지 않는다' in prompt
+    assert "소제목은 반드시 한 줄로 입력하듯 작성한다" in prompt
+    assert "소제목에는 줄 길이 규칙을 적용하지 않는다" in prompt
+    assert "[실천 항목], [Q&A], [정리], [제품 연결] 같은 대괄호 라벨을 본문에 출력하지 않는다" in prompt
     assert '본문 전체에서 "냥"' in prompt
 
 
