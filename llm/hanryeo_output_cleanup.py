@@ -22,6 +22,7 @@ MANAGEMENT_SUFFIX_PATTERN = re.compile(
 )
 CONNECTOR_SUFFIX_PATTERN = re.compile(r"(?:과|와|및)$")
 SUMMARY_WORDS = ("요약", "정리", "마무리", "맺음말")
+TITLE_LABEL_PATTERN = re.compile(r"^\s*(?:제목|본문|원고)\s*[:：]\s*(?P<body>.*)$")
 
 
 def _clean_tail(text: str, fallback: str) -> str:
@@ -103,11 +104,34 @@ def _rewrite_line(line: str) -> str:
     return line
 
 
+def _strip_output_labels(lines: list[str]) -> list[str]:
+    normalized_lines: list[str] = []
+    saw_content = False
+
+    for line in lines:
+        stripped = line.strip()
+        label_match = TITLE_LABEL_PATTERN.match(stripped)
+        if label_match:
+            body = label_match.group("body").strip()
+            if body:
+                normalized_lines.append(body)
+                saw_content = True
+            elif saw_content:
+                normalized_lines.append("")
+            continue
+
+        normalized_lines.append(line)
+        if stripped:
+            saw_content = True
+
+    return normalized_lines
+
+
 def sanitize_hanryeo_output(text: str) -> str:
     if not text.strip():
         return text
 
-    original_lines = text.splitlines()
+    original_lines = _strip_output_labels(text.splitlines())
     normalized_lines: list[str] = []
     index = 0
 

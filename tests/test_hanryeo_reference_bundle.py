@@ -149,6 +149,20 @@ def test_sanitize_hanryeo_output_rewrites_meta_subtitles() -> None:
     assert "8. 정리해보면" in result
 
 
+def test_sanitize_hanryeo_output_removes_output_labels() -> None:
+    text = """제목: 수족냉증 원인과 관리법
+
+본문:
+
+1. 수족냉증이란 무엇인가"""
+
+    result = sanitize_hanryeo_output(text)
+
+    assert result.startswith("수족냉증 원인과 관리법")
+    assert "제목:" not in result
+    assert "본문:" not in result
+
+
 def test_hanryeo_gen_injects_crawled_reference_bundle(monkeypatch) -> None:
     captured: dict[str, str] = {}
 
