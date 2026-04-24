@@ -6,8 +6,8 @@ from services import naver_blog_reference_service
 from services.naver_blog_reference_service import NaverBlogReference
 
 
-def test_hanryeo_service_uses_claude_sonnet_4_6() -> None:
-    assert hanryeo_service.MODEL_NAME == Model.CLAUDE_SONNET_4_6
+def test_hanryeo_service_uses_deepseek_v4_flash() -> None:
+    assert hanryeo_service.MODEL_NAME == Model.DEEPSEEK_V4_FLASH
 
 
 def test_extract_naver_blog_urls_deduplicates_and_normalizes() -> None:

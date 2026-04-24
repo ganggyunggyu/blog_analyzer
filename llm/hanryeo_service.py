@@ -10,12 +10,12 @@ from _constants.Model import Model
 from llm.hanryeo_output_cleanup import sanitize_hanryeo_output
 from services.naver_blog_reference_service import build_naver_blog_reference_bundle
 from utils.query_parser import parse_query
-from utils.text_cleaner import comprehensive_text_clean, remove_markdown
+from utils.text_cleaner import comprehensive_text_clean
 from utils.ai_client_factory import call_ai
 from utils.logger import log
 
 
-MODEL_NAME: str = Model.CLAUDE_SONNET_4_6
+MODEL_NAME: str = Model.DEEPSEEK_V4_FLASH
 TEMPERATURE: float = 0.85
 
 # ── 프롬프트 언어 설정 ──────────────────────────────
