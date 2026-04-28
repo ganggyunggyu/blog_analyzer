@@ -28,6 +28,20 @@ def test_blog_filler_system_prompt_requires_alibaba_dot_com_title() -> None:
     )
 
 
+def test_blog_filler_ophthalmology_prompt_uses_master_contract() -> None:
+    prompt = get_blog_filler_system_prompt(category="안과", keyword="백내장수술비용")
+
+    assert "안과 시력교정·백내장 분야의 전문 블로그 콘텐츠 라이터" in prompt
+    assert "메인 키워드: 백내장수술비용" in prompt
+    assert "공백 포함 3,500자 ~ 4,000자" in prompt
+    assert "H2 대제목 6~7개" in prompt
+    assert "본문 전체에서 8~12회" in prompt
+    assert "가격/비용 키워드일 때 필수" in prompt
+    assert "첫 줄: 실제 제목만 출력" in prompt
+    assert "\"[제목]\" 라벨 출력 금지" in prompt
+    assert "1,100~1,500자" not in prompt
+
+
 def test_extract_naver_view_titles_reads_search_result_titles() -> None:
     html_text = """
     <html>
