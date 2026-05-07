@@ -18,6 +18,7 @@ from utils.logger import log
 
 
 MODEL_NAME: str = Model.DEEPSEEK_V4_FLASH
+FALLBACK_MODEL_NAME: str = Model.GEMINI_3_FLASH_PREVIEW
 
 PEN_NAMES: list[str] = [
     "초파맘",
@@ -1148,6 +1149,32 @@ SYSTEM_PROMPT = "\n\n".join(
 USER_PROMPT = V2_USER_PROMPT
 
 
+def _is_balance_error(error: Exception) -> bool:
+    message = str(error).lower()
+    return "insufficient balance" in message or "402" in message
+
+
+def _call_pet_ai(system_prompt: str, user_prompt: str) -> str:
+    try:
+        return call_ai(
+            model_name=MODEL_NAME,
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+        )
+    except Exception as e:
+        if not _is_balance_error(e):
+            raise
+
+        log.warning(
+            f"primary model balance error, fallback={FALLBACK_MODEL_NAME}: {e}"
+        )
+        return call_ai(
+            model_name=FALLBACK_MODEL_NAME,
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+        )
+
+
 def blog_filler_pet_gen(
     user_instructions: str, ref: str = "", category: str = ""
 ) -> str:
@@ -1183,11 +1210,7 @@ def blog_filler_pet_gen(
     )
 
     try:
-        text = call_ai(
-            model_name=MODEL_NAME,
-            system_prompt=system,
-            user_prompt=user,
-        )
+        text = _call_pet_ai(system_prompt=system, user_prompt=user)
     except Exception as e:
         log.error(f"call_ai 에러: {e}")
         raise

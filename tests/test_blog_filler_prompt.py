@@ -19,6 +19,32 @@ def test_blog_filler_services_use_deepseek_v4_flash() -> None:
     assert blog_filler_restaurant_service.MODEL_NAME == Model.DEEPSEEK_V4_FLASH
 
 
+def test_blog_filler_pet_falls_back_when_primary_balance_is_empty(monkeypatch) -> None:
+    calls: list[str] = []
+
+    def fake_call_ai(
+        model_name: str,
+        system_prompt: str,
+        user_prompt: str,
+    ) -> str:
+        calls.append(model_name)
+
+        if len(calls) == 1:
+            raise RuntimeError("Error code: 402 - Insufficient Balance")
+
+        return "말티즈 성격 알아보기\n\n본문"
+
+    monkeypatch.setattr(blog_filler_pet_service, "call_ai", fake_call_ai)
+
+    result = blog_filler_pet_service._call_pet_ai("system", "user")
+
+    assert result == "말티즈 성격 알아보기\n\n본문"
+    assert calls == [
+        blog_filler_pet_service.MODEL_NAME,
+        blog_filler_pet_service.FALLBACK_MODEL_NAME,
+    ]
+
+
 def test_blog_filler_system_prompt_requires_alibaba_dot_com_title() -> None:
     prompt = get_blog_filler_system_prompt(keyword="알리바바 도매")
 
