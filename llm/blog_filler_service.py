@@ -17,6 +17,7 @@ from utils.logger import log
 
 
 MODEL_NAME: str = Model.DEEPSEEK_V4_FLASH
+FALLBACK_MODEL_NAME: str = Model.GEMINI_3_FLASH_PREVIEW
 NAVER_TITLE_EXAMPLE_LIMIT = 8
 DIET_V2_BLOG_FILLER_CATEGORIES: set[str] = {
     "다이어트",
@@ -54,6 +55,32 @@ def get_naver_title_examples(keyword: str) -> list[str]:
     return titles
 
 
+def _is_balance_error(error: Exception) -> bool:
+    message = str(error).lower()
+    return "insufficient balance" in message or "402" in message
+
+
+def _call_blog_filler_ai(system_prompt: str, user_prompt: str) -> str:
+    try:
+        return call_ai(
+            model_name=MODEL_NAME,
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+        )
+    except Exception as e:
+        if not _is_balance_error(e):
+            raise
+
+        log.warning(
+            f"primary model balance error, fallback={FALLBACK_MODEL_NAME}: {e}"
+        )
+        return call_ai(
+            model_name=FALLBACK_MODEL_NAME,
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+        )
+
+
 def blog_filler_gen(user_instructions: str, ref: str = "", category: str = "") -> str:
     """블로그 글밥 생성"""
 
@@ -87,11 +114,7 @@ def blog_filler_gen(user_instructions: str, ref: str = "", category: str = "") -
     log.info(f"프롬프트 sys={len(system)} user={len(user)}")
 
     try:
-        text = call_ai(
-            model_name=MODEL_NAME,
-            system_prompt=system,
-            user_prompt=user,
-        )
+        text = _call_blog_filler_ai(system_prompt=system, user_prompt=user)
     except Exception as e:
         log.error(f"call_ai 에러: {e}")
         raise

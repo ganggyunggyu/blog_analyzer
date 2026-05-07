@@ -15,11 +15,13 @@ from llm.blog_filler_pet_v2_service import (
     normalize_title_match,
 )
 from utils.ai_client_factory import call_ai
+from utils.logger import log
 from utils.query_parser import parse_query
 from utils.text_cleaner import comprehensive_text_clean, remove_markdown
 
 
 MODEL_NAME: str = Model.DEEPSEEK_V4_FLASH
+FALLBACK_MODEL_NAME: str = Model.GEMINI_3_FLASH_PREVIEW
 TITLE_MAX_ATTEMPTS = 5
 MANUSCRIPT_MAX_ATTEMPTS = 2
 TARGET_CATEGORY = "다이어트"
@@ -839,6 +841,41 @@ def build_title_prompt(
     return "\n\n".join(prompt_blocks)
 
 
+def _is_balance_error(error: Exception) -> bool:
+    message = str(error).lower()
+    return "insufficient balance" in message or "402" in message
+
+
+def _call_diet_ai(
+    system_prompt: str,
+    user_prompt: str,
+    max_tokens: int,
+    temperature: float,
+) -> str:
+    try:
+        return call_ai(
+            model_name=MODEL_NAME,
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            max_tokens=max_tokens,
+            temperature=temperature,
+        )
+    except Exception as e:
+        if not _is_balance_error(e):
+            raise
+
+        log.warning(
+            f"primary model balance error, fallback={FALLBACK_MODEL_NAME}: {e}"
+        )
+        return call_ai(
+            model_name=FALLBACK_MODEL_NAME,
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            max_tokens=max_tokens,
+            temperature=temperature,
+        )
+
+
 def generate_diet_title(
     keyword: str,
     note: str = "",
@@ -864,8 +901,7 @@ def generate_diet_title(
             recent_family_titles=previous_family_titles,
             retry_feedback=feedback,
         )
-        generated = call_ai(
-            model_name=MODEL_NAME,
+        generated = _call_diet_ai(
             system_prompt=TITLE_REWRITE_SYSTEM_PROMPT,
             user_prompt=prompt,
             max_tokens=120,
@@ -1100,8 +1136,7 @@ def generate_diet_manuscript(
             live_view_titles=live_titles,
             retry_feedback=retry_feedback,
         )
-        generated = call_ai(
-            model_name=MODEL_NAME,
+        generated = _call_diet_ai(
             system_prompt=build_manuscript_system_prompt(category),
             user_prompt=prompt,
             max_tokens=3200,

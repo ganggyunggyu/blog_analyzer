@@ -18,6 +18,7 @@ from utils.logger import log
 
 
 MODEL_NAME: str = Model.DEEPSEEK_V4_FLASH
+FALLBACK_MODEL_NAME: str = Model.GEMINI_3_FLASH_PREVIEW
 TEMPERATURE: float = 0.85
 MAX_GENERATION_ATTEMPTS: int = 2
 
@@ -91,6 +92,34 @@ def _merge_retry_note(note: str, issues: list[str]) -> str:
     return retry_note
 
 
+def _is_balance_error(error: Exception) -> bool:
+    message = str(error).lower()
+    return "insufficient balance" in message or "402" in message
+
+
+def _call_hanryeo_ai(system_prompt: str, user_prompt: str) -> str:
+    try:
+        return call_ai(
+            model_name=MODEL_NAME,
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            temperature=TEMPERATURE,
+        )
+    except Exception as e:
+        if not _is_balance_error(e):
+            raise
+
+        log.warning(
+            f"primary model balance error, fallback={FALLBACK_MODEL_NAME}: {e}"
+        )
+        return call_ai(
+            model_name=FALLBACK_MODEL_NAME,
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            temperature=TEMPERATURE,
+        )
+
+
 def hanryeo_gen(
     user_instructions: str,
     ref: str = "",
@@ -126,12 +155,7 @@ def hanryeo_gen(
         log.info(f"[{PROMPT_LANG}] 프롬프트 sys={len(system)} user={len(user)} attempt={attempt}")
 
         try:
-            text = call_ai(
-                model_name=MODEL_NAME,
-                system_prompt=system,
-                user_prompt=user,
-                temperature=TEMPERATURE,
-            )
+            text = _call_hanryeo_ai(system_prompt=system, user_prompt=user)
         except Exception as e:
             log.error(f"call_ai 에러: {e}")
             raise
