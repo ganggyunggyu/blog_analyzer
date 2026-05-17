@@ -20,8 +20,8 @@ from utils.query_parser import parse_query
 from utils.text_cleaner import comprehensive_text_clean, remove_markdown
 
 
-MODEL_NAME: str = Model.DEEPSEEK_V4_FLASH
-FALLBACK_MODEL_NAME: str = Model.GEMINI_3_FLASH_PREVIEW
+MODEL_NAME: str = Model.GEMINI_3_FLASH_PREVIEW
+FALLBACK_MODEL_NAME: str = Model.DEEPSEEK_V4_FLASH
 TITLE_MAX_ATTEMPTS = 5
 MANUSCRIPT_MAX_ATTEMPTS = 2
 TARGET_CATEGORY = "다이어트"

@@ -17,8 +17,8 @@ from utils.ai_client_factory import call_ai
 from utils.logger import log
 
 
-MODEL_NAME: str = Model.DEEPSEEK_V4_FLASH
-FALLBACK_MODEL_NAME: str = Model.GEMINI_3_FLASH_PREVIEW
+MODEL_NAME: str = Model.GEMINI_3_FLASH_PREVIEW
+FALLBACK_MODEL_NAME: str = Model.DEEPSEEK_V4_FLASH
 
 PEN_NAMES: list[str] = [
     "초파맘",

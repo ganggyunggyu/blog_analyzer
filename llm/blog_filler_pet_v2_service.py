@@ -17,7 +17,7 @@ from utils.ai_client_factory import call_ai
 from utils.logger import log
 
 
-MODEL_NAME: str = Model.DEEPSEEK_V4_FLASH
+MODEL_NAME: str = Model.GEMINI_3_FLASH_PREVIEW
 MAX_FEEDBACK_ROUNDS = 2
 LIVE_VIEW_TITLE_NOTE_KEYS: tuple[str, ...] = (
     "live_view_titles",
