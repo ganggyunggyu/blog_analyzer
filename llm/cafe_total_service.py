@@ -54,6 +54,7 @@ def cafe_total_gen(
             model_name=model,
             system_prompt=system,
             user_prompt=user,
+            max_tokens=32000,
         )
     except Exception as e:
         log.error(f"call_ai 에러: {e}")
