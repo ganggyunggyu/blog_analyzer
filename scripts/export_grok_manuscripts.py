@@ -61,9 +61,12 @@ def main() -> None:
             print(f"[ {label:>5} {category:>18} ] +{kept} (총 {len(rows)})")
         return kept
 
+    excluded = {"애견", "안과"}
+    target_cats = [c for c in CATEGORIES if c not in excluded]
+
     try:
-        # 1) 노출 원고(isVisible=True) 모두 우선 포함
-        for category in CATEGORIES:
+        # 1) 노출 원고(isVisible=True) 모두 우선 포함 (제외 카테고리 빼고)
+        for category in target_cats:
             if len(rows) >= args.limit:
                 break
             try:
@@ -81,9 +84,9 @@ def main() -> None:
         per_round = 5
         round_no = 0
         exhausted: set[str] = set()
-        while len(rows) < args.limit and len(exhausted) < len(CATEGORIES):
+        while len(rows) < args.limit and len(exhausted) < len(target_cats):
             round_no += 1
-            for category in CATEGORIES:
+            for category in target_cats:
                 if len(rows) >= args.limit:
                     break
                 if category in exhausted:
