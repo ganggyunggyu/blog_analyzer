@@ -9,7 +9,7 @@ from utils.text_cleaner import comprehensive_text_clean
 from utils.logger import log
 
 
-DEFAULT_MODEL: str = Model.CLAUDE_SONNET_4_6
+DEFAULT_MODEL: str = Model.GEMINI_3_FLASH_PREVIEW
 
 
 SYSTEM_PROMPT = ""

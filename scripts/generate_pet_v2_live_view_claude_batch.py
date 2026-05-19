@@ -32,7 +32,7 @@ DEFAULT_KEYWORDS: tuple[str, ...] = (
     "웰시코기",
     "강아지",
 )
-DEFAULT_MODEL_NAME = Model.CLAUDE_SONNET_4_6
+DEFAULT_MODEL_NAME = Model.GEMINI_3_FLASH_PREVIEW
 REVIEW_BLOCK_PATTERN = re.compile(
     r'data-block-id="review/prs_template_v2_review_blog_rra_desk\.ts".*?<script>(.*?)</script>',
     re.S,
