@@ -1,7 +1,6 @@
 """Gemini Cafe - 카페 짧은 글 생성 서비스 (200~300자)"""
 
 from __future__ import annotations
-import re
 
 from _prompts.gemini.cafe_system import get_gemini_cafe_system_prompt
 from _prompts.gemini.cafe_user import get_gemini_cafe_user_prompt
@@ -11,7 +10,7 @@ from utils.text_cleaner import comprehensive_text_clean
 from utils.ai_client_factory import call_ai
 
 
-MODEL_NAME: str = Model.GEMINI_3_FLASH_PREVIEW
+MODEL_NAME: str = Model.DEEPSEEK_V4_FLASH
 
 
 def gemini_cafe_gen(user_instructions: str, category: str = "") -> str:

@@ -9,7 +9,7 @@ from utils.text_cleaner import comprehensive_text_clean
 from utils.logger import log
 
 
-DEFAULT_MODEL: str = Model.GEMINI_3_FLASH_PREVIEW
+DEFAULT_MODEL: str = Model.DEEPSEEK_V4_FLASH
 
 
 SYSTEM_PROMPT = ""

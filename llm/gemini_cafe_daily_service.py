@@ -16,7 +16,7 @@ from utils.ai_client_factory import call_ai
 from utils.logger import log, truncate
 
 
-MODEL_NAME: str = Model.GPT5_4_MINI
+MODEL_NAME: str = Model.DEEPSEEK_V4_FLASH
 
 
 def gemini_cafe_daily_gen(
