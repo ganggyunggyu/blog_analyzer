@@ -16,7 +16,7 @@ router = APIRouter()
 
 class TestCafeDailyRequest(BaseModel):
     prompt: str
-    model: str = Model.GEMINI_3_FLASH_PREVIEW
+    model: str = Model.DEEPSEEK_V4_FLASH
 
 
 class TestCafeDailyResponse(BaseModel):
@@ -40,6 +40,7 @@ async def generate_test_cafe_daily(request: TestCafeDailyRequest):
             model_name=request.model,
             system_prompt="",
             user_prompt=request.prompt,
+            max_tokens=32000,
         )
 
         elapsed = time.time() - start_ts
