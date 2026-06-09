@@ -9,6 +9,7 @@ def get_alibaba_user_prompt(
     ref: str,
     category: str,
     profile: AlibabaProfile,
+    auto_reference_count: int | None = None,
 ) -> str:
     parts = [
         f"[키워드]\n{keyword}",
@@ -21,6 +22,11 @@ def get_alibaba_user_prompt(
             "선택 기준과 체크포인트가 바로 잡히도록 써주세요."
         ),
     ]
+
+    if auto_reference_count is not None:
+        parts.append(f"[참고원고 확보 수]\n{auto_reference_count}개")
+        shortage_status = "필요" if auto_reference_count < 2 else "불필요"
+        parts.append(f"[참고원고 부족 안내]\n{shortage_status}")
 
     if note:
         parts.append(f"[추가 요청]\n{note}")
