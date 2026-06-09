@@ -1,0 +1,47 @@
+[
+  {
+    "index": 1,
+    "keyword": "알리바바닷컴",
+    "title": "알리바바닷컴 소싱 가이드: 알리익스프레스와 차이점 및 실패 없는 공장 직거래 기준",
+    "output_path": "test-manuscripts/alibaba_prompt/20260609_180105/01_알리바바닷컴.txt",
+    "chars_no_space": 1900,
+    "profile_id": "default",
+    "profile_label": "실속 가이드형"
+  },
+  {
+    "index": 2,
+    "keyword": "알리바바구매대행",
+    "title": "알리바바구매대행 1688과 차이점은? 실속 셀러를 위한 플랫폼별 선택 가이드",
+    "output_path": "test-manuscripts/alibaba_prompt/20260609_180105/02_알리바바구매대행.txt",
+    "chars_no_space": 2154,
+    "profile_id": "default",
+    "profile_label": "실속 가이드형"
+  },
+  {
+    "index": 3,
+    "keyword": "알리바바직구",
+    "title": "알리바바직구 실패 없는 플랫폼 비교와 똑똑한 사입 선택 기준 가이드",
+    "output_path": "test-manuscripts/alibaba_prompt/20260609_180105/03_알리바바직구.txt",
+    "chars_no_space": 1942,
+    "profile_id": "default",
+    "profile_label": "실속 가이드형"
+  },
+  {
+    "index": 4,
+    "keyword": "1688구매대행",
+    "title": "1688구매대행 실패 없는 사입 전략과 알리바바 비교 실속 가이드",
+    "output_path": "test-manuscripts/alibaba_prompt/20260609_180105/04_1688구매대행.txt",
+    "chars_no_space": 2102,
+    "profile_id": "default",
+    "profile_label": "실속 가이드형"
+  },
+  {
+    "index": 5,
+    "keyword": "타오바오 직구방법",
+    "title": "타오바오 직구방법 실패 없는 실속 가이드와 알리바바 계열 플랫폼 비교",
+    "output_path": "test-manuscripts/alibaba_prompt/20260609_180105/05_타오바오_직구방법.txt",
+    "chars_no_space": 2230,
+    "profile_id": "default",
+    "profile_label": "실속 가이드형"
+  }
+]

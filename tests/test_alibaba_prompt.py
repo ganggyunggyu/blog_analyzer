@@ -18,6 +18,7 @@ def test_alibaba_system_prompt_uses_research_copywriter_contract() -> None:
     assert "네이버 블로그(blog.naver.com, m.blog.naver.com) URL 최소 3개 이상 확보" in prompt
     assert "최소 2개 본문 확보" in prompt
     assert "최소 1,500자 이상" in prompt
+    assert "사용자가 명시하지 않은 연도, 월, 최신" in prompt
     assert "분석 내용, 소제목 목록, 해시태그, 글자수, URL" in prompt
 
 
@@ -69,6 +70,22 @@ def test_build_alibaba_reference_bundle_reports_auto_reference_count(monkeypatch
     assert "1688구매대행 업체 비교 기준" in bundle
     assert "[사용자 제공 참조원고]" in bundle
     assert "직접 메모" in bundle
+
+
+def test_sanitize_alibaba_output_rewrites_domain_style_platform_names() -> None:
+    text = (
+        "알리바바닷컴(Alibaba.com)은 B2B이고 "
+        "알리바바(Alibaba.com)는 글로벌 플랫폼이며 "
+        "1688.com은 내수 도매입니다."
+    )
+
+    result = alibaba_service.sanitize_alibaba_output(text)
+
+    assert "알리바바닷컴은 B2B" in result
+    assert "알리바바닷컴은 글로벌 플랫폼" in result
+    assert "1688닷컴은 내수 도매" in result
+    assert "Alibaba.com" not in result
+    assert "1688.com" not in result
 
 
 def test_alibaba_gen_injects_crawled_reference_bundle(monkeypatch) -> None:

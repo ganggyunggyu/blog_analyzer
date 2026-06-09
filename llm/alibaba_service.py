@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+
 from _constants.Model import Model
 from _prompts.alibaba.profile import resolve_alibaba_profile
 from _prompts.alibaba.system import get_alibaba_system_prompt
@@ -16,6 +18,16 @@ from utils.text_cleaner import comprehensive_text_clean, remove_markdown
 MODEL_NAME: str = Model.GEMINI_3_FLASH_PREVIEW
 AUTO_REFERENCE_LIMIT = 8
 REFERENCE_BODY_CHAR_LIMIT = 3500
+ALIBABA_DOT_COM_PATTERN = re.compile(
+    r"(?<![A-Za-z0-9])(?:Alibaba|alibaba)\.com(?![A-Za-z0-9])"
+)
+ALIBABA_DOT_COM_WITH_KOREAN_PATTERN = re.compile(
+    r"알리바바(?:닷컴)?\s*\(\s*(?:Alibaba|alibaba)\.com\s*\)"
+)
+SIXTEEN_EIGHT_DOT_COM_PATTERN = re.compile(
+    r"(?<![A-Za-z0-9])1688\.com(?![A-Za-z0-9])",
+    re.I,
+)
 
 
 def _trim_reference_body(body: str) -> str:
@@ -84,6 +96,18 @@ def build_alibaba_reference_bundle(
     return "\n\n".join(parts).strip(), len(references)
 
 
+def sanitize_alibaba_output(text: str) -> str:
+    text = remove_markdown(text)
+    text = ALIBABA_DOT_COM_WITH_KOREAN_PATTERN.sub("알리바바닷컴", text)
+    text = ALIBABA_DOT_COM_PATTERN.sub("알리바바닷컴", text)
+    text = SIXTEEN_EIGHT_DOT_COM_PATTERN.sub("1688닷컴", text)
+    text = text.replace("알리바바닷컴는", "알리바바닷컴은")
+    text = text.replace("알리바바닷컴와", "알리바바닷컴과")
+    text = text.replace("1688닷컴는", "1688닷컴은")
+    text = text.replace("1688닷컴와", "1688닷컴과")
+    return comprehensive_text_clean(text)
+
+
 def alibaba_gen(
     user_instructions: str,
     ref: str = "",
@@ -124,8 +148,7 @@ def alibaba_gen(
         system_prompt=system,
         user_prompt=user,
     )
-    text = remove_markdown(text)
-    text = comprehensive_text_clean(text)
+    text = sanitize_alibaba_output(text)
 
     return {
         "content": text,
