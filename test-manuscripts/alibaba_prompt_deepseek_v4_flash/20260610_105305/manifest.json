@@ -1,0 +1,57 @@
+[
+  {
+    "index": 1,
+    "keyword": "알리바바닷컴",
+    "model": "deepseek-v4-flash",
+    "title": "알리바바닷컴, 입문자가 가장 헷갈리는 선택 기준 완벽 정리",
+    "output_path": "test-manuscripts/alibaba_prompt_deepseek_v4_flash/20260610_105305/01_알리바바닷컴.txt",
+    "chars_no_space": 2222,
+    "profile_id": "default",
+    "profile_label": "실속 가이드형",
+    "auto_reference_count": 6
+  },
+  {
+    "index": 2,
+    "keyword": "알리바바구매대행",
+    "model": "deepseek-v4-flash",
+    "title": "알리바바구매대행, 플랫폼별 원가 구조와 선택 기준을 정리합니다",
+    "output_path": "test-manuscripts/alibaba_prompt_deepseek_v4_flash/20260610_105305/02_알리바바구매대행.txt",
+    "chars_no_space": 1678,
+    "profile_id": "default",
+    "profile_label": "실속 가이드형",
+    "auto_reference_count": 8
+  },
+  {
+    "index": 3,
+    "keyword": "알리바바직구",
+    "model": "deepseek-v4-flash",
+    "title": "알리바바직구, 실패하지 않는 현실적인 선택 기준 5가지",
+    "output_path": "test-manuscripts/alibaba_prompt_deepseek_v4_flash/20260610_105305/03_알리바바직구.txt",
+    "chars_no_space": 2407,
+    "profile_id": "default",
+    "profile_label": "실속 가이드형",
+    "auto_reference_count": 8
+  },
+  {
+    "index": 4,
+    "keyword": "1688구매대행",
+    "model": "deepseek-v4-flash",
+    "title": "1688구매대행의 현실 선택 기준, 알리바바와 비교해 골라잡기",
+    "output_path": "test-manuscripts/alibaba_prompt_deepseek_v4_flash/20260610_105305/04_1688구매대행.txt",
+    "chars_no_space": 2533,
+    "profile_id": "default",
+    "profile_label": "실속 가이드형",
+    "auto_reference_count": 8
+  },
+  {
+    "index": 5,
+    "keyword": "타오바오 직구방법",
+    "model": "deepseek-v4-flash",
+    "title": "타오바오 직구방법, 처음이면 이 기준부터 챙기세요",
+    "output_path": "test-manuscripts/alibaba_prompt_deepseek_v4_flash/20260610_105305/05_타오바오_직구방법.txt",
+    "chars_no_space": 2063,
+    "profile_id": "default",
+    "profile_label": "실속 가이드형",
+    "auto_reference_count": 8
+  }
+]
