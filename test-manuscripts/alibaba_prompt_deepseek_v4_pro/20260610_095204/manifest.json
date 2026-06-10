@@ -1,0 +1,52 @@
+[
+  {
+    "index": 1,
+    "keyword": "알리바바닷컴",
+    "model": "deepseek-v4-pro",
+    "title": "알리바바닷컴 이제 막 시작하려는 당신, 어디서부터 손대야 할지 모를 때 읽는 실전 분류법",
+    "output_path": "test-manuscripts/alibaba_prompt_deepseek_v4_pro/20260610_095204/01_알리바바닷컴.txt",
+    "chars_no_space": 2428,
+    "profile_id": "default",
+    "profile_label": "실속 가이드형"
+  },
+  {
+    "index": 2,
+    "keyword": "알리바바구매대행",
+    "model": "deepseek-v4-pro",
+    "title": "알리바바구매대행, 1688과 타오바오 중 무엇을 선택해야 진짜 이득일까",
+    "output_path": "test-manuscripts/alibaba_prompt_deepseek_v4_pro/20260610_095204/02_알리바바구매대행.txt",
+    "chars_no_space": 3334,
+    "profile_id": "default",
+    "profile_label": "실속 가이드형"
+  },
+  {
+    "index": 3,
+    "keyword": "알리바바직구",
+    "model": "deepseek-v4-pro",
+    "title": "알리바바직구, 단순 가격 싼 곳 찾기보다 먼저 따져볼 현실적인 선택 기준",
+    "output_path": "test-manuscripts/alibaba_prompt_deepseek_v4_pro/20260610_095204/03_알리바바직구.txt",
+    "chars_no_space": 2641,
+    "profile_id": "default",
+    "profile_label": "실속 가이드형"
+  },
+  {
+    "index": 4,
+    "keyword": "1688구매대행",
+    "model": "deepseek-v4-pro",
+    "title": "1688구매대행에서 놓치면 후회하는 진짜 비용 비교법",
+    "output_path": "test-manuscripts/alibaba_prompt_deepseek_v4_pro/20260610_095204/04_1688구매대행.txt",
+    "chars_no_space": 2903,
+    "profile_id": "default",
+    "profile_label": "실속 가이드형"
+  },
+  {
+    "index": 5,
+    "keyword": "타오바오 직구방법",
+    "model": "deepseek-v4-pro",
+    "title": "타오바오 직구방법, 알리,테무와 무엇이 다를까? 선택 기준부터 결제까지 실속 정리",
+    "output_path": "test-manuscripts/alibaba_prompt_deepseek_v4_pro/20260610_095204/05_타오바오_직구방법.txt",
+    "chars_no_space": 4485,
+    "profile_id": "default",
+    "profile_label": "실속 가이드형"
+  }
+]
