@@ -1596,3 +1596,6 @@ INFO:     127.0.0.1:55193 - "GET /docs HTTP/1.1" 200 OK
 ────────────────────────────────────────────────────────────────────────────────
 22:15:43 SUCCESS  ✨ 카페 글 완료 모델=deepseek-v4-flash 길이=774자 시간=13.3s
 INFO:     127.0.0.1:55223 - "POST /generate/cafe-total HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61105 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61621 - "GET /api/image/category-random?category=%ED%95%9C%EB%A0%A4%EB%8B%B4%EC%9B%90&keyword=%ED%9D%91%EC%97%BC%EC%86%8C%EC%A6%99%ED%9A%A8%EB%8A%A5 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61623 - "GET /docs HTTP/1.1" 200 OK
