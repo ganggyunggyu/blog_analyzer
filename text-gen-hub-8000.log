@@ -12854,3 +12854,143 @@ INFO:     127.0.0.1:61223 - "GET /health HTTP/1.1" 404 Not Found
 09:49:56 INFO     토큰 in=714 out=20 | 비용=$0.0000 (0원)
 09:49:56 SUCCESS  ✨ 댓글 생성 완료 시간=8.20s
 INFO:     127.0.0.1:61284 - "POST /generate/comment HTTP/1.1" 200 OK
+
+───────────────────────────────── 💬 댓글 생성 ─────────────────────────────────
+  글 길이: 48자
+  키워드: 없음
+  모델: gemini-3.1-pro-preview
+10:53:08 INFO     토큰 in=709 out=30 | 비용=$0.0000 (0원)
+10:53:08 SUCCESS  ✨ 댓글 생성 완료 시간=10.16s
+INFO:     127.0.0.1:63375 - "POST /generate/comment HTTP/1.1" 200 OK
+
+───────────────────────────────── 💬 댓글 생성 ─────────────────────────────────
+  글 길이: 747자
+  키워드: 없음
+  모델: gemini-3.1-pro-preview
+10:53:59 INFO     토큰 in=1,145 out=42 | 비용=$0.0000 (0원)
+10:53:59 SUCCESS  ✨ 댓글 생성 완료 시간=11.11s
+INFO:     127.0.0.1:63597 - "POST /generate/comment HTTP/1.1" 200 OK
+
+───────────────────────────────── 💬 댓글 생성 ─────────────────────────────────
+  글 길이: 842자
+  키워드: 없음
+  모델: gemini-3.1-pro-preview
+10:55:00 INFO     토큰 in=1,204 out=45 | 비용=$0.0000 (0원)
+10:55:00 SUCCESS  ✨ 댓글 생성 완료 시간=15.39s
+INFO:     127.0.0.1:63838 - "POST /generate/comment HTTP/1.1" 200 OK
+
+───────────────────────────────── 💬 댓글 생성 ─────────────────────────────────
+  글 길이: 919자
+  키워드: 없음
+  모델: gemini-3.1-pro-preview
+10:55:51 INFO     토큰 in=1,251 out=54 | 비용=$0.0000 (0원)
+10:55:51 SUCCESS  ✨ 댓글 생성 완료 시간=9.31s
+INFO:     127.0.0.1:64170 - "POST /generate/comment HTTP/1.1" 200 OK
+
+───────────────────────────────── 💬 댓글 생성 ─────────────────────────────────
+  글 길이: 1006자
+  키워드: 없음
+  모델: gemini-3.1-pro-preview
+10:57:05 INFO     토큰 in=1,307 out=59 | 비용=$0.0000 (0원)
+10:57:05 SUCCESS  ✨ 댓글 생성 완료 시간=17.46s
+INFO:     127.0.0.1:64491 - "POST /generate/comment HTTP/1.1" 200 OK
+
+──────────────────────────────── 💬 대댓글 생성 ────────────────────────────────
+  원댓글: 흑염소 냄새 걱정되시면 요새는 비위 안 상하게 즙으로 잘 나오는 곳들도 
+많더라고요. 몸조리...
+  모델: grok-4-1-fast-non-reasoning
+10:57:45 ERROR    ❌ 대댓글 생성 실패: <_InactiveRpcError of RPC that terminated
+with:
+        status = StatusCode.PERMISSION_DENIED
+        details = "Your team c9c77d84-a44c-48c9-9289-afe4be216ba9 has either 
+used all available credits or reached its monthly spending limit. To continue 
+making API requests, please purchase more credits or raise your spending limit."
+        debug_error_string = "UNKNOWN:Error received from peer  {grpc_status:7, 
+grpc_message:"Your team c9c77d84-a44c-48c9-9289-afe4be216ba9 has either used all
+available credits or reached its monthly spending limit. To continue making API 
+requests, please purchase more credits or raise your spending limit."}"
+>
+INFO:     127.0.0.1:64809 - "POST /generate/recomment HTTP/1.1" 500 Internal Server Error
+
+───────────────────────────────── 💬 댓글 생성 ─────────────────────────────────
+  글 길이: 666자
+  키워드: 없음
+  모델: gemini-3.1-pro-preview
+10:58:38 INFO     토큰 in=1,096 out=58 | 비용=$0.0000 (0원)
+10:58:38 SUCCESS  ✨ 댓글 생성 완료 시간=9.91s
+INFO:     127.0.0.1:64998 - "POST /generate/comment HTTP/1.1" 200 OK
+
+───────────────────────────────── 💬 댓글 생성 ─────────────────────────────────
+  글 길이: 777자
+  키워드: 없음
+  모델: gemini-3.1-pro-preview
+10:59:30 INFO     토큰 in=1,170 out=49 | 비용=$0.0000 (0원)
+10:59:30 SUCCESS  ✨ 댓글 생성 완료 시간=10.51s
+INFO:     127.0.0.1:65243 - "POST /generate/comment HTTP/1.1" 200 OK
+
+───────────────────────────────── 💬 댓글 생성 ─────────────────────────────────
+  글 길이: 863자
+  키워드: 없음
+  모델: gemini-3.1-pro-preview
+11:00:24 INFO     토큰 in=1,220 out=47 | 비용=$0.0000 (0원)
+11:00:24 SUCCESS  ✨ 댓글 생성 완료 시간=14.08s
+INFO:     127.0.0.1:65490 - "POST /generate/comment HTTP/1.1" 200 OK
+
+───────────────────────────────── 💬 댓글 생성 ─────────────────────────────────
+  글 길이: 949자
+  키워드: 없음
+  모델: gemini-3.1-pro-preview
+11:01:18 INFO     토큰 in=1,269 out=56 | 비용=$0.0000 (0원)
+11:01:18 SUCCESS  ✨ 댓글 생성 완료 시간=13.89s
+INFO:     127.0.0.1:49387 - "POST /generate/comment HTTP/1.1" 200 OK
+
+──────────────────────────────── 💬 대댓글 생성 ────────────────────────────────
+  원댓글: 이전에 다른 제품 냄새 때문에 버리셨다니 너무 아깝네요ㅠㅠ 단백질 류가 
+은근 비린 게 많던...
+  모델: grok-4-1-fast-non-reasoning
+11:01:58 ERROR    ❌ 대댓글 생성 실패: <_InactiveRpcError of RPC that terminated
+with:
+        status = StatusCode.PERMISSION_DENIED
+        details = "Your team c9c77d84-a44c-48c9-9289-afe4be216ba9 has either 
+used all available credits or reached its monthly spending limit. To continue 
+making API requests, please purchase more credits or raise your spending limit."
+        debug_error_string = "UNKNOWN:Error received from peer  
+{grpc_message:"Your team c9c77d84-a44c-48c9-9289-afe4be216ba9 has either used 
+all available credits or reached its monthly spending limit. To continue making 
+API requests, please purchase more credits or raise your spending limit.", 
+grpc_status:7}"
+>
+INFO:     127.0.0.1:49617 - "POST /generate/recomment HTTP/1.1" 500 Internal Server Error
+
+──────────────────────────────── 💬 대댓글 생성 ────────────────────────────────
+  원댓글: 건강검진 받고 단백질 챙겨야 한다는 말 들으면 진짜 공감 가요. 저도 
+예전에 냄새 때문에 ...
+  모델: grok-4-1-fast-non-reasoning
+11:02:39 ERROR    ❌ 대댓글 생성 실패: <_InactiveRpcError of RPC that terminated
+with:
+        status = StatusCode.PERMISSION_DENIED
+        details = "Your team c9c77d84-a44c-48c9-9289-afe4be216ba9 has either 
+used all available credits or reached its monthly spending limit. To continue 
+making API requests, please purchase more credits or raise your spending limit."
+        debug_error_string = "UNKNOWN:Error received from peer  {grpc_status:7, 
+grpc_message:"Your team c9c77d84-a44c-48c9-9289-afe4be216ba9 has either used all
+available credits or reached its monthly spending limit. To continue making API 
+requests, please purchase more credits or raise your spending limit."}"
+>
+INFO:     127.0.0.1:49811 - "POST /generate/recomment HTTP/1.1" 500 Internal Server Error
+
+───────────────────────────────── 💬 댓글 생성 ─────────────────────────────────
+  글 길이: 717자
+  키워드: 없음
+  모델: gemini-3.1-pro-preview
+11:03:41 INFO     토큰 in=1,128 out=42 | 비용=$0.0000 (0원)
+11:03:41 SUCCESS  ✨ 댓글 생성 완료 시간=8.38s
+INFO:     127.0.0.1:50067 - "POST /generate/comment HTTP/1.1" 200 OK
+
+───────────────────────────────── 💬 댓글 생성 ─────────────────────────────────
+  글 길이: 810자
+  키워드: 없음
+  모델: gemini-3.1-pro-preview
+11:04:33 INFO     토큰 in=1,186 out=48 | 비용=$0.0000 (0원)
+11:04:33 SUCCESS  ✨ 댓글 생성 완료 시간=11.28s
+INFO:     127.0.0.1:50338 - "POST /generate/comment HTTP/1.1" 200 OK
