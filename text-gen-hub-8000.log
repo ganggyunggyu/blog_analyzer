@@ -12994,3 +12994,292 @@ INFO:     127.0.0.1:50067 - "POST /generate/comment HTTP/1.1" 200 OK
 11:04:33 INFO     토큰 in=1,186 out=48 | 비용=$0.0000 (0원)
 11:04:33 SUCCESS  ✨ 댓글 생성 완료 시간=11.28s
 INFO:     127.0.0.1:50338 - "POST /generate/comment HTTP/1.1" 200 OK
+
+───────────────────────────────── 💬 댓글 생성 ─────────────────────────────────
+  글 길이: 887자
+  키워드: 없음
+  모델: gemini-3.1-pro-preview
+11:05:23 INFO     토큰 in=1,236 out=50 | 비용=$0.0000 (0원)
+11:05:23 SUCCESS  ✨ 댓글 생성 완료 시간=11.68s
+INFO:     127.0.0.1:50608 - "POST /generate/comment HTTP/1.1" 200 OK
+
+───────────────────────────────── 💬 댓글 생성 ─────────────────────────────────
+  글 길이: 969자
+  키워드: 없음
+  모델: gemini-3.1-pro-preview
+11:06:13 INFO     토큰 in=1,287 out=50 | 비용=$0.0000 (0원)
+11:06:13 SUCCESS  ✨ 댓글 생성 완료 시간=11.91s
+INFO:     127.0.0.1:50803 - "POST /generate/comment HTTP/1.1" 200 OK
+
+──────────────────────────────── 💬 대댓글 생성 ────────────────────────────────
+  원댓글: 단백질 수치 때문에 신경 쓰이셨겠어요. 알부민 당제로는 처음이라 
+낯설어하시는 거 같은데 익...
+  모델: grok-4-1-fast-non-reasoning
+11:06:53 ERROR    ❌ 대댓글 생성 실패: <_InactiveRpcError of RPC that terminated
+with:
+        status = StatusCode.PERMISSION_DENIED
+        details = "Your team c9c77d84-a44c-48c9-9289-afe4be216ba9 has either 
+used all available credits or reached its monthly spending limit. To continue 
+making API requests, please purchase more credits or raise your spending limit."
+        debug_error_string = "UNKNOWN:Error received from peer  
+{grpc_message:"Your team c9c77d84-a44c-48c9-9289-afe4be216ba9 has either used 
+all available credits or reached its monthly spending limit. To continue making 
+API requests, please purchase more credits or raise your spending limit.", 
+grpc_status:7}"
+>
+INFO:     127.0.0.1:51020 - "POST /generate/recomment HTTP/1.1" 500 Internal Server Error
+
+──────────────────────────────── 💬 대댓글 생성 ────────────────────────────────
+  원댓글: 아버님이 흑염소진액을 제일 좋아하셨다니 취향 제대로 저격하셨네요ㅋㅋ 
+어머니도 며칠 꾸준히 ...
+  모델: grok-4-1-fast-non-reasoning
+11:07:36 ERROR    ❌ 대댓글 생성 실패: <_InactiveRpcError of RPC that terminated
+with:
+        status = StatusCode.PERMISSION_DENIED
+        details = "Your team c9c77d84-a44c-48c9-9289-afe4be216ba9 has either 
+used all available credits or reached its monthly spending limit. To continue 
+making API requests, please purchase more credits or raise your spending limit."
+        debug_error_string = "UNKNOWN:Error received from peer  
+{grpc_message:"Your team c9c77d84-a44c-48c9-9289-afe4be216ba9 has either used 
+all available credits or reached its monthly spending limit. To continue making 
+API requests, please purchase more credits or raise your spending limit.", 
+grpc_status:7}"
+>
+INFO:     127.0.0.1:51209 - "POST /generate/recomment HTTP/1.1" 500 Internal Server Error
+
+───────────────────────────────── 💬 댓글 생성 ─────────────────────────────────
+  글 길이: 2796자
+  키워드: 없음
+  모델: gemini-3.1-pro-preview
+11:08:41 INFO     토큰 in=1,875 out=27 | 비용=$0.0000 (0원)
+11:08:41 SUCCESS  ✨ 댓글 생성 완료 시간=9.89s
+INFO:     127.0.0.1:51476 - "POST /generate/comment HTTP/1.1" 200 OK
+
+───────────────────────────────── 💬 댓글 생성 ─────────────────────────────────
+  글 길이: 2873자
+  키워드: 없음
+  모델: gemini-3.1-pro-preview
+11:09:35 INFO     토큰 in=1,875 out=29 | 비용=$0.0000 (0원)
+11:09:35 SUCCESS  ✨ 댓글 생성 완료 시간=11.43s
+INFO:     127.0.0.1:51766 - "POST /generate/comment HTTP/1.1" 200 OK
+
+───────────────────────────────── 💬 댓글 생성 ─────────────────────────────────
+  글 길이: 2927자
+  키워드: 없음
+  모델: gemini-3.1-pro-preview
+11:10:20 INFO     토큰 in=1,875 out=29 | 비용=$0.0000 (0원)
+11:10:20 SUCCESS  ✨ 댓글 생성 완료 시간=6.18s
+INFO:     127.0.0.1:51963 - "POST /generate/comment HTTP/1.1" 200 OK
+
+───────────────────────────────── 💬 댓글 생성 ─────────────────────────────────
+  글 길이: 2983자
+  키워드: 없음
+  모델: gemini-3.1-pro-preview
+11:11:07 INFO     토큰 in=1,875 out=32 | 비용=$0.0000 (0원)
+11:11:07 SUCCESS  ✨ 댓글 생성 완료 시간=8.26s
+INFO:     127.0.0.1:52152 - "POST /generate/comment HTTP/1.1" 200 OK
+
+──────────────────────────────── 💬 대댓글 생성 ────────────────────────────────
+  원댓글: 매번 부모님 영양제 고를 때마다 엄청 고민했는데 이거 보고 
+참고해야겠네요ㅎㅎ 꿀팁 감사합니...
+  모델: grok-4-1-fast-non-reasoning
+11:11:47 ERROR    ❌ 대댓글 생성 실패: <_InactiveRpcError of RPC that terminated
+with:
+        status = StatusCode.PERMISSION_DENIED
+        details = "Your team c9c77d84-a44c-48c9-9289-afe4be216ba9 has either 
+used all available credits or reached its monthly spending limit. To continue 
+making API requests, please purchase more credits or raise your spending limit."
+        debug_error_string = "UNKNOWN:Error received from peer  {grpc_status:7, 
+grpc_message:"Your team c9c77d84-a44c-48c9-9289-afe4be216ba9 has either used all
+available credits or reached its monthly spending limit. To continue making API 
+requests, please purchase more credits or raise your spending limit."}"
+>
+INFO:     127.0.0.1:52349 - "POST /generate/recomment HTTP/1.1" 500 Internal Server Error
+
+──────────────────────────────── 💬 대댓글 생성 ────────────────────────────────
+  원댓글: 부모님 영양제 고르는게 은근 제일 까다로운데 좋은 정보 감사해요~ 
+참고해서 골라봐야겠어요ㅎ...
+  모델: grok-4-1-fast-non-reasoning
+11:12:28 ERROR    ❌ 대댓글 생성 실패: <_InactiveRpcError of RPC that terminated
+with:
+        status = StatusCode.PERMISSION_DENIED
+        details = "Your team c9c77d84-a44c-48c9-9289-afe4be216ba9 has either 
+used all available credits or reached its monthly spending limit. To continue 
+making API requests, please purchase more credits or raise your spending limit."
+        debug_error_string = "UNKNOWN:Error received from peer  
+{grpc_message:"Your team c9c77d84-a44c-48c9-9289-afe4be216ba9 has either used 
+all available credits or reached its monthly spending limit. To continue making 
+API requests, please purchase more credits or raise your spending limit.", 
+grpc_status:7}"
+>
+INFO:     127.0.0.1:52730 - "POST /generate/recomment HTTP/1.1" 500 Internal Server Error
+
+───────────────────────────────── 💬 댓글 생성 ─────────────────────────────────
+  글 길이: 2551자
+  키워드: 없음
+  모델: gemini-3.1-pro-preview
+11:13:35 INFO     토큰 in=1,939 out=32 | 비용=$0.0000 (0원)
+11:13:35 SUCCESS  ✨ 댓글 생성 완료 시간=11.43s
+INFO:     127.0.0.1:53002 - "POST /generate/comment HTTP/1.1" 200 OK
+
+───────────────────────────────── 💬 댓글 생성 ─────────────────────────────────
+  글 길이: 2629자
+  키워드: 없음
+  모델: gemini-3.1-pro-preview
+11:14:25 INFO     토큰 in=1,939 out=25 | 비용=$0.0000 (0원)
+11:14:25 SUCCESS  ✨ 댓글 생성 완료 시간=8.54s
+INFO:     127.0.0.1:53244 - "POST /generate/comment HTTP/1.1" 200 OK
+
+───────────────────────────────── 💬 댓글 생성 ─────────────────────────────────
+  글 길이: 2676자
+  키워드: 없음
+  모델: gemini-3.1-pro-preview
+11:15:09 INFO     토큰 in=1,939 out=25 | 비용=$0.0000 (0원)
+11:15:09 SUCCESS  ✨ 댓글 생성 완료 시간=5.87s
+INFO:     127.0.0.1:53441 - "POST /generate/comment HTTP/1.1" 200 OK
+
+───────────────────────────────── 💬 댓글 생성 ─────────────────────────────────
+  글 길이: 2725자
+  키워드: 없음
+  모델: gemini-3.1-pro-preview
+11:15:54 INFO     토큰 in=1,939 out=30 | 비용=$0.0000 (0원)
+11:15:54 SUCCESS  ✨ 댓글 생성 완료 시간=6.73s
+INFO:     127.0.0.1:53630 - "POST /generate/comment HTTP/1.1" 200 OK
+
+──────────────────────────────── 💬 대댓글 생성 ────────────────────────────────
+  원댓글: 저도 맨날 어지러워서 빈혈인 줄 알았는데 아니었네요.. 내일부터 아침에 
+천천히 일어나야겠어...
+  모델: grok-4-1-fast-non-reasoning
+11:16:33 ERROR    ❌ 대댓글 생성 실패: <_InactiveRpcError of RPC that terminated
+with:
+        status = StatusCode.PERMISSION_DENIED
+        details = "Your team c9c77d84-a44c-48c9-9289-afe4be216ba9 has either 
+used all available credits or reached its monthly spending limit. To continue 
+making API requests, please purchase more credits or raise your spending limit."
+        debug_error_string = "UNKNOWN:Error received from peer  
+{grpc_message:"Your team c9c77d84-a44c-48c9-9289-afe4be216ba9 has either used 
+all available credits or reached its monthly spending limit. To continue making 
+API requests, please purchase more credits or raise your spending limit.", 
+grpc_status:7}"
+>
+INFO:     127.0.0.1:53861 - "POST /generate/recomment HTTP/1.1" 500 Internal Server Error
+
+──────────────────────────────── 💬 대댓글 생성 ────────────────────────────────
+  원댓글: 헐 저는 지금까지 그냥 빈혈인 줄 알았어요ㅠㅠ 아침에 일어날 때 
+조심해야겠네요.
+  모델: grok-4-1-fast-non-reasoning
+11:17:14 ERROR    ❌ 대댓글 생성 실패: <_InactiveRpcError of RPC that terminated
+with:
+        status = StatusCode.PERMISSION_DENIED
+        details = "Your team c9c77d84-a44c-48c9-9289-afe4be216ba9 has either 
+used all available credits or reached its monthly spending limit. To continue 
+making API requests, please purchase more credits or raise your spending limit."
+        debug_error_string = "UNKNOWN:Error received from peer  
+{grpc_message:"Your team c9c77d84-a44c-48c9-9289-afe4be216ba9 has either used 
+all available credits or reached its monthly spending limit. To continue making 
+API requests, please purchase more credits or raise your spending limit.", 
+grpc_status:7}"
+>
+INFO:     127.0.0.1:54035 - "POST /generate/recomment HTTP/1.1" 500 Internal Server Error
+
+───────────────────────────────── 💬 댓글 생성 ─────────────────────────────────
+  글 길이: 2464자
+  키워드: 없음
+  모델: gemini-3.1-pro-preview
+11:18:17 INFO     토큰 in=1,840 out=35 | 비용=$0.0000 (0원)
+11:18:17 SUCCESS  ✨ 댓글 생성 완료 시간=9.39s
+INFO:     127.0.0.1:54279 - "POST /generate/comment HTTP/1.1" 200 OK
+
+───────────────────────────────── 💬 댓글 생성 ─────────────────────────────────
+  글 길이: 2548자
+  키워드: 없음
+  모델: gemini-3.1-pro-preview
+11:19:10 INFO     토큰 in=1,840 out=34 | 비용=$0.0000 (0원)
+11:19:10 SUCCESS  ✨ 댓글 생성 완료 시간=11.65s
+INFO:     127.0.0.1:54475 - "POST /generate/comment HTTP/1.1" 200 OK
+
+───────────────────────────────── 💬 댓글 생성 ─────────────────────────────────
+  글 길이: 2604자
+  키워드: 없음
+  모델: gemini-3.1-pro-preview
+11:19:59 INFO     토큰 in=1,840 out=29 | 비용=$0.0000 (0원)
+11:19:59 SUCCESS  ✨ 댓글 생성 완료 시간=10.91s
+INFO:     127.0.0.1:54705 - "POST /generate/comment HTTP/1.1" 200 OK
+
+───────────────────────────────── 💬 댓글 생성 ─────────────────────────────────
+  글 길이: 2652자
+  키워드: 없음
+  모델: gemini-3.1-pro-preview
+11:20:49 INFO     토큰 in=1,840 out=28 | 비용=$0.0000 (0원)
+11:20:49 SUCCESS  ✨ 댓글 생성 완료 시간=5.92s
+INFO:     127.0.0.1:54988 - "POST /generate/comment HTTP/1.1" 200 OK
+
+──────────────────────────────── 💬 대댓글 생성 ────────────────────────────────
+  원댓글: 맞아요 진짜 영양제 사드리면 맨날 서랍행이더라고요ㅋㅋ 앞으로는 평소에 
+뭐 불편해하시는지 잘...
+  모델: grok-4-1-fast-non-reasoning
+11:21:27 ERROR    ❌ 대댓글 생성 실패: <_InactiveRpcError of RPC that terminated
+with:
+        status = StatusCode.PERMISSION_DENIED
+        details = "Your team c9c77d84-a44c-48c9-9289-afe4be216ba9 has either 
+used all available credits or reached its monthly spending limit. To continue 
+making API requests, please purchase more credits or raise your spending limit."
+        debug_error_string = "UNKNOWN:Error received from peer  {grpc_status:7, 
+grpc_message:"Your team c9c77d84-a44c-48c9-9289-afe4be216ba9 has either used all
+available credits or reached its monthly spending limit. To continue making API 
+requests, please purchase more credits or raise your spending limit."}"
+>
+INFO:     127.0.0.1:55200 - "POST /generate/recomment HTTP/1.1" 500 Internal Server Error
+
+──────────────────────────────── 💬 대댓글 생성 ────────────────────────────────
+  원댓글: 영양제 서랍에 방치된다는 거 진짜 공감요ㅋㅋ 이번엔 평소에 뭘 
+불편해하시는지 잘 지켜봐야겠...
+  모델: grok-4-1-fast-non-reasoning
+11:22:09 ERROR    ❌ 대댓글 생성 실패: <_InactiveRpcError of RPC that terminated
+with:
+        status = StatusCode.PERMISSION_DENIED
+        details = "Your team c9c77d84-a44c-48c9-9289-afe4be216ba9 has either 
+used all available credits or reached its monthly spending limit. To continue 
+making API requests, please purchase more credits or raise your spending limit."
+        debug_error_string = "UNKNOWN:Error received from peer  
+{grpc_message:"Your team c9c77d84-a44c-48c9-9289-afe4be216ba9 has either used 
+all available credits or reached its monthly spending limit. To continue making 
+API requests, please purchase more credits or raise your spending limit.", 
+grpc_status:7}"
+>
+INFO:     127.0.0.1:55312 - "POST /generate/recomment HTTP/1.1" 500 Internal Server Error
+
+──────────────────────────────── 💬 대댓글 생성 ────────────────────────────────
+  원댓글: 흑염소 냄새 걱정되시면 요새는 비위 안 상하게 즙으로 잘 나오는 곳들도 
+많더라고요. 몸조리...
+  모델: grok-4-1-fast-non-reasoning
+11:24:39 ERROR    ❌ 대댓글 생성 실패: <_InactiveRpcError of RPC that terminated
+with:
+        status = StatusCode.PERMISSION_DENIED
+        details = "Your team c9c77d84-a44c-48c9-9289-afe4be216ba9 has either 
+used all available credits or reached its monthly spending limit. To continue 
+making API requests, please purchase more credits or raise your spending limit."
+        debug_error_string = "UNKNOWN:Error received from peer  
+{grpc_message:"Your team c9c77d84-a44c-48c9-9289-afe4be216ba9 has either used 
+all available credits or reached its monthly spending limit. To continue making 
+API requests, please purchase more credits or raise your spending limit.", 
+grpc_status:7}"
+>
+INFO:     127.0.0.1:55982 - "POST /generate/recomment HTTP/1.1" 500 Internal Server Error
+
+──────────────────────────────── 💬 대댓글 생성 ────────────────────────────────
+  원댓글: 한방 탕 가격이 꽤 나가서 고민되시겠지만 눈 딱 감고 한 달 정도 챙겨 
+먹으니 저는 기력 ...
+  모델: grok-4-1-fast-non-reasoning
+11:25:22 ERROR    ❌ 대댓글 생성 실패: <_InactiveRpcError of RPC that terminated
+with:
+        status = StatusCode.PERMISSION_DENIED
+        details = "Your team c9c77d84-a44c-48c9-9289-afe4be216ba9 has either 
+used all available credits or reached its monthly spending limit. To continue 
+making API requests, please purchase more credits or raise your spending limit."
+        debug_error_string = "UNKNOWN:Error received from peer  {grpc_status:7, 
+grpc_message:"Your team c9c77d84-a44c-48c9-9289-afe4be216ba9 has either used all
+available credits or reached its monthly spending limit. To continue making API 
+requests, please purchase more credits or raise your spending limit."}"
+>
+INFO:     127.0.0.1:56195 - "POST /generate/recomment HTTP/1.1" 500 Internal Server Error
