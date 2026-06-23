@@ -17746,3 +17746,8 @@ pymongo.errors.ConfigurationError: The resolution lifetime expired after 21.149 
 INFO:     Waiting for application shutdown.
 INFO:     Application shutdown complete.
 INFO:     Finished server process [51199]
+INFO:     Started server process [29817]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:52883 - "GET /docs HTTP/1.1" 200 OK
